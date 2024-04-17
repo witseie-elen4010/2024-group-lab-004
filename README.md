@@ -3,3 +3,4 @@
 ## Authors
 
 - Brent Butkow
+- Christopher Pearse
