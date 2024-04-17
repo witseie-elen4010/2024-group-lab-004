@@ -5,3 +5,4 @@
 - Brent Butkow
 - Christopher Pearse
 - Rudolph Torlage
+- Samuel Cohen
