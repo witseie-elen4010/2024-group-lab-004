@@ -1,1 +1,5 @@
-# 2024-group-lab-004
+# Art Among Us
+
+## Authors
+
+- Brent Butkow
