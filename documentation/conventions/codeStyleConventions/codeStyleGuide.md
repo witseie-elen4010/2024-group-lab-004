@@ -47,4 +47,4 @@ This guide is intended to help maintain consistency and readability across our c
 ## 7 Version Control
 
 - **Commits**: Write clear, concise commit messages describing the changes made and the reason for them.
-- **Branches**: Keep branch names descriptive and focused on specific features or fixes.
+- **Branches**: <story*type>*<issueNumber>/<description>
