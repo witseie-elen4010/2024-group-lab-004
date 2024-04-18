@@ -47,4 +47,4 @@ This guide is intended to help maintain consistency and readability across our c
 ## 7 Version Control
 
 - **Commits**: Write clear, concise commit messages describing the changes made and the reason for them.
-- **Branches**: <story*type>*<issueNumber>/<description>
+- **Branches**: `<story_type>_<issueNumber>/<description>`
