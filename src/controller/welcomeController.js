@@ -1,3 +1,5 @@
+const path = require('path')
+
 exports.welcome = async (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'))
+  path.join(__dirname, '..', './', 'public', 'html', 'testing.html')
 }

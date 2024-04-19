@@ -1,0 +1,90 @@
+body {
+  background-color: #313131;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.colour {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  min-height: 40px;
+  min-width: 40px;
+  border-color: white;
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+#black {
+  background-color: black;
+}
+#blue {
+  background-color: blue;
+}
+#green {
+  background-color: green;
+}
+#red {
+  background-color: red;
+}
+#yellow {
+  background-color: yellow;
+}
+
+.tools {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  margin-top: 20px;
+}
+
+.drawButton {
+  align-self: center;
+  width: 100px;
+  height: 40px;
+  border-radius: 5px;
+  font-weight: bold;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+#colour-picker {
+  align-self: center;
+  margin-left: 5px;
+  margin-right: 5px;
+  height: 40px;
+}
+
+#size-picker {
+  align-self: center;
+  margin-left: 5px;
+  margin-right: 5px;
+  accent-color: blue;
+  cursor: pointer;
+}
+
+#canvas {
+  box-shadow: -3px 2px 9px 6px black;
+  cursor: url('../images/cursor_pen.png'), auto;
+  margin-top: 20px;
+}
+
+#appLogo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  width: 100%;
+}
+
+#prompt {
+  color: white;
+  font-size: 30px;
+  text-align: center;
+  margin-top: 10px;
+}
