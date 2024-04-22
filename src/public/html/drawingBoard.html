@@ -20,15 +20,17 @@
     <div class="whiteboard">
       <canvas id="canvas"></canvas>
       <div class="tools">
-        <button id="clear" class="drawButton">Clear</button>
-        <button id="undo" class="drawButton">Undo</button>
-        <button id="black" class="colour"></button>
-        <button id="red" class="colour"></button>
-        <button id="blue" class="colour"></button>
-        <button id="green" class="colour"></button>
-        <button id="yellow" class="colour"></button>
+        <button id="clear" class="drawButton" onclick="clearCanvas()">
+          Clear
+        </button>
+        <button id="undo" class="drawButton" onclick="undoLast()">Undo</button>
+        <button class="colour" style="background: black"></button>
+        <button class="colour" style="background: red"></button>
+        <button class="colour" style="background: blue"></button>
+        <button class="colour" style="background: green"></button>
+        <button class="colour" style="background: pink"></button>
         <input type="color" id="colour-picker" value="#90EE90" />
-        <input type="range" id="size-picker" min="1" max="50" />
+        <input type="range" id="size-picker" min="1" max="25" value="2" />
         <button id="save" class="drawButton">Save</button>
       </div>
     </div>
