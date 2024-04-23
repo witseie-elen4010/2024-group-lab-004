@@ -1,0 +1,122 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: #55609b;
+  color: #333;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 600px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: #5a5a5a;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.language-selector button {
+  padding: 5px 10px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+}
+
+.language-selector button:hover {
+  background-color: #d1d1d1;
+}
+
+.authentication button {
+  width: 48%;
+  padding: 10px;
+  margin: 5px 1%;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+}
+
+.authentication button:hover {
+  background-color: #45a049;
+}
+
+.guest-nickname {
+  margin-top: 10px;
+}
+
+.guest-nickname input {
+  padding: 10px;
+  width: 70%;
+  margin-right: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.guest-nickname button {
+  width: 25%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #008cba;
+  color: white;
+}
+
+.profile-upload {
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+#profile-upload {
+  margin-top: 5px;
+}
+
+#help-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#help-btn:hover {
+  background-color: #e53935;
+}
+
+.mascot img {
+  width: 100px;
+  height: auto;
+  margin-top: 20px;
+  border: #333;
+  border-radius: 5px;
+}
+
+footer {
+  margin-top: 20px;
+}

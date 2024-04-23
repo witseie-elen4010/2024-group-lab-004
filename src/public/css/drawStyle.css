@@ -1,5 +1,6 @@
 body {
-  background-color: #313131;
+  font-family: 'Arial', sans-serif;
+  background-color: #55609b;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -58,13 +59,12 @@ body {
   margin-top: 20px;
 }
 
-#appLogo {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
-  width: 100%;
+#appLogo img {
+  width: 100px;
+  height: auto;
+  margin-top: 20px;
+  border: #333;
+  border-radius: 5px;
 }
 
 #prompt {
