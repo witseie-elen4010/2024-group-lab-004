@@ -2,6 +2,13 @@ const canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth - 300
 canvas.height = window.innerHeight * 0.5
 
+const blackButton = document.getElementById('blackButton')
+const redButton = document.getElementById('redButton')
+const greenButton = document.getElementById('greenButton')
+const blueButton = document.getElementById('blueButton')
+const pinkButton = document.getElementById('pinkButton')
+const multiColourButton = document.getElementById('colour-picker')
+
 const context = canvas.getContext('2d')
 context.fillStyle = 'white'
 context.fillRect(0, 0, canvas.width, canvas.height)
@@ -9,12 +16,28 @@ context.fillRect(0, 0, canvas.width, canvas.height)
 let isDrawing = false
 let drawWidth = '2'
 drawWidth = '2'
-const drawColour = 'black'
+let drawColour = 'black'
 
 canvas.addEventListener('mousedown', startDrawing, false)
 canvas.addEventListener('mousemove', draw, false)
 canvas.addEventListener('mouseup', stopDrawing, false)
 canvas.addEventListener('mouseout', stopDrawing, false)
+
+blackButton.addEventListener('click', () => changeColour('black'))
+redButton.addEventListener('click', () => changeColour('red'))
+greenButton.addEventListener('click', () => changeColour('green'))
+blueButton.addEventListener('click', () => changeColour('blue'))
+pinkButton.addEventListener('click', () => changeColour('pink'))
+
+multiColourButton.addEventListener('input', () =>
+  changeColour(multiColourButton.value)
+)
+
+function changeColour(colour) {
+  drawColour = colour
+  console.log(drawColour)
+  context.strokeStyle = drawColour
+}
 
 function startDrawing(e) {
   isDrawing = true
@@ -26,7 +49,7 @@ function startDrawing(e) {
 function draw(e) {
   if (isDrawing) {
     context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
-    context.strokeStyle = drawColour
+    //context.strokeStyle = drawColour
     context.lineWidth = drawWidth
     context.lineCap = 'round'
     context.lineJoin = 'round'
