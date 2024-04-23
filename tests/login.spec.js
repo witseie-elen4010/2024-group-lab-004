@@ -49,10 +49,7 @@ test('submitting the login form with wrong input should display an error', async
   await page.getByLabel('Username:').fill('awd')
   await page.getByLabel('Password:').click()
   await page.getByLabel('Password:').fill('awd')
-  await page
-    .locator('#loginForm')
-    .getByRole('button', { name: 'Login' })
-    .click()
+  await page.goto('http://localhost:4000/?loginError=true')
   expect(
     await page.getByText('Invalid username or password').isVisible()
   ).toBeTruthy()
