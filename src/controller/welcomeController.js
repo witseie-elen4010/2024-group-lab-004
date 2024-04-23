@@ -7,3 +7,7 @@ const path = require('path')
 exports.login = async (req, res) => {
   res.sendFile(path.join(__dirname, '../public/html', 'login.html'))
 }
+
+exports.welcome = async (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/html', 'welcome.html'))
+}

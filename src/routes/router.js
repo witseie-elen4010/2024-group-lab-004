@@ -5,9 +5,9 @@ const drawController = require('../controller/drawController')
 
 const router = express.Router()
 
-router.route('/').get(welcomeController.login)
+router.route('/').get(welcomeController.welcome)
 router.route('/draw').get(drawController.board)
-// router.route('/:id').get()
+router.route('/login').get(welcomeController.login)
 router.route('/register').post(userController.createUserAccount)
 router.route('/login').post(userController.checkUserAccount)
 

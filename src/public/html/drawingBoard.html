@@ -14,7 +14,11 @@
   </head>
   <body>
     <div id="appLogo">
-      <img src="../images/Among_us_Logo.png" alt="Logo" id="logo" />
+      <img
+        src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaXY4c3JvNXdzb29iZWNmc3hkbXk0bWdtYTgxcHpjOXN1bGNxdXNjdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oW7cXqaVmt5EKQ48FQ/giphy.gif"
+        alt="Logo"
+        id="logo"
+      />
     </div>
     <div id="prompt">Draw something big doing something</div>
     <div class="whiteboard">
@@ -24,11 +28,27 @@
           Clear
         </button>
         <button id="undo" class="drawButton" onclick="undoLast()">Undo</button>
-        <button id="blackButton" class="colour" style="background: black"></button>
+        <button
+          id="blackButton"
+          class="colour"
+          style="background: black"
+        ></button>
         <button id="redButton" class="colour" style="background: red"></button>
-        <button id="blueButton" class="colour" style="background: blue"></button>
-        <button id="greenButton" class="colour" style="background: green"></button>
-        <button id="pinkButton" class="colour" style="background: rgb(255, 192, 241)"></button>
+        <button
+          id="blueButton"
+          class="colour"
+          style="background: blue"
+        ></button>
+        <button
+          id="greenButton"
+          class="colour"
+          style="background: green"
+        ></button>
+        <button
+          id="pinkButton"
+          class="colour"
+          style="background: rgb(255, 192, 241)"
+        ></button>
         <input type="color" id="colour-picker" value="#90EE90" />
         <input type="range" id="size-picker" min="1" max="25" value="2" />
         <button id="save" class="drawButton">Save</button>

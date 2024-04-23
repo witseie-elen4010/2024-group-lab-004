@@ -21,7 +21,7 @@ exports.checkUserAccount = async (req, res) => {
     const result = await db.query(query, values)
 
     if (result.rowCount === 0) {
-      res.redirect('/?loginError=true')
+      res.redirect('/login/?loginError=true')
     } else {
       return res.redirect('/draw')
     }
