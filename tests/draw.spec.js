@@ -78,14 +78,7 @@ test('testing colour change', async ({ page }) => {
 
 test('testing custom colour picker', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.locator('#colour-picker').click()
   await page.locator('#colour-picker').fill('#01f901')
-  await page.locator('#canvas').click({
-    position: {
-      x: 434,
-      y: 139,
-    },
-  })
 
   // Get the strokeStyle color of the canvas
   const strokeStyleColor = await page.evaluate(() => {
