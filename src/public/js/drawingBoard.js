@@ -35,7 +35,6 @@ multiColourButton.addEventListener('input', () =>
 
 function changeColour(colour) {
   drawColour = colour
-  console.log(drawColour)
   context.strokeStyle = drawColour
 }
 
