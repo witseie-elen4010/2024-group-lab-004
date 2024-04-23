@@ -1,14 +1,14 @@
 const { test, expect } = require('@playwright/test')
 
 test('canvas exists', async ({ page }) => {
-  await page.goto('http://localhost:3000/draw')
+  await page.goto('http://localhost:4000/draw')
 
   const canvas = await page.$('canvas')
   expect(canvas).toBeTruthy()
 })
 
 test('canvas has correct dimensions', async ({ page }) => {
-  await page.goto('http://localhost:3000/draw')
+  await page.goto('http://localhost:4000/draw')
 
   const canvas = await page.$('canvas')
   const width = await canvas.getAttribute('width')
@@ -24,7 +24,7 @@ test('canvas has correct dimensions', async ({ page }) => {
 })
 
 test('canvas has white rectangle', async ({ page }) => {
-  await page.goto('http://localhost:3000/draw') // Replace with your page URL
+  await page.goto('http://localhost:4000/draw') // Replace with your page URL
 
   const whiteRectangle = await page.evaluate(() => {
     const canvas = document.getElementById('canvas')

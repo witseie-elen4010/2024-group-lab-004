@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login and Registration</title>
+    <link rel="stylesheet" href="../css/loginStyle.css" />
+    <script src="../js/login.js" defer></script>
+  </head>
+  <body>
+    <div class="form-container">
+      <div class="toggle-buttons">
+        <button id="loginButton">Login</button>
+        <button id="registerButton">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" action="http://localhost:4000" method="GET">
+        <h2>Login to Your Account</h2>
+        <div class="input-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required />
+        </div>
+        <div class="input-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+        <div class="submit-group">
+          <button type="submit">Login</button>
+        </div>
+        <p
+          id="loginError"
+          class="error-message"
+          style="color: red; display: none"
+        >
+          Invalid username or password. Please try again.
+        </p>
+      </form>
+
+      <!-- Registration Form -->
+      <form
+        id="registerForm"
+        action="http://localhost:4000/register"
+        method="POST"
+        style="display: none"
+      >
+        <h2>Register New Account</h2>
+        <div class="input-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required />
+        </div>
+        <div class="input-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+        <div class="submit-group">
+          <button type="submit">Register</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
