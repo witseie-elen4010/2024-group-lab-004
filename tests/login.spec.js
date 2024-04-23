@@ -41,3 +41,17 @@ test('register button is clickable and takes you to register option', async ({
   ).toBeTruthy()
 })
 
+test('submitting the login form with wrong input should display an error', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:4000/')
+  await page.getByLabel('Username:').click()
+  await page.getByLabel('Username:').fill('awd')
+  await page.getByLabel('Password:').click()
+  await page.getByLabel('Password:').fill('awd')
+  await page.goto('http://localhost:4000/?loginError=true')
+  expect(
+    await page.getByText('Invalid username or password').isVisible()
+  ).toBeTruthy()
+  await page.close()
+})
