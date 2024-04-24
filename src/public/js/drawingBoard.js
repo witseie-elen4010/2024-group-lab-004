@@ -65,7 +65,7 @@ function stopDrawing(e) {
   }
 
   if (e.type !== 'mouseout') {
-    pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
+    // pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
   }
 }
@@ -102,7 +102,6 @@ function activateInputPrompt(timeout) {
 
     function inputDone() {
       let prompt = getInput.value
-      console.log(prompt)
       if (prompt == '') {
         prompt = getInput.placeholder
       }
@@ -117,7 +116,6 @@ function getPrompt() {
     const promptText = document.getElementById('prompt')
     promptText.innerText = prompt
   })
-  c
 }
 
 getPrompt()
