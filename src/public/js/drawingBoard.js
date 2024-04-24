@@ -69,3 +69,55 @@ function stopDrawing(e) {
     index += 1
   }
 }
+function activateInputPrompt(timeout) {
+  return new Promise((resolve) => {
+    const inputPrompt = document.getElementById('inputPrompt')
+    const doneButton = document.getElementById('doneButton')
+    const getInput = document.getElementById('getInput')
+
+    // Show the inputPrompt
+    inputPrompt.style.display = 'block'
+
+    // Set a timeout to hide the inputPrompt
+    const timeoutId = setTimeout(() => {
+      inputPrompt.style.display = 'none'
+      inputDone()
+    }, timeout)
+
+    // Add event listener to doneButton to hide the inputPrompt
+    doneButton.addEventListener('click', inputEntered)
+
+    // Add event listener to getInput to hide the inputPrompt when Enter is pressed
+    getInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        inputEntered()
+      }
+    })
+
+    function inputEntered() {
+      inputPrompt.style.display = 'none'
+      clearTimeout(timeoutId)
+      inputDone()
+    }
+
+    function inputDone() {
+      let prompt = getInput.value
+      console.log(prompt)
+      if (prompt == '') {
+        prompt = getInput.placeholder
+      }
+      getInput.value = ''
+      resolve(prompt) // Resolve the Promise with the prompt
+    }
+  })
+}
+
+function getPrompt() {
+  activateInputPrompt(15000).then((prompt) => {
+    const promptText = document.getElementById('prompt')
+    promptText.innerText = prompt
+  })
+  c
+}
+
+getPrompt()
