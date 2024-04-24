@@ -24,7 +24,7 @@ test('canvas has correct dimensions', async ({ page }) => {
 })
 
 test('canvas has white rectangle', async ({ page }) => {
-  await page.goto('http://localhost:4000/draw') // Replace with your page URL
+  await page.goto('http://localhost:4000/draw')
 
   const whiteRectangle = await page.evaluate(() => {
     const canvas = document.getElementById('canvas')
