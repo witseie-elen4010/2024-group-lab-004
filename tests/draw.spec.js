@@ -57,46 +57,61 @@ test.describe('Testing the input field when the draw page is loaded', () => {
   })
 })
 
-// This test has been temporarily removed, and will be added back when the input functionality is working
-// test('testing colour change', async ({ page }) => {
-//   await page.goto('http://localhost:4000/draw')
+test('testing input field', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
 
-//   //Check Red
-//   await page.locator('#redButton').click()
-//   let strokeStyleColor = await page.evaluate(() => {
-//     const canvas = document.querySelector('#canvas')
-//     const context = canvas.getContext('2d')
-//     return context.strokeStyle
-//   })
-//   expect(strokeStyleColor).toBe('#ff0000')
+  //enter a prompt
+  await page.locator('#getInput').fill('test prompt')
+  await page.locator('#doneButton').click()
 
-//   //Check Blue
-//   await page.locator('#blueButton').click()
-//   strokeStyleColor = await page.evaluate(() => {
-//     const canvas = document.querySelector('#canvas')
-//     const context = canvas.getContext('2d')
-//     return context.strokeStyle
-//   })
-//   expect(strokeStyleColor).toBe('#0000ff')
+  //check if the prompt is displayed
+  const prompt = await page.locator('#prompt').innerText()
+  expect(prompt).toBe('test prompt')
+})
 
-//   //Check Green
-//   await page.locator('#greenButton').click()
-//   strokeStyleColor = await page.evaluate(() => {
-//     const canvas = document.querySelector('#canvas')
-//     const context = canvas.getContext('2d')
-//     return context.strokeStyle
-//   })
-//   expect(strokeStyleColor).toBe('#008000')
+test('testing colour change', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
 
-//   //Check Pink
-//   await page.locator('#pinkButton').click()
-//   strokeStyleColor = await page.evaluate(() => {
-//     const canvas = document.querySelector('#canvas')
-//     const context = canvas.getContext('2d')
-//     return context.strokeStyle
-//   })
-//   expect(strokeStyleColor).toBe('#ffc0cb')
-// })
+  //enter a prompt
+  await page.locator('#getInput').fill('test')
+  await page.locator('#doneButton').click()
+
+  //Check Red
+  await page.locator('#redButton').click()
+  let strokeStyleColor = await page.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#ff0000')
+
+  //Check Blue
+  await page.locator('#blueButton').click()
+  strokeStyleColor = await page.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#0000ff')
+
+  //Check Green
+  await page.locator('#greenButton').click()
+  strokeStyleColor = await page.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#008000')
+
+  //Check Pink
+  await page.locator('#pinkButton').click()
+  strokeStyleColor = await page.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#ffc0cb')
+})
 
 test('testing custom colour picker', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
