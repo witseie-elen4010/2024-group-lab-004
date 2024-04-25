@@ -11,6 +11,6 @@
   },
   "scripts": {
     "run": "node src/server.js",
-    "start": "nodemon src/server.js"
+    "start":"[ ! -L \"./node_modules/.bin/nodemon\" ] && ln -s ../nodemon/bin/nodemon.js ./node_modules/.bin/nodemon; nodemon src/server.js"
   }
 }
