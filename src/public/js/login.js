@@ -26,4 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loginButton.classList.add('active')
     registerButton.classList.remove('active')
   })
+
+  loginForm.action = window.location.origin + '/login'
+  registerForm.action = window.location.origin + '/register'
 })

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Redirect to login page on sign-in
   signInButton.addEventListener('click', function () {
-    window.location.href = 'http://localhost:4000/login'
+    window.location.href = window.location.origin + '/login'
   })
 
   // Toggle display of guest nickname input
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (nicknameInput.value.trim() === '') {
       alert('Please enter a nickname.')
     } else {
-      window.location.href = 'http://localhost:4000/draw'
+      window.location.href = window.location.origin + '/draw'
     }
   })
 
