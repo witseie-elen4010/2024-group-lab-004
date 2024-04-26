@@ -86,9 +86,6 @@ test('input field closes after 25 seconds', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
   const inputTimer = 25
 
-  //enter a prompt
-  await page.locator('#getInput').fill('test prompt')
-
   // input field does not close after 24 seconds
   await page.waitForTimeout((inputTimer - 1) * 1000)
   let isVisible = await page.locator('#getInput').isVisible()
@@ -110,7 +107,6 @@ test('testing the timer bar appears until the prompt is entered', async ({
   expect(timerBar).toBe(true)
 
   //enter a prompt and click done
-  await page.locator('#getInput').fill('test prompt')
   await page.locator('#doneButton').click()
 
   //check if the timer bar is displayed
@@ -118,26 +114,94 @@ test('testing the timer bar appears until the prompt is entered', async ({
   expect(timerBar).toBe(false)
 })
 
-test('testing that the timer bar decreases in width', async ({ page }) => {
+test.describe('testing that the timer bar decreases in width', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:4000/draw')
+  })
+
+  test('for the original prompt entering', async ({ page }) => {
+    //get the initial width of the timer bar
+    const initialWidth = await page.$eval(
+      '#countdown-bar',
+      (element) => getComputedStyle(element).width
+    )
+
+    //wait for some time
+    await page.waitForTimeout(500)
+
+    //get the width of the timer bar after half a second
+    const laterWidth = await page.$eval(
+      '#countdown-bar',
+      (element) => getComputedStyle(element).width
+    )
+
+    //check if the width of the timer bar has decreased
+    expect(parseInt(laterWidth)).toBeLessThan(parseInt(initialWidth))
+  })
+
+  test('for describing a drawing', async ({ page }) => {
+    // get to teh describe a drawing point
+    await page.locator('#doneButton').click()
+    await page.locator('#submit').click()
+
+    //get the initial width of the timer bar
+    const initialWidth = await page.$eval(
+      '#countdown-bar',
+      (element) => getComputedStyle(element).width
+    )
+
+    //wait for some time
+    await page.waitForTimeout(500)
+
+    //get the width of the timer bar after half a second
+    const laterWidth = await page.$eval(
+      '#countdown-bar',
+      (element) => getComputedStyle(element).width
+    )
+
+    //check if the width of the timer bar has decreased
+    expect(parseInt(laterWidth)).toBeLessThan(parseInt(initialWidth))
+  })
+})
+
+test('testing that a drawing is shown after submitting the drawing', async ({
+  page,
+}) => {
   await page.goto('http://localhost:4000/draw')
 
-  //get the initial width of the timer bar
-  const initialWidth = await page.$eval(
-    '#countdown-bar',
-    (element) => getComputedStyle(element).width
-  )
+  // make sure the drawingDisplay is not visible
+  let drawingDisplay = await page.locator('#drawing').isVisible()
+  expect(drawingDisplay).toBe(false)
 
-  //wait for some time
-  await page.waitForTimeout(500)
+  //enter a prompt and click done
+  await page.locator('#doneButton').click()
 
-  //get the width of the timer bar after half a second
-  const laterWidth = await page.$eval(
-    '#countdown-bar',
-    (element) => getComputedStyle(element).width
-  )
+  //press the submit button
+  await page.locator('#submit').click()
 
-  //check if the width of the timer bar has decreased
-  expect(parseInt(laterWidth)).toBeLessThan(parseInt(initialWidth))
+  // make sure the drawingDisplay is  visible
+  drawingDisplay = await page.locator('#drawing').isVisible()
+  expect(drawingDisplay).toBe(true)
+})
+
+test('testing that the description entered becomes the new prompt', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:4000/draw')
+
+  //enter a prompt and click done
+  await page.locator('#doneButton').click()
+
+  //press the submit button
+  await page.locator('#submit').click()
+
+  //enter a prompt and click done
+  await page.locator('#getInput').fill('test prompt')
+  await page.locator('#doneButton').click()
+
+  //check if the prompt is displayed
+  const prompt = await page.locator('#prompt').innerText()
+  expect(prompt).toBe('test prompt')
 })
 
 test('testing colour change', async ({ page }) => {
