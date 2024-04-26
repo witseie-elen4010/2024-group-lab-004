@@ -75,9 +75,16 @@ function activateInputPrompt(timeout) {
     const inputPrompt = document.getElementById('inputPrompt')
     const doneButton = document.getElementById('doneButton')
     const getInput = document.getElementById('getInput')
+    const countdownBar = document.getElementById('countdown-bar')
 
     // Show the inputPrompt
     inputPrompt.style.display = 'block'
+
+    // Start the countdown
+    countdownBar.style.width = '100%'
+    const countdownBarTimer = setTimeout(() => {
+      countdownBar.style.width = '0%'
+    }, 0)
 
     // Set a timeout to hide the inputPrompt
     const timeoutId = setTimeout(() => {
@@ -86,22 +93,23 @@ function activateInputPrompt(timeout) {
     }, timeout)
 
     // Add event listener to doneButton to hide the inputPrompt
-    doneButton.addEventListener('click', inputEntered)
+    doneButton.addEventListener('click', inputDone)
 
     // Add event listener to getInput to hide the inputPrompt when Enter is pressed
     getInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
-        inputEntered()
+        inputDone()
       }
     })
 
-    function inputEntered() {
-      inputPrompt.style.display = 'none'
-      clearTimeout(timeoutId)
-      inputDone()
-    }
-
     function inputDone() {
+      inputPrompt.style.display = 'none'
+
+      // Reset the countdown bar and timer
+      countdownBar.style.width = '100%'
+      clearTimeout(timeoutId)
+      clearTimeout(countdownBarTimer)
+
       let prompt = getInput.value
       if (prompt == '') {
         prompt = getInput.placeholder
