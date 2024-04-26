@@ -10,7 +10,7 @@
     "@types/node": "^20.12.7"
   },
   "scripts": {
-    "run": "node src/server.js",
+    "run": "nodemon src/server.js",
     "start":"node src/server.js"
   }
 }

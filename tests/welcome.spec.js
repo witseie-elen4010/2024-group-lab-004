@@ -69,4 +69,5 @@ test('Join button takes you to draw page', async ({ page }) => {
 
   // Check if the current URL is the expected URL
   expect(currentUrl).toBe('http://localhost:4000/draw')
+  page.close()
 })

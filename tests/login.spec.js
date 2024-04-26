@@ -53,5 +53,4 @@ test('submitting the login form with wrong input should display an error', async
   expect(
     await page.getByText('Invalid username or password').isVisible()
   ).toBeTruthy()
-  await page.close()
 })

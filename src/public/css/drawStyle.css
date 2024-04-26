@@ -73,3 +73,16 @@ body {
   text-align: center;
   margin-top: 10px;
 }
+
+#countdown-bar-container {
+  width: 100%;
+  height: 20px;
+  background-color: #f3f3f3;
+}
+
+#countdown-bar {
+  height: 100%;
+  width: 100%;
+  background-color: #ff0000;
+  transition: width 25s linear;
+}

@@ -57,7 +57,7 @@ test.describe('Testing the input field when the draw page is loaded', () => {
   })
 })
 
-test('testing input field', async ({ page }) => {
+test('input field closes when the done button is pressed', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
 
   //enter a prompt
@@ -67,6 +67,77 @@ test('testing input field', async ({ page }) => {
   //check if the prompt is displayed
   const prompt = await page.locator('#prompt').innerText()
   expect(prompt).toBe('test prompt')
+})
+
+test('input field closes when the enter key is pressed', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+
+  //enter a prompt
+  await page.locator('#getInput').fill('test prompt')
+  await page.locator('#getInput').press('Enter')
+
+  //check if the prompt is displayed
+  const prompt = await page.locator('#prompt').innerText()
+  expect(prompt).toBe('test prompt')
+})
+
+test('input field closes after 25 seconds', async ({ page }) => {
+  test.setTimeout(40000)
+  await page.goto('http://localhost:4000/draw')
+  const inputTimer = 25
+
+  //enter a prompt
+  await page.locator('#getInput').fill('test prompt')
+
+  // input field does not close after 24 seconds
+  await page.waitForTimeout((inputTimer - 1) * 1000)
+  let isVisible = await page.locator('#getInput').isVisible()
+  expect(isVisible).toBe(true)
+
+  // input field closes after 25 seconds
+  await page.waitForTimeout(1000)
+  isVisible = await page.locator('#getInput').isVisible()
+  expect(isVisible).toBe(false)
+})
+
+test('testing the timer bar appears until the prompt is entered', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:4000/draw')
+
+  //check if the timer bar is displayed
+  let timerBar = await page.locator('#countdown-bar').isVisible()
+  expect(timerBar).toBe(true)
+
+  //enter a prompt and click done
+  await page.locator('#getInput').fill('test prompt')
+  await page.locator('#doneButton').click()
+
+  //check if the timer bar is displayed
+  timerBar = await page.locator('#countdown-bar').isVisible()
+  expect(timerBar).toBe(false)
+})
+
+test('testing that the timer bar decreases in width', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+
+  //get the initial width of the timer bar
+  const initialWidth = await page.$eval(
+    '#countdown-bar',
+    (element) => getComputedStyle(element).width
+  )
+
+  //wait for some time
+  await page.waitForTimeout(500)
+
+  //get the width of the timer bar after half a second
+  const laterWidth = await page.$eval(
+    '#countdown-bar',
+    (element) => getComputedStyle(element).width
+  )
+
+  //check if the width of the timer bar has decreased
+  expect(parseInt(laterWidth)).toBeLessThan(parseInt(initialWidth))
 })
 
 test('testing colour change', async ({ page }) => {
