@@ -82,6 +82,7 @@ test('input field closes when the enter key is pressed', async ({ page }) => {
 })
 
 test('input field closes after 25 seconds', async ({ page }) => {
+  test.setTimeout(40000)
   await page.goto('http://localhost:4000/draw')
   const inputTimer = 25
 
