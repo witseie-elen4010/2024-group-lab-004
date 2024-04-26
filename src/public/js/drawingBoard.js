@@ -17,6 +17,7 @@ let isDrawing = false
 let drawWidth = '2'
 drawWidth = '2'
 let drawColour = 'black'
+const inputTimer = 25
 
 canvas.addEventListener('mousedown', startDrawing, false)
 canvas.addEventListener('mousemove', draw, false)
@@ -112,7 +113,7 @@ function activateInputPrompt(timeout) {
 }
 
 function getPrompt() {
-  activateInputPrompt(15000).then((prompt) => {
+  activateInputPrompt(inputTimer * 1000).then((prompt) => {
     const promptText = document.getElementById('prompt')
     promptText.innerText = prompt
   })
