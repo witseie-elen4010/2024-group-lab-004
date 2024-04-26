@@ -68,6 +68,7 @@ test('input field closes when the done button is pressed', async ({ page }) => {
   const prompt = await page.locator('#prompt').innerText()
   expect(prompt).toBe('test prompt')
 })
+
 test('input field closes when the enter key is pressed', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
 
@@ -79,6 +80,7 @@ test('input field closes when the enter key is pressed', async ({ page }) => {
   const prompt = await page.locator('#prompt').innerText()
   expect(prompt).toBe('test prompt')
 })
+
 test('input field closes after 25 seconds', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
   const inputTimer = 25
@@ -95,6 +97,46 @@ test('input field closes after 25 seconds', async ({ page }) => {
   await page.waitForTimeout(1000)
   isVisible = await page.locator('#getInput').isVisible()
   expect(isVisible).toBe(false)
+})
+
+test('testing the timer bar appears until the prompt is entered', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:4000/draw')
+
+  //check if the timer bar is displayed
+  let timerBar = await page.locator('#countdown-bar').isVisible()
+  expect(timerBar).toBe(true)
+
+  //enter a prompt and click done
+  await page.locator('#getInput').fill('test prompt')
+  await page.locator('#doneButton').click()
+
+  //check if the timer bar is displayed
+  timerBar = await page.locator('#countdown-bar').isVisible()
+  expect(timerBar).toBe(false)
+})
+
+test('testing that the timer bar decreases in width', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+
+  //get the initial width of the timer bar
+  const initialWidth = await page.$eval(
+    '#countdown-bar',
+    (element) => getComputedStyle(element).width
+  )
+
+  //wait for some time
+  await page.waitForTimeout(500)
+
+  //get the width of the timer bar after half a second
+  const laterWidth = await page.$eval(
+    '#countdown-bar',
+    (element) => getComputedStyle(element).width
+  )
+
+  //check if the width of the timer bar has decreased
+  expect(parseInt(laterWidth)).toBeLessThan(parseInt(initialWidth))
 })
 
 test('testing colour change', async ({ page }) => {
