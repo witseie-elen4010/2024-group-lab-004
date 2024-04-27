@@ -1,9 +1,9 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
 
-if (!roomId) {
-  window.location.href = '/landing'
-}
+// if (!roomId) {
+//   window.location.href = '/landing'
+// }
 
 socket.emit('joinRoom', roomId)
 

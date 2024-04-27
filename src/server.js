@@ -25,22 +25,6 @@ io.on('connection', (socket) => {
     console.log(`Room created: ${roomID}`)
   })
 
-  socket.on('joinRoom', (roomID) => {
-    if (rooms[roomID]) {
-      rooms[roomID].members.push(socket.id)
-      socket.join(roomID)
-      currentRoom = roomID
-      socket.emit('roomJoined', {
-        roomId: roomID,
-        members: rooms[roomID].members,
-      })
-      io.to(roomID).emit('updateMembers', rooms[roomID].members.length)
-      console.log(`Joined room: ${roomID}`)
-    } else {
-      socket.emit('roomJoinError', 'Room does not exist')
-    }
-  })
-
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
       io.to(roomID).emit('gameStarted')
