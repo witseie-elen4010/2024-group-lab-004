@@ -93,6 +93,7 @@ let endTimeout = function () {}
 
 function submitDrawing() {
   const image = canvas.toDataURL('image/png')
+  stopDrawing({ type: 'mouseout' })
   context.fillRect(0, 0, canvas.width, canvas.height)
 
   endTimeout()
@@ -194,3 +195,9 @@ function startDrawTimer() {
 
 // start the game by getting the user's first prompt
 getPrompt()
+
+/* BUG FIX: 
+The canvas does not get cleared if the user is drawing the moment the timer runs out
+The input timer sometimes does not show up - very inconsistent, I am not sure what causes it
+
+*/
