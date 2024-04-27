@@ -133,6 +133,7 @@ function activateInputPrompt(img = null) {
 
       // Reset the countdown bar and timer
       inputCountdownBar.style.width = '100%'
+      void drawingCountdownBar.offsetWidth // force a reflow to apply the changes immediately
       clearTimeout(countdownBarTimer)
       clearTimeout(timeoutId)
 
