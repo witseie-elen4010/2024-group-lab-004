@@ -53,8 +53,8 @@
           <input type="text" id="getInput" placeholder="default value here" />
           <button id="doneButton">Done!</button>
         </div>
-        <div id="countdown-bar-container" style="margin-top: 40px">
-          <div id="countdown-bar"></div>
+        <div class="countdown-bar-container" style="margin-top: 40px">
+          <div id="inputCountdownBar" class="countdown-bar"></div>
         </div>
       </div>
     </div>
@@ -66,6 +66,9 @@
       />
     </div>
     <div id="prompt">Prompt</div>
+    <div class="countdown-bar-container" style="margin-top: 40px; width: 80%">
+      <div id="drawingCountdownBar" class="countdown-bar"></div>
+    </div>
     <div class="whiteboard">
       <canvas id="canvas"></canvas>
       <div class="tools">
