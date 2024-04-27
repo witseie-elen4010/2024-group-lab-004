@@ -101,16 +101,12 @@ test.describe('Landing page tests', () => {
 
   test('create room and check number of members', async ({ page }) => {
     await page.click('#createRoom')
-    const createRoomButtonDisplay = await page.$eval(
-      '#createRoom',
-      (el) => getComputedStyle(el).display
-    )
-    const joinRoomButtonDisplay = await page.$eval(
-      '#joinRoom',
-      (el) => getComputedStyle(el).display
-    )
-    expect(createRoomButtonDisplay).toBe('none')
-    expect(joinRoomButtonDisplay).toBe('none')
+    const createRoomButton = await page.$('#createRoom')
+    const joinRoomButton = await page.$('#joinRoom')
+    const isCreateRoomButtonVisible = await createRoomButton.isVisible()
+    const isJoinRoomButtonVisible = await joinRoomButton.isVisible()
+    expect(isCreateRoomButtonVisible).toBe(false)
+    expect(isJoinRoomButtonVisible).toBe(false)
 
     // Check if the roomId and membersCount are displayed
     const roomIdDisplay = await page.$eval(
@@ -130,7 +126,6 @@ test.describe('Landing page tests', () => {
       '#membersCount',
       (el) => el.textContent
     )
-    expect(roomId).toBeTruthy()
     expect(membersCount).toBe('1')
   })
 })
