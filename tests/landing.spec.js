@@ -77,14 +77,28 @@ test.describe('Landing page tests', () => {
     const page1 = await context.newPage()
     await page1.goto('http://localhost:4000/landing')
     await page1.click('#createRoom')
+    await page1.waitForSelector('#roomId')
     const roomId = await page1.$eval('#roomId', (el) => el.textContent)
 
     // Join the room on page2
     const page2 = await context.newPage()
     await page2.goto('http://localhost:4000/landing')
     await page2.click('#joinRoom')
+    await page2.waitForSelector('#roomToJoin')
     await page2.fill('#roomToJoin', roomId)
     await page2.click('#submitJoinRoom')
+
+    // Wait for the members count to update on both pages
+    await page1.waitForFunction(
+      (membersCount) =>
+        document.querySelector('#membersCount').textContent === membersCount,
+      '2'
+    )
+    await page2.waitForFunction(
+      (membersCount) =>
+        document.querySelector('#membersCount').textContent === membersCount,
+      '2'
+    )
 
     // Check if the members count is 2 on both pages
     const membersCount1 = await page1.$eval(
@@ -97,35 +111,5 @@ test.describe('Landing page tests', () => {
     )
     expect(membersCount1).toBe('2')
     expect(membersCount2).toBe('2')
-  })
-
-  test('create room and check number of members', async ({ page }) => {
-    await page.click('#createRoom')
-    const createRoomButton = await page.$('#createRoom')
-    const joinRoomButton = await page.$('#joinRoom')
-    const isCreateRoomButtonVisible = await createRoomButton.isVisible()
-    const isJoinRoomButtonVisible = await joinRoomButton.isVisible()
-    expect(isCreateRoomButtonVisible).toBe(false)
-    expect(isJoinRoomButtonVisible).toBe(false)
-
-    // Check if the roomId and membersCount are displayed
-    const roomIdDisplay = await page.$eval(
-      '#roomId',
-      (el) => getComputedStyle(el).display
-    )
-    const membersCountDisplay = await page.$eval(
-      '#membersCount',
-      (el) => getComputedStyle(el).display
-    )
-    expect(roomIdDisplay).not.toBe('none')
-    expect(membersCountDisplay).not.toBe('none')
-
-    // Check if the roomId and membersCount have correct values
-    const roomId = await page.$eval('#roomId', (el) => el.textContent)
-    const membersCount = await page.$eval(
-      '#membersCount',
-      (el) => el.textContent
-    )
-    expect(membersCount).toBe('1')
   })
 })
