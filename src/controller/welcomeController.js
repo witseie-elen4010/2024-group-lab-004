@@ -11,3 +11,7 @@ exports.login = async (req, res) => {
 exports.welcome = async (req, res) => {
   res.sendFile(path.join(__dirname, '../public/html', 'welcome.html'))
 }
+
+exports.landing = async (req, res) => {
+  res.sendFile(path.join(__dirname, '..', './public/html', 'landingPage.html'))
+}
