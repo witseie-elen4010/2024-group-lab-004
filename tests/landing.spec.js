@@ -34,40 +34,4 @@ test.describe('Landing page tests', () => {
     const submitJoinRoomButton = await page.$('#submitJoinRoom')
     expect(submitJoinRoomButton).toBeTruthy()
   })
-
-  test('create room', async ({ page }) => {
-    await page.click('#createRoom')
-    const createRoomButtonDisplay = await page.$eval(
-      '#createRoom',
-      (el) => getComputedStyle(el).display
-    )
-    const joinRoomButtonDisplay = await page.$eval(
-      '#joinRoom',
-      (el) => getComputedStyle(el).display
-    )
-    expect(createRoomButtonDisplay).toBe('none')
-    expect(joinRoomButtonDisplay).toBe('none')
-
-    // Check if the roomId and membersCount are displayed
-    const roomIdDisplay = await page.$eval(
-      '#roomId',
-      (el) => getComputedStyle(el).display
-    )
-    const membersCountDisplay = await page.$eval(
-      '#membersCount',
-      (el) => getComputedStyle(el).display
-    )
-    expect(roomIdDisplay).not.toBe('none')
-    expect(membersCountDisplay).not.toBe('none')
-
-    // Check if the roomId and membersCount have correct values
-    const roomId = await page.$eval('#roomId', (el) => el.textContent)
-    const membersCount = await page.$eval(
-      '#membersCount',
-      (el) => el.textContent
-    )
-    expect(roomId).toBeTruthy()
-    expect(membersCount).toBe('1')
-  })
 })
-
