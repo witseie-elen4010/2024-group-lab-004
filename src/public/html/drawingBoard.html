@@ -42,7 +42,13 @@
           border-radius: 40px;
         "
       >
-        <h2 style="margin-bottom: 60px">Enter your prompt here</h2>
+        <div id="notDrawing">
+          <h2 style="margin-bottom: 60px">Enter your prompt</h2>
+        </div>
+        <div id="drawing" style="display: none">
+          <h2 style="margin-bottom: 60px">Enter your description</h2>
+          <img src="" id="drawingDisplay" style="margin-bottom: 30px" />
+        </div>
         <div style="display: flex">
           <input type="text" id="getInput" placeholder="default value here" />
           <button id="doneButton">Done!</button>
@@ -90,7 +96,7 @@
         ></button>
         <input type="color" id="colour-picker" value="#90EE90" />
         <input type="range" id="size-picker" min="1" max="25" value="2" />
-        <button id="save" class="drawButton">Save</button>
+        <button id="submit" class="drawButton">Submit</button>
       </div>
     </div>
     <script src="./js/drawingBoard.js"></script>
