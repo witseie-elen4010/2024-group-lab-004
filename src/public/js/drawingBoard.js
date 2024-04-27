@@ -11,6 +11,15 @@ const multiColourButton = document.getElementById('colour-picker')
 const submitButton = document.getElementById('submit')
 const drawingDisplay = document.getElementById('drawingDisplay')
 
+const inputPrompt = document.getElementById('inputPrompt')
+const doneButton = document.getElementById('doneButton')
+const getInput = document.getElementById('getInput')
+const inputCountdownBar = document.getElementById('inputCountdownBar')
+const drawingCountdownBar = document.getElementById('drawingCountdownBar')
+
+const drawing = document.getElementById('drawing')
+const notDrawing = document.getElementById('notDrawing')
+
 const context = canvas.getContext('2d')
 context.fillStyle = 'white'
 context.fillRect(0, 0, canvas.width, canvas.height)
@@ -21,7 +30,10 @@ drawingDisplay.height = canvas.height / 4
 let isDrawing = false
 let drawWidth = '2'
 let drawColour = 'black'
-const inputTimer = 25
+
+const urlParams = new URLSearchParams(window.location.search)
+const inputTimer = (urlParams.get('inputTimer') || 25) * 1000
+const drawingTimer = (urlParams.get('drawingTimer') || 60) * 1000
 
 canvas.addEventListener('mousedown', startDrawing, false)
 canvas.addEventListener('mousemove', draw, false)
@@ -76,24 +88,19 @@ function stopDrawing(e) {
   }
 }
 
+// stores the timeouts for the drawing bar, so that they can be ended from the submitdrawing function
+let endTimeout = function () {}
+
 function submitDrawing() {
   const image = canvas.toDataURL('image/png')
   context.fillRect(0, 0, canvas.width, canvas.height)
 
-  activateInputPrompt(inputTimer * 1000, image).then((prompt) =>
-    setPrompt(prompt)
-  )
+  endTimeout()
+
+  getPrompt(image)
 }
 
-function activateInputPrompt(timeout, img = null) {
-  const inputPrompt = document.getElementById('inputPrompt')
-  const doneButton = document.getElementById('doneButton')
-  const getInput = document.getElementById('getInput')
-  const countdownBar = document.getElementById('countdown-bar')
-
-  const drawing = document.getElementById('drawing')
-  const notDrawing = document.getElementById('notDrawing')
-
+function activateInputPrompt(img = null) {
   return new Promise((resolve) => {
     // the text displayed changes based on if an image is given (we are reviewing a drawing), or not (it is the start of the game)
     drawing.style.display = img ? 'block' : 'none'
@@ -106,13 +113,14 @@ function activateInputPrompt(timeout, img = null) {
     inputPrompt.style.display = 'block'
 
     // Start the countdown
-    countdownBar.style.width = '100%'
+    inputCountdownBar.style.width = '100%'
+    inputCountdownBar.style.transitionDuration = `${inputTimer}ms`
     const countdownBarTimer = setTimeout(() => {
-      countdownBar.style.width = '0%'
+      inputCountdownBar.style.width = '0%'
     }, 0)
 
     // Set a timeout to hide the inputPrompt
-    const timeoutId = setTimeout(inputDone, timeout)
+    const timeoutId = setTimeout(inputDone, inputTimer)
 
     function checkEnterKey(event) {
       if (event.key === 'Enter') {
@@ -124,7 +132,7 @@ function activateInputPrompt(timeout, img = null) {
       inputPrompt.style.display = 'none'
 
       // Reset the countdown bar and timer
-      countdownBar.style.width = '100%'
+      inputCountdownBar.style.width = '100%'
       clearTimeout(countdownBarTimer)
       clearTimeout(timeoutId)
 
@@ -145,13 +153,42 @@ function activateInputPrompt(timeout, img = null) {
   })
 }
 
-function getPrompt() {
-  activateInputPrompt(inputTimer * 1000).then((prompt) => setPrompt(prompt))
+function getPrompt(image = null) {
+  if (image) {
+    activateInputPrompt(image).then((prompt) => setPrompt(prompt))
+  } else {
+    activateInputPrompt().then((prompt) => setPrompt(prompt))
+  }
 }
 
 function setPrompt(prompt) {
   const promptText = document.getElementById('prompt')
   promptText.innerText = prompt
+  startDrawTimer()
+}
+
+function startDrawTimer() {
+  drawingCountdownBar.style.width = '100%'
+  drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
+  const countdownBarTimer = setTimeout(() => {
+    drawingCountdownBar.style.width = '0%'
+  }, 0)
+
+  const countdownBarTimeout = setTimeout(() => {
+    clearTimeout(countdownBarTimer)
+    submitDrawing()
+  }, drawingTimer)
+
+  endTimeout = function () {
+    clearTimeout(countdownBarTimeout)
+    clearTimeout(countdownBarTimer)
+    drawingCountdownBar.style.transition = 'none'
+    drawingCountdownBar.style.width = '100%'
+    // Force a reflow to apply the changes immediately
+    void drawingCountdownBar.offsetWidth
+    // Re-enable the transition
+    drawingCountdownBar.style.transition = ''
+  }
 }
 
 // start the game by getting the user's first prompt
