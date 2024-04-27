@@ -47,7 +47,8 @@ drawingDisplay.width = canvas.width / 4
 drawingDisplay.height = canvas.height / 4
 
 let isDrawing = false
-const drawWidth = '2'
+
+let drawWidth = '2'
 let drawColour = 'black'
 
 const urlParams = new URLSearchParams(window.location.search)
