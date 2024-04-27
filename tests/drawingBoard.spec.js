@@ -132,10 +132,16 @@ test('testing the timer bar appears until the prompt is entered', async ({
 })
 
 test.describe('testing that the timer bar decreases in width', () => {
+  const waitTime = 1000
+  const inputTimer = 25
+  const drawingTimer = 60
+  const percentageAllowed = 10
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:4000/draw?inputTimer=50&drawingTimer=60')
+    await page.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
   })
-  // The difPercentage part of the test is very inconsistent, it can go from about 1-2.5% for all of them, up to around 10-15%
+  // The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
 
   test('The input timer bar decreases for the original prompt entering', async ({
     page,
@@ -144,8 +150,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     const initialWidth = parseInt(
       await page.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
     )
-
-    const waitTime = 2000
 
     //wait for some time
     await page.waitForTimeout(waitTime)
@@ -157,15 +161,16 @@ test.describe('testing that the timer bar decreases in width', () => {
 
     // get the expected decrease in width in seconds
     const expectedDecrease =
-      ((initialWidth - laterWidth) / initialWidth) * 50 * 1000
+      ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
 
-    // the difference in percentage must be less than 15%
+    // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
+    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
-    expect(difPercentage).toBeLessThan(15)
+    expect(difPercentage).toBeLessThan(percentageAllowed)
   })
 
   test('The input timer bar decreases for describing a drawing', async ({
@@ -180,8 +185,6 @@ test.describe('testing that the timer bar decreases in width', () => {
       await page.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
     )
 
-    const waitTime = 2000
-
     //wait for some time
     await page.waitForTimeout(waitTime)
 
@@ -192,15 +195,16 @@ test.describe('testing that the timer bar decreases in width', () => {
 
     // get the expected decrease in width in seconds
     const expectedDecrease =
-      ((initialWidth - laterWidth) / initialWidth) * 50 * 1000
+      ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
 
-    // the difference in percentage must be less than 15%
+    // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
+    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
-    expect(difPercentage).toBeLessThan(15)
+    expect(difPercentage).toBeLessThan(percentageAllowed)
   })
   test('The draw timer bar decreases', async ({ page }) => {
     // get to the describe a drawing point
@@ -210,8 +214,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     const initialWidth = parseInt(
       await page.$eval('#drawingCountdownBar', (e) => getComputedStyle(e).width)
     )
-
-    const waitTime = 2000
 
     //wait for some time
     await page.waitForTimeout(waitTime)
@@ -223,15 +225,16 @@ test.describe('testing that the timer bar decreases in width', () => {
 
     // get the expected decrease in width in seconds
     const expectedDecrease =
-      ((initialWidth - laterWidth) / initialWidth) * 60 * 1000
+      ((initialWidth - laterWidth) / initialWidth) * drawingTimer * 1000
 
-    // the difference in percentage must be less than 15%
+    // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
+    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
-    expect(difPercentage).toBeLessThan(15)
+    expect(difPercentage).toBeLessThan(percentageAllowed)
   })
 })
 

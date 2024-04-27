@@ -116,9 +116,11 @@ function activateInputPrompt(img = null) {
     // Start the countdown
     inputCountdownBar.style.width = '100%'
     inputCountdownBar.style.transitionDuration = `${inputTimer}ms`
-    const countdownBarTimer = setTimeout(() => {
-      inputCountdownBar.style.width = '0%'
-    }, 0)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        inputCountdownBar.style.width = '0%'
+      })
+    })
 
     // Set a timeout to hide the inputPrompt
     const timeoutId = setTimeout(inputDone, inputTimer)
@@ -131,11 +133,11 @@ function activateInputPrompt(img = null) {
 
     function inputDone() {
       inputPrompt.style.display = 'none'
+      drawingDisplay.src = ''
 
       // Reset the countdown bar and timer
       inputCountdownBar.style.width = '100%'
       void drawingCountdownBar.offsetWidth // force a reflow to apply the changes immediately
-      clearTimeout(countdownBarTimer)
       clearTimeout(timeoutId)
 
       let prompt = getInput.value
@@ -172,18 +174,19 @@ function setPrompt(prompt) {
 function startDrawTimer() {
   drawingCountdownBar.style.width = '100%'
   drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
-  const countdownBarTimer = setTimeout(() => {
-    drawingCountdownBar.style.width = '0%'
-  }, 0)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      drawingCountdownBar.style.width = '0%'
+    })
+  })
 
   const countdownBarTimeout = setTimeout(() => {
-    clearTimeout(countdownBarTimer)
     submitDrawing()
   }, drawingTimer)
 
   endTimeout = function () {
     clearTimeout(countdownBarTimeout)
-    clearTimeout(countdownBarTimer)
+
     drawingCountdownBar.style.transition = 'none'
     drawingCountdownBar.style.width = '100%'
     // Force a reflow to apply the changes immediately
@@ -195,9 +198,3 @@ function startDrawTimer() {
 
 // start the game by getting the user's first prompt
 getPrompt()
-
-/* BUG FIX: 
-The canvas does not get cleared if the user is drawing the moment the timer runs out
-The input timer sometimes does not show up - very inconsistent, I am not sure what causes it
-
-*/
