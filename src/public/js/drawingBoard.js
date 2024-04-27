@@ -1,3 +1,22 @@
+const socket = io()
+const roomId = localStorage.getItem('roomId')
+
+// if (!roomId) {
+//   window.location.href = '/landing'
+// }
+
+socket.emit('joinRoom', roomId)
+
+socket.on('roomJoined', (data) => {
+  console.log(`Joined room: ${data.roomId}`)
+  console.log(`Members: ${data.members.join(', ')}`)
+})
+
+socket.on('updatePrompt', (prompt) => {
+  inputPrompt.style.display = 'none'
+  setPrompt(prompt)
+})
+
 const canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth - 300
 canvas.height = window.innerHeight - 300
@@ -28,6 +47,7 @@ drawingDisplay.width = canvas.width / 4
 drawingDisplay.height = canvas.height / 4
 
 let isDrawing = false
+
 let drawWidth = '2'
 let drawColour = 'black'
 
@@ -66,7 +86,7 @@ function startDrawing(e) {
 function draw(e) {
   if (isDrawing) {
     context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
-    //context.strokeStyle = drawColour
+    // context.strokeStyle = drawColour
     context.lineWidth = drawWidth
     context.lineCap = 'round'
     context.lineJoin = 'round'
@@ -149,6 +169,7 @@ function activateInputPrompt(img = null) {
       // remove old event listeners, as they hold incorrect variable addresses
       doneButton.removeEventListener('click', inputDone)
       getInput.removeEventListener('keydown', checkEnterKey)
+      socket.emit('inputDone', { roomId, prompt }) // Emit the input value to the sockets in the room
       resolve(prompt) // Resolve the Promise with the prompt
     }
 

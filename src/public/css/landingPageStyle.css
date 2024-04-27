@@ -1,0 +1,92 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: #55609b;
+  color: #333;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding-top: 50px; /* Adds padding at the top of the page */
+}
+
+/* Styles for the mascot image */
+.mascot img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 10px; /* Space below the mascot image */
+  border-radius: 5px;
+  display: block; /* Ensure the image is block level for centering */
+  margin: 20px auto; /* Centers the image horizontally and adds margin */
+}
+
+/* Styles for the name div */
+#name {
+  font-size: 36px; /* Larger text for the title */
+  color: white;
+  font-weight: bold;
+  margin-bottom: 20px; /* Space below the title */
+  text-align: center;
+}
+
+/* Styles for the main container */
+#container {
+  width: 90%;
+  max-width: 600px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
+
+/* General button styles */
+button {
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Hover effect for buttons */
+button:hover {
+  background-color: #45a049;
+}
+
+/* Specific styles for Start Game and Join buttons */
+#startGame,
+#submitJoinRoom {
+  background-color: #008cba;
+}
+
+#startGame {
+  display: block; /* Makes the button a block element */
+  margin: 20px auto; /* Centers the button horizontally with automatic margins */
+  width: 50%; /* Optional: you can set a specific width if you want a uniform button size */
+}
+
+#startGame:hover,
+#submitJoinRoom:hover {
+  background-color: #007ba7;
+}
+
+/* Styles for input fields */
+input[type='text'] {
+  padding: 10px;
+  width: 70%;
+  margin-right: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
