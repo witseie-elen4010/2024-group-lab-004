@@ -48,4 +48,68 @@ test.describe('Landing page tests', () => {
     const isVisible = await submitJoinRoomButton.isVisible()
     expect(isVisible).toBe(false)
   })
+
+  test('join room', async ({ page }) => {
+    await page.click('#joinRoom')
+
+    // Check if the text area appears
+    const roomToJoinInput = await page.$('#roomToJoin')
+    expect(roomToJoinInput).toBeTruthy()
+    const submitJoinRoomButton = await page.$('#submitJoinRoom')
+    await page.fill('#roomToJoin', 'testRoom')
+    await page.click('#submitJoinRoom')
+    const isVisible = await submitJoinRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
+
+  test('join room with invalid id', async ({ page }) => {
+    await page.click('#joinRoom')
+    await page.fill('#roomToJoin', 'invalidRoomId')
+    page.on('dialog', (dialog) => {
+      expect(dialog.message()).toBe('Room does not exist')
+      dialog.dismiss()
+    })
+    await page.click('#submitJoinRoom')
+  })
+
+  test('join room created by another page', async ({ context }) => {
+    // Create a room on page1
+    const page1 = await context.newPage()
+    await page1.goto('http://localhost:4000/landing')
+    await page1.click('#createRoom')
+    await page1.waitForSelector('#roomId')
+    const roomId = await page1.$eval('#roomId', (el) => el.textContent)
+
+    // Join the room on page2
+    const page2 = await context.newPage()
+    await page2.goto('http://localhost:4000/landing')
+    await page2.click('#joinRoom')
+    await page2.waitForSelector('#roomToJoin')
+    await page2.fill('#roomToJoin', roomId)
+    await page2.click('#submitJoinRoom')
+
+    // Wait for the members count to update on both pages
+    await page1.waitForFunction(
+      (membersCount) =>
+        document.querySelector('#membersCount').textContent === membersCount,
+      '2'
+    )
+    await page2.waitForFunction(
+      (membersCount) =>
+        document.querySelector('#membersCount').textContent === membersCount,
+      '2'
+    )
+
+    // Check if the members count is 2 on both pages
+    const membersCount1 = await page1.$eval(
+      '#membersCount',
+      (el) => el.textContent
+    )
+    const membersCount2 = await page2.$eval(
+      '#membersCount',
+      (el) => el.textContent
+    )
+    expect(membersCount1).toBe('2')
+    expect(membersCount2).toBe('2')
+  })
 })
