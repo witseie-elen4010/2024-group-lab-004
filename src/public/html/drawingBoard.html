@@ -4,15 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" 
       rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" 
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="./css/drawStyle.css" />
     <title>Drawing Board</title>
   </head>
   <body>
+    <div id="HelpButton" class="top-left">
+      <img
+        src="https://cdn.icon-icons.com/icons2/1302/PNG/512/helpbutton_85772.png"
+        alt="Logo"
+        id="logo"
+        width="50px"
+      />
+    </div>
+    <div id="HelpList"  style="position: absolute; display: none;">
+      <div
+        id="helpoverlay"
+        style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          z-index: 2500;
+        "
+      ></div>
+      <div class="container" style="z-index: 3000;">
+        <div class="top-right">
+          <img
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cross_red_circle.svg/1024px-Cross_red_circle.svg.png"
+          id="HelpClose"
+          width="50px">
+        </div>
+      <h1>How to play</h1>
+        Input a prompt that another player must attempt to draw. <br>
+        Once you have entered your prompt, you will be given a time limit to draw the prompt given to you. <br>
+        Once the time limit is up, the drawing will be sent to another player who must guess what you have drawn. <br>
+        The game will continue until all players have had a turn to draw and guess. <br>
+        The player with the most correct guesses wins! Good luck!<br>
+        <br>
+        *Add Instructions Here*
+      </div>
+
+    </div>
     <div id="inputPrompt" style="display: none">
       <div
         id="overlay"
@@ -23,7 +62,7 @@
           width: 100%;
           height: 100%;
           background-color: rgba(0, 0, 0, 0.5);
-          z-index: 1000;
+          z-index: 0;
         "
       ></div>
       <div
@@ -104,5 +143,17 @@
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="./js/drawingBoard.js"></script>
+    <script src=”https://code.jquery.com/jquery-3.2.1.slim.min.js”
+    integrity=”sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN”
+    crossorigin=”anonymous”>
+    </script>
+    <script src=”https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js”
+    integrity=”sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q”
+    crossorigin=”anonymous”>
+    </script>
+    <script src=”https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js”
+    integrity=”sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl”
+    crossorigin=”anonymous”>
+    </script>
   </body>
 </html>

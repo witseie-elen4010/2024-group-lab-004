@@ -35,7 +35,9 @@ const doneButton = document.getElementById('doneButton')
 const getInput = document.getElementById('getInput')
 const inputCountdownBar = document.getElementById('inputCountdownBar')
 const drawingCountdownBar = document.getElementById('drawingCountdownBar')
-
+const helpButton = document.getElementById('HelpButton')
+const HelpList = document.getElementById('HelpList')
+const HelpListClose = document.getElementById('HelpClose')
 const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
 
@@ -65,6 +67,14 @@ redButton.addEventListener('click', () => changeColour('red'))
 greenButton.addEventListener('click', () => changeColour('green'))
 blueButton.addEventListener('click', () => changeColour('blue'))
 pinkButton.addEventListener('click', () => changeColour('pink'))
+
+helpButton.addEventListener('click', function () {
+  HelpList.style.display = 'block'
+})
+
+HelpListClose.addEventListener('click', function () {
+  HelpList.style.display = 'none'
+})
 
 penSizeSlider.addEventListener('input', () =>
   changeLineWidth(penSizeSlider.value)
