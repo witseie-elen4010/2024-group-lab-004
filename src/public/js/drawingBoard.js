@@ -29,7 +29,7 @@ const pinkButton = document.getElementById('pinkButton')
 const multiColourButton = document.getElementById('colour-picker')
 const submitButton = document.getElementById('submit')
 const drawingDisplay = document.getElementById('drawingDisplay')
-
+const penSizeSlider = document.getElementById('size-picker')
 const inputPrompt = document.getElementById('inputPrompt')
 const doneButton = document.getElementById('doneButton')
 const getInput = document.getElementById('getInput')
@@ -66,10 +66,19 @@ greenButton.addEventListener('click', () => changeColour('green'))
 blueButton.addEventListener('click', () => changeColour('blue'))
 pinkButton.addEventListener('click', () => changeColour('pink'))
 
+penSizeSlider.addEventListener('input', () =>
+  changeLineWidth(penSizeSlider.value)
+)
+
 submitButton.addEventListener('click', submitDrawing)
 multiColourButton.addEventListener('input', () =>
   changeColour(multiColourButton.value)
 )
+
+function changeLineWidth(width) {
+  drawWidth = width
+  context.lineWidth = drawWidth
+}
 
 function changeColour(colour) {
   drawColour = colour
@@ -87,7 +96,7 @@ function draw(e) {
   if (isDrawing) {
     context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
     // context.strokeStyle = drawColour
-    context.lineWidth = drawWidth
+    //context.lineWidth = drawWidth
     context.lineCap = 'round'
     context.lineJoin = 'round'
     context.stroke()

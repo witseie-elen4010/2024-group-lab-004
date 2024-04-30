@@ -336,3 +336,19 @@ test('testing custom colour picker', async ({ page }) => {
   // Check if the strokeStyle color is the expected color
   expect(strokeStyleColor).toBe('#01f901')
 })
+
+test('test', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#size-picker').fill('23')
+
+  const strokeStyleColor = await page.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.lineWidth
+  })
+
+  expect(strokeStyleColor).toBe(23)
+})
