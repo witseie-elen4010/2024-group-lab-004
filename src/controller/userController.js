@@ -35,20 +35,14 @@ exports.checkUserAccount = async (req, res) => {
   }
 }
 
-// exports.history = async (req, res) => {
-//   if (req.session.user) {
-//     res.sendFile(
-//       path.join(__dirname, '..', './', 'public', 'html', 'history.html')
-//     )
-//   } else {
-//     res.redirect('/') // Redirect to login if no session is found
-//   }
-// }
-
 exports.history = async (req, res) => {
-  res.sendFile(
-    path.join(__dirname, '..', './', 'public', 'html', 'history.html')
-  )
+  if (req.session.user) {
+    res.sendFile(
+      path.join(__dirname, '..', './', 'public', 'html', 'history.html')
+    )
+  } else {
+    res.redirect('/') // Redirect to login if no session is found
+  }
 }
 
 exports.guest = async (req, res) => {
