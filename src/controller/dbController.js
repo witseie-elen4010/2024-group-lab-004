@@ -24,7 +24,6 @@ exports.fetchPrompts = async (req, res) => {
     if (result.rowCount === 0) {
       res.status(404).json({ message: 'No prompts found' })
     } else {
-      await console.log(result.rows)
       res.json(result.rows)
     }
   } catch (error) {
