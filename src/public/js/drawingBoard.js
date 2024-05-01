@@ -40,6 +40,7 @@ const HelpList = document.getElementById('HelpList')
 const HelpListClose = document.getElementById('HelpClose')
 const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
+const undoButton = document.getElementById('undo')
 
 const context = canvas.getContext('2d')
 context.fillStyle = 'white'
@@ -52,6 +53,9 @@ let isDrawing = false
 
 let drawWidth = '2'
 let drawColour = 'black'
+
+let pastDrawings = []
+let index = -1
 
 const urlParams = new URLSearchParams(window.location.search)
 const inputTimer = (urlParams.get('inputTimer') || 25) * 1000
@@ -84,6 +88,17 @@ submitButton.addEventListener('click', submitDrawing)
 multiColourButton.addEventListener('input', () =>
   changeColour(multiColourButton.value)
 )
+
+undoButton.addEventListener('click', function () {
+  index -= 1
+  if (index <= -1) {
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    index = -1
+    return
+  } else {
+    context.putImageData(pastDrawings[index], 0, 0)
+  }
+})
 
 function changeLineWidth(width) {
   drawWidth = width
@@ -122,7 +137,7 @@ function stopDrawing(e) {
   }
 
   if (e.type !== 'mouseout') {
-    // pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
+    pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
   }
 }
