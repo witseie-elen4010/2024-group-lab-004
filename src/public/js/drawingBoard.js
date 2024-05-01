@@ -41,6 +41,7 @@ const HelpListClose = document.getElementById('HelpClose')
 const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
 const undoButton = document.getElementById('undo')
+const redoButton = document.getElementById('redo')
 
 const context = canvas.getContext('2d')
 context.fillStyle = 'white'
@@ -90,10 +91,23 @@ multiColourButton.addEventListener('input', () =>
 )
 
 undoButton.addEventListener('click', function () {
+  if (index < 0) {
+    return
+  }
   index -= 1
   if (index <= -1) {
     context.fillRect(0, 0, canvas.width, canvas.height)
     index = -1
+    return
+  } else {
+    context.putImageData(pastDrawings[index], 0, 0)
+  }
+})
+
+redoButton.addEventListener('click', function () {
+  index += 1
+  if (index >= pastDrawings.length) {
+    index = pastDrawings.length - 1
     return
   } else {
     context.putImageData(pastDrawings[index], 0, 0)
@@ -120,8 +134,6 @@ function startDrawing(e) {
 function draw(e) {
   if (isDrawing) {
     context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
-    // context.strokeStyle = drawColour
-    //context.lineWidth = drawWidth
     context.lineCap = 'round'
     context.lineJoin = 'round'
     context.stroke()
@@ -137,6 +149,14 @@ function stopDrawing(e) {
   }
 
   if (e.type !== 'mouseout') {
+    if (index < pastDrawings.length - 1) {
+      if (index === -1) {
+        pastDrawings = []
+      } else {
+        pastDrawings = pastDrawings.slice(0, index + 1)
+        index = pastDrawings.length - 1
+      }
+    }
     pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
   }
