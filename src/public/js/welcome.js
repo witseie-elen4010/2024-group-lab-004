@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (nicknameInput.value.trim() === '') {
       alert('Please enter a nickname.')
     } else {
-      window.location.href = window.location.origin + '/draw'
+      window.location.href =
+        window.location.origin + `/guest?nickname=${nicknameInput.value.trim()}`
     }
   })
 

@@ -13,5 +13,11 @@ exports.welcome = async (req, res) => {
 }
 
 exports.landing = async (req, res) => {
-  res.sendFile(path.join(__dirname, '..', './public/html', 'landingPage.html'))
+  if (req.session.user) {
+    res.sendFile(
+      path.join(__dirname, '..', './public/html', 'landingPage.html')
+    )
+  } else {
+    res.redirect('/') // Redirect to login if no session is found
+  }
 }

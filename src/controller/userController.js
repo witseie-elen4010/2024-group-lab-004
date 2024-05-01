@@ -41,6 +41,14 @@ exports.history = async (req, res) => {
       path.join(__dirname, '..', './', 'public', 'html', 'history.html')
     )
   } else {
-    res.redirect('/login') // Redirect to login if no session is found
+    res.redirect('/landing') // Redirect to login if no session is found
   }
+}
+
+exports.guest = async (req, res) => {
+  req.session.user = {
+    id: null,
+    username: req.query.nickname,
+  }
+  return res.redirect('/draw')
 }
