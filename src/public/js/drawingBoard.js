@@ -178,7 +178,10 @@ function submitDrawing() {
   const image = canvas.toDataURL('image/png')
   stopDrawing({ type: 'mouseout' })
   context.fillRect(0, 0, canvas.width, canvas.height)
-
+  index = -1
+  pastDrawings = []
+  undoButton.disabled = true
+  redoButton.disabled = true
   endTimeout()
 
   getPrompt(image)
