@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function viewPrompts(gameId) {
+    prevButton.style.visibility = 'hidden'
+    nextButton.style.visibility = 'hidden'
     fetchPrompts(gameId).then((prompts) => {
       gameListElement.innerHTML = '' // Clear current list
       prompts.forEach((prompt) => {
@@ -92,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
   })
 
   backButton.addEventListener('click', () => {
-    window.history.back()
+    window.location.href = '/draw'
   })
 
   fetchGames().then((games) => {

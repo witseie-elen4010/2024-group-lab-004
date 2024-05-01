@@ -27,10 +27,7 @@ app.use(
 app.use('/', Router)
 
 app.all('*', (req, res, next) => {
-  res.status(404).json({
-    status: 'fail',
-    message: `Can't find ${req.originalUrl} on this server!`,
-  })
+  res.redirect('/')
 })
 
 module.exports = app
