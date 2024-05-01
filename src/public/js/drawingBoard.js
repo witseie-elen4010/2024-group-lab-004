@@ -91,9 +91,10 @@ multiColourButton.addEventListener('input', () =>
 )
 
 undoButton.addEventListener('click', function () {
-  if (index < 0) {
-    return
+  if (index <= 0) {
+    undoButton.disabled = true
   }
+  redoButton.disabled = false
   index -= 1
   if (index <= -1) {
     context.fillRect(0, 0, canvas.width, canvas.height)
@@ -105,12 +106,15 @@ undoButton.addEventListener('click', function () {
 })
 
 redoButton.addEventListener('click', function () {
+  undoButton.disabled = false
   index += 1
   if (index >= pastDrawings.length) {
     index = pastDrawings.length - 1
-    return
   } else {
     context.putImageData(pastDrawings[index], 0, 0)
+  }
+  if (index === pastDrawings.length - 1) {
+    redoButton.disabled = true
   }
 })
 
@@ -146,9 +150,7 @@ function stopDrawing(e) {
     context.stroke()
     context.closePath()
     isDrawing = false
-  }
 
-  if (e.type !== 'mouseout') {
     if (index < pastDrawings.length - 1) {
       if (index === -1) {
         pastDrawings = []
@@ -159,6 +161,13 @@ function stopDrawing(e) {
     }
     pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
+    console.log(index)
+    if (index >= 0) {
+      undoButton.disabled = false
+    }
+    if (index === pastDrawings.length - 1) {
+      redoButton.disabled = true
+    }
   }
 }
 

@@ -369,3 +369,147 @@ test('Help menu closes when close button is clicked', async ({ page }) => {
     await page.getByRole('heading', { name: 'How to play' }).isVisible()
   ).toBeFalsy()
 })
+
+test('Undo and redo buttons disabled on loading.', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+
+  expect(
+    await page.getByRole('button', { name: 'Undo' }).isDisabled()
+  ).toBeTruthy()
+  expect(
+    await page.getByRole('button', { name: 'Redo' }).isDisabled()
+  ).toBeTruthy()
+})
+
+test('Undo button becomes enabled once something is drawn', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#canvas').click({
+    position: {
+      x: 525,
+      y: 195,
+    },
+  })
+
+  expect(
+    await page.getByRole('button', { name: 'Undo' }).isDisabled()
+  ).toBeFalsy()
+  expect(
+    await page.getByRole('button', { name: 'Redo' }).isDisabled()
+  ).toBeTruthy()
+})
+
+test('Undo button back tracks drawing', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#canvas').hover()
+  await page.mouse.down()
+  for (let y = 500; y <= 600; y += 10) {
+    await page.mouse.move(500, y)
+  }
+
+  await page.mouse.up()
+  await page.getByRole('button', { name: 'Undo' }).click()
+
+  const isEmpty = await page.evaluate(() => {
+    const canvas = document.getElementById('canvas')
+    const context = canvas.getContext('2d')
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+    return Array.from(imageData.data).every((value) => value === 255)
+  })
+
+  expect(isEmpty).toBeTruthy()
+})
+
+test('Redo button undoes the undo button', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#canvas').hover()
+  await page.mouse.down()
+  for (let y = 500; y <= 600; y += 10) {
+    await page.mouse.move(500, y)
+  }
+
+  await page.mouse.up()
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await page.getByRole('button', { name: 'Redo' }).click()
+
+  const isEmpty = await page.evaluate(() => {
+    const canvas = document.getElementById('canvas')
+    const context = canvas.getContext('2d')
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+    return Array.from(imageData.data).every((value) => value === 255)
+  })
+
+  expect(isEmpty).toBeFalsy()
+})
+
+test('Undo button becomes disabled after undoing all drawings', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#canvas').hover()
+  await page.mouse.down()
+  for (let y = 500; y <= 600; y += 10) {
+    await page.mouse.move(500, y)
+  }
+
+  await page.mouse.up()
+  await page.getByRole('button', { name: 'Undo' }).click()
+
+  const isEmpty = await page.evaluate(() => {
+    const canvas = document.getElementById('canvas')
+    const context = canvas.getContext('2d')
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+    return Array.from(imageData.data).every((value) => value === 255)
+  })
+
+  expect(isEmpty).toBeTruthy()
+  expect(
+    await page.getByRole('button', { name: 'Undo' }).isDisabled()
+  ).toBeTruthy()
+})
+
+test('Redo button becomes disabled after redoing all drawings', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#canvas').hover()
+  await page.mouse.down()
+  for (let y = 500; y <= 600; y += 10) {
+    await page.mouse.move(500, y)
+  }
+
+  await page.mouse.up()
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await page.getByRole('button', { name: 'Redo' }).click()
+
+  const isEmpty = await page.evaluate(() => {
+    const canvas = document.getElementById('canvas')
+    const context = canvas.getContext('2d')
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+    return Array.from(imageData.data).every((value) => value === 255)
+  })
+
+  expect(isEmpty).toBeFalsy()
+  expect(
+    await page.getByRole('button', { name: 'Redo' }).isDisabled()
+  ).toBeTruthy()
+})
