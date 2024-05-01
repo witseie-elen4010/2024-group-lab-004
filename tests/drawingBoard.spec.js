@@ -336,3 +336,36 @@ test('testing custom colour picker', async ({ page }) => {
   // Check if the strokeStyle color is the expected color
   expect(strokeStyleColor).toBe('#01f901')
 })
+
+test('Test linewidth changes', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.getByPlaceholder('default value here').click()
+  await page.getByPlaceholder('default value here').fill('test')
+  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#size-picker').fill('23')
+
+  const strokeStyleColor = await page.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.lineWidth
+  })
+
+  expect(strokeStyleColor).toBe(23)
+})
+
+test('Help menu appears when help button is clicked', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.locator('#HelpButton').getByRole('img', { name: 'Logo' }).click()
+  expect(
+    await page.getByRole('heading', { name: 'How to play' }).isVisible()
+  ).toBeTruthy()
+})
+
+test('Help menu closes when close button is clicked', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+  await page.locator('#HelpButton').getByRole('img', { name: 'Logo' }).click()
+  await page.locator('#HelpClose').click()
+  expect(
+    await page.getByRole('heading', { name: 'How to play' }).isVisible()
+  ).toBeFalsy()
+})
