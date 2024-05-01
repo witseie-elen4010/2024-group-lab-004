@@ -43,6 +43,7 @@ test('next page button works', async ({ page }) => {
   expect(await page.getByRole('button', { name: 'Next' })).toBeVisible()
   await page.getByRole('button', { name: 'Next' }).click()
   expect(await page.locator('#gameList').innerText()).not.toBe('')
+  await page.waitForTimeout(500)
   expect(await page.getByRole('button', { name: 'Next' })).not.toBeVisible()
 })
 
@@ -61,8 +62,10 @@ test('previous page button works', async ({ page }) => {
   await page.waitForTimeout(5000)
   expect(await page.getByRole('button', { name: 'Previous' })).not.toBeVisible()
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.waitForTimeout(500)
   expect(await page.getByRole('button', { name: 'Previous' })).toBeVisible()
   await page.getByRole('button', { name: 'Previous' }).click()
+  await page.waitForTimeout(500)
   expect(await page.getByRole('button', { name: 'Previous' })).not.toBeVisible()
 })
 
