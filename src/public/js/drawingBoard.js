@@ -40,6 +40,8 @@ const HelpList = document.getElementById('HelpList')
 const HelpListClose = document.getElementById('HelpClose')
 const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
+const undoButton = document.getElementById('undo')
+const redoButton = document.getElementById('redo')
 
 const context = canvas.getContext('2d')
 context.fillStyle = 'white'
@@ -52,6 +54,9 @@ let isDrawing = false
 
 let drawWidth = '2'
 let drawColour = 'black'
+
+let pastDrawings = []
+let index = -1
 
 const urlParams = new URLSearchParams(window.location.search)
 const inputTimer = (urlParams.get('inputTimer') || 25) * 1000
@@ -85,6 +90,34 @@ multiColourButton.addEventListener('input', () =>
   changeColour(multiColourButton.value)
 )
 
+undoButton.addEventListener('click', function () {
+  if (index <= 0) {
+    undoButton.disabled = true
+  }
+  redoButton.disabled = false
+  index -= 1
+  if (index <= -1) {
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    index = -1
+    return
+  } else {
+    context.putImageData(pastDrawings[index], 0, 0)
+  }
+})
+
+redoButton.addEventListener('click', function () {
+  undoButton.disabled = false
+  index += 1
+  if (index >= pastDrawings.length) {
+    index = pastDrawings.length - 1
+  } else {
+    context.putImageData(pastDrawings[index], 0, 0)
+  }
+  if (index === pastDrawings.length - 1) {
+    redoButton.disabled = true
+  }
+})
+
 function changeLineWidth(width) {
   drawWidth = width
   context.lineWidth = drawWidth
@@ -105,8 +138,6 @@ function startDrawing(e) {
 function draw(e) {
   if (isDrawing) {
     context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
-    // context.strokeStyle = drawColour
-    //context.lineWidth = drawWidth
     context.lineCap = 'round'
     context.lineJoin = 'round'
     context.stroke()
@@ -119,11 +150,24 @@ function stopDrawing(e) {
     context.stroke()
     context.closePath()
     isDrawing = false
-  }
 
-  if (e.type !== 'mouseout') {
-    // pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
+    if (index < pastDrawings.length - 1) {
+      if (index === -1) {
+        pastDrawings = []
+      } else {
+        pastDrawings = pastDrawings.slice(0, index + 1)
+        index = pastDrawings.length - 1
+      }
+    }
+    pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
+    console.log(index)
+    if (index >= 0) {
+      undoButton.disabled = false
+    }
+    if (index === pastDrawings.length - 1) {
+      redoButton.disabled = true
+    }
   }
 }
 
@@ -134,7 +178,10 @@ function submitDrawing() {
   const image = canvas.toDataURL('image/png')
   stopDrawing({ type: 'mouseout' })
   context.fillRect(0, 0, canvas.width, canvas.height)
-
+  index = -1
+  pastDrawings = []
+  undoButton.disabled = true
+  redoButton.disabled = true
   endTimeout()
 
   getPrompt(image)
