@@ -13,7 +13,7 @@
     <title>Drawing Board</title>
   </head>
   <body>
-    <div id="HelpButton" class="top-left">
+    <div id="HelpButton" style= 'position: fixed;' class="top-left">
       <img
         src="https://cdn.icon-icons.com/icons2/1302/PNG/512/helpbutton_85772.png"
         alt="Logo"
@@ -142,6 +142,7 @@
         <button id="submit" class="drawButton">Submit</button>
       </div>
     </div>
+    <button onclick="window.location.href='/history';" style="position: fixed; bottom: 10px; right: 10px;">History</button>
     <script src="/socket.io/socket.io.js"></script>
     <script src="./js/drawingBoard.js"></script>
     <script src=”https://code.jquery.com/jquery-3.2.1.slim.min.js”
