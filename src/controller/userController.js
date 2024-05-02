@@ -52,3 +52,14 @@ exports.guest = async (req, res) => {
   }
   return res.redirect('/draw')
 }
+
+exports.logout = async (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      // handle error
+      res.send('Error logging out')
+    } else {
+      res.redirect('/')
+    }
+  })
+}

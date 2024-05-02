@@ -16,5 +16,6 @@ router.route('/history').get(userController.history)
 router.route('/fetchGames').get(dbController.fetchGames)
 router.route('/fetchPrompts').get(dbController.fetchPrompts)
 router.route('/guest').get(userController.guest)
+router.route('/logout').get(userController.logout)
 
 module.exports = router
