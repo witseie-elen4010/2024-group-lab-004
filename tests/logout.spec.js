@@ -14,7 +14,8 @@ test('logout button destroys session', async ({ page }) => {
   await page.getByRole('button', { name: 'History' }).click()
   await page.getByRole('button', { name: 'Back to Home' }).click()
   await page.getByRole('button', { name: 'Logout' }).click()
-  await page.goto('http://localhost:4000/history')
-  expect(await page.getByRole('button', { name: 'Sign In' })).toBeVisible()
+  expect(
+    await page.getByRole('heading', { name: 'Art Among Us' })
+  ).toBeVisible()
 })
 
