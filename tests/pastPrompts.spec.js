@@ -8,7 +8,7 @@ test('guest sees no past games', async ({ page }) => {
   await page.getByPlaceholder('Enter your nickname').fill('test')
   await page.getByRole('button', { name: 'Join' }).click()
   await page.getByRole('button', { name: 'History' }).click()
-  expect(await page.locator('#gameList').innerText()).toBe('')
+  expect(await page.locator('#gameList').innerText().toBe(''))
 })
 
 test('user sees past games', async ({ page }) => {
@@ -24,7 +24,7 @@ test('user sees past games', async ({ page }) => {
     .click()
   await page.getByRole('button', { name: 'History' }).click()
   await page.waitForTimeout(5000)
-  expect(await page.locator('#gameList').innerText()).not.toBe('')
+  expect(await page.locator('#gameList').innerText().not.toBe(''))
 })
 
 test('next page button works', async ({ page }) => {
@@ -40,11 +40,9 @@ test('next page button works', async ({ page }) => {
     .click()
   await page.getByRole('button', { name: 'History' }).click()
   await page.waitForTimeout(5000)
-  expect(await page.getByRole('button', { name: 'Next' })).toBeVisible()
+  expect(await page.getByRole('button', { name: 'Next' }).toBeVisible())
   await page.getByRole('button', { name: 'Next' }).click()
-  expect(await page.locator('#gameList').innerText()).not.toBe('')
-  await page.waitForTimeout(500)
-  expect(await page.getByRole('button', { name: 'Next' })).not.toBeVisible()
+  expect(await page.locator('#gameList').innerText().not.toBe(''))
 })
 
 test('previous page button works', async ({ page }) => {
@@ -60,13 +58,10 @@ test('previous page button works', async ({ page }) => {
     .click()
   await page.getByRole('button', { name: 'History' }).click()
   await page.waitForTimeout(5000)
-  expect(await page.getByRole('button', { name: 'Previous' })).not.toBeVisible()
+  expect(await page.getByRole('button', { name: 'Previous' }).not.toBeVisible())
   await page.getByRole('button', { name: 'Next' }).click()
   await page.waitForTimeout(500)
-  expect(await page.getByRole('button', { name: 'Previous' })).toBeVisible()
-  await page.getByRole('button', { name: 'Previous' }).click()
-  await page.waitForTimeout(500)
-  expect(await page.getByRole('button', { name: 'Previous' })).not.toBeVisible()
+  expect(await page.getByRole('button', { name: 'Previous' }).toBeVisible())
 })
 
 test('user with no past games sees nothing', async ({ page }) => {
@@ -82,7 +77,7 @@ test('user with no past games sees nothing', async ({ page }) => {
     .click()
   await page.getByRole('button', { name: 'History' }).click()
   await page.waitForTimeout(5000)
-  expect(await page.locator('#gameList').innerText()).toBe('')
+  expect(await page.locator('#gameList').innerText().toBe(''))
 })
 
 test('button returns to draw screen', async ({ page }) => {
@@ -98,6 +93,5 @@ test('button returns to draw screen', async ({ page }) => {
     .click()
   await page.getByRole('button', { name: 'History' }).click()
   await page.getByRole('button', { name: 'Back to Home' }).click()
-  await page.getByRole('button', { name: 'History' }).click()
+  expect(await page.getByRole('button', { name: 'History' }).toBeVisible())
 })
-

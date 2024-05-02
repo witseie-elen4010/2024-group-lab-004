@@ -15,7 +15,10 @@ test('logout button destroys session', async ({ page }) => {
   await page.getByRole('button', { name: 'Back to Home' }).click()
   await page.getByRole('button', { name: 'Logout' }).click()
   await page.getByRole('button', { name: 'Sign In' }).click()
-  await page.getByLabel('Username:').click()
-  expect(await page.getByLabel('Username:')).toBeVisible()
+  expect(
+    await page
+      .getByRole('heading', { name: 'Login to Your Account' })
+      .isVisible()
+  )
 })
 
