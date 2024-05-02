@@ -13,13 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      APP_PORT: ${{ secrets.APP_PORT }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      APP_PORT: $(APP_PORT)
+      DB_USER: $(DB_USER)
+      DB_PASS: $(DB_PASS)
+      DB_NAME: $(DB_NAME)
+      DB_HOST: $(DB_HOST)
+      DB_PORT: $(DB_PORT)
+      SESSION_SECRET: $(SESSION_SECRET)
     steps:
       - uses: actions/checkout@v4
 
