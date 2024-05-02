@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game History</title>
+    <link rel="stylesheet" href="./css/historyStyle.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Game History</h1>
+        <button id="backButton" class="nav-button">Back to Home</button>
+      </header>
+      <main>
+        <ul id="gameList" class="game-list">
+          <!-- List of games will be inserted here dynamically -->
+        </ul>
+        <nav id="navigation" class="button-group">
+          <button id="prevButton" class="nav-button">Previous 10</button>
+          <button id="nextButton" class="nav-button">Next 10</button>
+        </nav>
+      </main>
+    </div>
+    <script type="module" src="./js/history.js"></script>
+  </body>
+</html>

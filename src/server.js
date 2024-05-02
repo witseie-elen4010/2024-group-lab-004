@@ -7,7 +7,7 @@ const app = require('./app')
 const server = http.createServer(app)
 const io = socketio(server)
 
-const port = process.env.PORT || 4000
+const port = process.env.APP_PORT
 
 let rooms = {}
 rooms = {}
