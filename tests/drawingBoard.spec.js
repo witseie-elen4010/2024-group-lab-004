@@ -72,7 +72,18 @@ test('input field closes when the done button is pressed', async ({ page }) => {
 test('input field closes when the enter key is pressed', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
 
-  //enter a prompt
+  await page.locator('#getInput').press('Enter')
+  const prompt = await page.locator('#prompt').innerText()
+  await page.goto('http://localhost:4000/draw')
+  await page.locator('#getInput').press('Enter')
+  const prompt2 = await page.locator('#prompt').innerText()
+
+  expect(prompt).not.toBe(prompt2)
+})
+
+test('testing random prompt generation', async ({ page }) => {
+  await page.goto('http://localhost:4000/draw')
+
   await page.locator('#getInput').fill('test prompt')
   await page.locator('#getInput').press('Enter')
 
@@ -339,9 +350,7 @@ test('testing custom colour picker', async ({ page }) => {
 
 test('Test linewidth changes', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.getByPlaceholder('default value here').click()
-  await page.getByPlaceholder('default value here').fill('test')
-  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#getInput').press('Enter')
   await page.locator('#size-picker').fill('23')
 
   const strokeStyleColor = await page.evaluate(() => {
@@ -372,9 +381,7 @@ test('Help menu closes when close button is clicked', async ({ page }) => {
 
 test('Undo and redo buttons disabled on loading.', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.getByPlaceholder('default value here').click()
-  await page.getByPlaceholder('default value here').fill('test')
-  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#getInput').press('Enter')
 
   expect(
     await page.getByRole('button', { name: 'Undo' }).isDisabled()
@@ -388,9 +395,7 @@ test('Undo button becomes enabled once something is drawn', async ({
   page,
 }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.getByPlaceholder('default value here').click()
-  await page.getByPlaceholder('default value here').fill('test')
-  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#getInput').press('Enter')
   await page.locator('#canvas').click({
     position: {
       x: 525,
@@ -408,9 +413,7 @@ test('Undo button becomes enabled once something is drawn', async ({
 
 test('Undo button back tracks drawing', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.getByPlaceholder('default value here').click()
-  await page.getByPlaceholder('default value here').fill('test')
-  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#getInput').press('Enter')
   await page.locator('#canvas').hover()
   await page.mouse.down()
   for (let y = 500; y <= 600; y += 10) {
@@ -432,9 +435,7 @@ test('Undo button back tracks drawing', async ({ page }) => {
 
 test('Redo button undoes the undo button', async ({ page }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.getByPlaceholder('default value here').click()
-  await page.getByPlaceholder('default value here').fill('test')
-  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#getInput').press('Enter')
   await page.locator('#canvas').hover()
   await page.mouse.down()
   for (let y = 500; y <= 600; y += 10) {
@@ -459,9 +460,7 @@ test('Undo button becomes disabled after undoing all drawings', async ({
   page,
 }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.getByPlaceholder('default value here').click()
-  await page.getByPlaceholder('default value here').fill('test')
-  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#getInput').press('Enter')
   await page.locator('#canvas').hover()
   await page.mouse.down()
   for (let y = 500; y <= 600; y += 10) {
@@ -488,9 +487,7 @@ test('Redo button becomes disabled after redoing all drawings', async ({
   page,
 }) => {
   await page.goto('http://localhost:4000/draw')
-  await page.getByPlaceholder('default value here').click()
-  await page.getByPlaceholder('default value here').fill('test')
-  await page.getByRole('button', { name: 'Done!' }).click()
+  await page.locator('#getInput').press('Enter')
   await page.locator('#canvas').hover()
   await page.mouse.down()
   for (let y = 500; y <= 600; y += 10) {
