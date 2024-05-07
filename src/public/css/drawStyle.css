@@ -113,3 +113,84 @@ body {
   text-align: center;
   margin-top: 10px;
 }
+
+/* Waiting container styling */
+#waitingContainer {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3000;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#waitingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2500;
+}
+
+.waiting-content {
+  z-index: 3500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  padding: 100px;
+  border-radius: 40px;
+}
+
+.waiting-content h2 {
+  margin-bottom: 60px;
+}
+
+.waiting-content img {
+  margin-bottom: 30px;
+  border: 5px solid black;
+  border-radius: 10px;
+}
+/* Full-screen overlay */
+#roundOverOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #55609b;
+  z-index: 4000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#roundOverContainer {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 4500;
+}
+
+#roundOverButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+#roundOverButtons button {
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}

@@ -142,6 +142,24 @@
         <button id="submit" class="drawButton">Submit</button>
       </div>
     </div>
+    <div id="waitingContainer" style="display: none;">
+      <div id="waitingOverlay"></div>
+      <div class="waiting-content">
+        <h2>Waiting for game submissions...</h2>
+        <img src="https://media.tenor.com/images/25eba48a338d64e17edc99f88f0482bf/tenor.gif" alt="Waiting Icon" />
+      </div>
+    </div>
+    <div id="roundOverOverlay" style="display: none;">
+      <div id="roundOverContainer">
+        <h2>Round Over</h2>
+        <div id="roundOverButtons">
+          <button id="leaveGameButton">Leave Game</button>
+          <button id="nextRoundButton">Next Round</button>
+        </div>
+      </div>
+    </div>
+  
+
     <button onclick="window.location.href='/history';" style="position: fixed; bottom: 50px; right: 10px;">History</button>
     <button onclick="window.location.href='/logout';" style="position: fixed; bottom: 10px; right: 10px;">Logout</button>
     <script src="/socket.io/socket.io.js"></script>

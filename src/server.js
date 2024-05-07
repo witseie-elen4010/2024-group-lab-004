@@ -9,9 +9,8 @@ const io = socketio(server)
 
 const port = process.env.PORT || process.env.APP_PORT
 
-// Global object to manage rooms and orders
 const rooms = {}
-// Global object to track drawing submissions
+const rounds = {}
 const drawingSubmissions = {}
 
 io.on('connection', (socket) => {
@@ -24,7 +23,7 @@ io.on('connection', (socket) => {
       members: [socket.id],
       host: socket.id,
       orders: {},
-      prompts: {}
+      prompts: {},
     }
     currentRoom = roomID
     socket.join(roomID)
@@ -34,17 +33,22 @@ io.on('connection', (socket) => {
   })
 
   socket.on('joinRoom', (roomID) => {
-    if (rooms[roomID]) {
-      rooms[roomID].members.push(socket.id)
-      socket.join(roomID)
-      currentRoom = roomID
-      updateAndEmitOrders(roomID)
-      socket.emit('roomJoined', {
-        roomId: roomID,
-        members: rooms[roomID].members
-      })
-      io.to(roomID).emit('updateMembers', rooms[roomID].members.length)
-      console.log(`Joined room: ${roomID}`)
+    const room = rooms[roomID]
+    if (room) {
+      if (room.gameStarted && room.members.length >= room.maxMembers) {
+        socket.emit('roomJoinError', 'Game has already started')
+      } else {
+        room.members.push(socket.id)
+        socket.join(roomID)
+        currentRoom = roomID
+        updateAndEmitOrders(roomID)
+        socket.emit('roomJoined', {
+          roomId: roomID,
+          members: room.members,
+        })
+        io.to(roomID).emit('updateMembers', room.members.length)
+        console.log(`Joined room: ${roomID}`)
+      }
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
     }
@@ -53,12 +57,10 @@ io.on('connection', (socket) => {
   socket.on('inputDone', (data) => {
     const { roomId, prompt } = data
 
-    // Store the prompt by member ID
     if (rooms[roomId]) {
       rooms[roomId].prompts[socket.id] = prompt
       console.log(`Received prompt from member ${socket.id} in room ${roomId}`)
 
-      // Check if all members have submitted their prompts
       if (
         Object.keys(rooms[roomId].prompts).length ===
         rooms[roomId].members.length
@@ -76,12 +78,8 @@ io.on('connection', (socket) => {
       drawingSubmissions[roomId] = {}
     }
 
-    // Track the submitted drawing
     drawingSubmissions[roomId][socket.id] = image
-
     console.log(`Drawing submitted by member ${socket.id} in room ${roomId}`)
-
-    // Check if all members have submitted their drawings
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -92,22 +90,40 @@ io.on('connection', (socket) => {
 
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
+      rooms[roomID].gameStarted = true
+      rooms[roomID].maxMembers = rooms[roomID].members.length * 2
       io.to(roomID).emit('gameStarted')
       console.log(`Game started in room: ${roomID}`)
+    }
+  })
+
+  socket.on('nextRound', (roomID) => {
+    if (rooms[roomID]) {
+      // Reset rounds, prompts, and drawings
+      rounds[roomID] = 0
+      rooms[roomID].prompts = {}
+      drawingSubmissions[roomID] = {}
+
+      io.to(roomID).emit('newRound')
+      console.log(`New round started in room: ${roomID}`)
     }
   })
 
   socket.on('disconnect', () => {
     console.log('User disconnected')
     if (currentRoom) {
-      rooms[currentRoom].members = rooms[currentRoom].members.filter(
-        (id) => id !== socket.id
-      )
-      if (rooms[currentRoom].orders[socket.id]) {
-        delete rooms[currentRoom].orders[socket.id]
+      const room = rooms[currentRoom]
+      room.members = room.members.filter((id) => id !== socket.id)
+
+      if (room.gameStarted) {
+        room.maxMembers -= 1
       }
-      if (rooms[currentRoom].prompts[socket.id]) {
-        delete rooms[currentRoom].prompts[socket.id]
+
+      if (room.orders[socket.id]) {
+        delete room.orders[socket.id]
+      }
+      if (room.prompts[socket.id]) {
+        delete room.prompts[socket.id]
       }
       if (
         drawingSubmissions[currentRoom] &&
@@ -121,11 +137,11 @@ io.on('connection', (socket) => {
   })
 })
 
-function generateRoomId () {
+function generateRoomId() {
   return Math.random().toString(36).substring(2, 10)
 }
 
-function generateUniqueOrders (numPlayers) {
+function generateUniqueOrders(numPlayers) {
   const orders = Array.from({ length: numPlayers }, () =>
     Array(numPlayers).fill(0)
   )
@@ -139,7 +155,7 @@ function generateUniqueOrders (numPlayers) {
   return orders.sort(() => Math.random() - 0.5)
 }
 
-function updateAndEmitOrders (roomID) {
+function updateAndEmitOrders(roomID) {
   const members = rooms[roomID].members
   const uniqueOrders = generateUniqueOrders(members.length)
   rooms[roomID].orders = Object.fromEntries(
@@ -154,43 +170,53 @@ function updateAndEmitOrders (roomID) {
   io.to(roomID).emit('updateOrders', rooms[roomID].orders)
 }
 
-function distributePrompts (roomID) {
+function distributePrompts(roomID) {
   const members = rooms[roomID].members
   const prompts = rooms[roomID].prompts
+  if (!rounds[roomID]) {
+    rounds[roomID] = 0
+  }
+  rounds[roomID]++
+  if (rounds[roomID] < rooms[roomID].members.length) {
+    members.forEach((member, index) => {
+      let nextIndex = (index + 1) % members.length
+      while (members[nextIndex] === member) {
+        nextIndex = (nextIndex + 1) % members.length
+      }
+      const nextMember = members[nextIndex]
+      const prompt = prompts[nextMember] || 'No prompt'
 
-  members.forEach((member, index) => {
-    let nextIndex = (index + 1) % members.length
-    // Find the next member who isn't the current member
-    while (members[nextIndex] === member) {
-      nextIndex = (nextIndex + 1) % members.length
-    }
-    const nextMember = members[nextIndex]
-    const prompt = prompts[nextMember] || 'No prompt'
-
-    io.to(member).emit('updatePrompt', prompt)
-    console.log(`Sent prompt to member ${member}: ${prompt}`)
-  })
+      io.to(member).emit('updatePrompt', prompt)
+      console.log(`Sent prompt to member ${member}: ${prompt}`)
+    })
+  } else {
+    emitRoundOver(roomID)
+  }
 }
 
-function distributeDrawings (roomID) {
+function distributeDrawings(roomID) {
   const members = rooms[roomID].members
   const drawings = drawingSubmissions[roomID]
+  rounds[roomID]++
+  if (rounds[roomID] < rooms[roomID].members.length) {
+    members.forEach((member, index) => {
+      let nextIndex = (index + 1) % members.length
+      while (members[nextIndex] === member) {
+        nextIndex = (nextIndex + 1) % members.length
+      }
+      const nextMember = members[nextIndex]
+      const drawing = drawings[nextMember] || 'No drawing'
 
-  members.forEach((member, index) => {
-    let nextIndex = (index + 1) % members.length
-    // Find the next member who isn't the current member
-    while (members[nextIndex] === member) {
-      nextIndex = (nextIndex + 1) % members.length
-    }
-    const nextMember = members[nextIndex]
-    const drawing = drawings[nextMember] || 'No drawing'
+      io.to(member).emit('updateDrawing', drawing)
+    })
+  } else {
+    emitRoundOver(roomID)
+    drawingSubmissions[roomID] = {}
+  }
+}
 
-    io.to(member).emit('updateDrawing', drawing)
-    // console.log(`Sent drawing to member ${member}: ${drawing}`)
-  })
-
-  // Reset the drawing submissions for the room
-  drawingSubmissions[roomID] = {}
+function emitRoundOver(roomID) {
+  io.to(roomID).emit('roundOver')
 }
 
 server.listen(port, () => {
