@@ -211,7 +211,94 @@ function submitDrawing() {
   getPrompt(image)
 }
 
+const colors = [
+  'A red',
+  'A blue',
+  'A green',
+  'A yellow',
+  'An orange',
+  'A purple',
+  'A black',
+  'A white',
+  'A pink',
+  'A gray',
+]
+const objects = [
+  'cat',
+  'dog',
+  'car',
+  'tree',
+  'house',
+  'sun',
+  'moon',
+  'star',
+  'flower',
+  'bird',
+  'fish',
+  'schoolbus',
+  'spaceship',
+  'robot',
+  'unicorn',
+  'dragon',
+  'castle',
+  'raindbow',
+  'sword',
+  'hamburger',
+  'volcano',
+  'coffee',
+  'Einstein',
+  'zombie',
+  'T-Rex',
+  'octopus',
+  'elephant',
+  'printer',
+  'mouse',
+  'spider',
+  'alien',
+  'clock',
+]
+const actions = [
+  'jumping',
+  'sleeping',
+  'running',
+  'eating',
+  'dancing',
+  'flying',
+  'swimming',
+  'singing',
+  'crying',
+  'laughing',
+  'reading',
+  'writing',
+  'drawing',
+  'painting',
+  'cooking',
+  'exploding',
+  'recycling',
+  'driving',
+  'fishing',
+  'sneezing',
+  'sneaking',
+  'hiding',
+]
+
+// Function to generate a random prompt
+function getRandomPrompt() {
+  const color = colors[Math.floor(Math.random() * colors.length)]
+  const object = objects[Math.floor(Math.random() * objects.length)]
+  const action = actions[Math.floor(Math.random() * actions.length)]
+  return `${color} ${object} ${action}`
+}
+
+// Function to set a random prompt as the default input value
+function setRandomPrompt() {
+  const randomPrompt = getRandomPrompt()
+  const getInput = document.getElementById('getInput')
+  getInput.placeholder = randomPrompt // Set the random prompt as placeholder
+}
+
 function activateInputPrompt(img = null) {
+  setRandomPrompt()
   return new Promise((resolve) => {
     // the text displayed changes based on if an image is given (we are reviewing a drawing), or not (it is the start of the game)
     drawing.style.display = img ? 'block' : 'none'
