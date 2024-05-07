@@ -10,7 +10,6 @@ const io = socketio(server)
 const port = process.env.PORT || process.env.APP_PORT
 
 let rooms = {}
-rooms = {}
 
 io.on('connection', (socket) => {
   console.log('New WebSocket connection')
@@ -30,7 +29,7 @@ io.on('connection', (socket) => {
       rooms[roomID].members.push(socket.id)
       socket.join(roomID)
       currentRoom = roomID
-      socket.emit('roomJoined', {
+      io.to(roomID).emit('roomJoined', {
         roomId: roomID,
         members: rooms[roomID].members,
       })
