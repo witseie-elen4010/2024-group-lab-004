@@ -511,6 +511,7 @@ test('Redo button becomes disabled after redoing all drawings', async ({
 // this test starts from landing and goes to drawingBoard, so I didnt know which test file to put it in
 test('Exactly 1 imposter is chosen at the start of the game', async ({
   context,
+  browserName,
 }) => {
   if (browserName === 'webkit') {
     test.fixme()
