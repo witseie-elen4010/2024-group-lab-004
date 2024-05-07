@@ -523,15 +523,15 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
   await page2.goto('http://localhost:4000/landing')
   await page2.getByRole('button', { name: 'Join Room' }).click()
   await page2.getByPlaceholder('Enter room ID').fill(roomID)
-  await page2.getByRole('button', { name: 'Join', exact: true }).click()
+  await page2.locator('#submitJoinRoom').click()
 
   const page3 = await context.newPage()
   await page3.goto('http://localhost:4000/landing')
   await page3.getByRole('button', { name: 'Join Room' }).click()
   await page3.getByPlaceholder('Enter room ID').fill(roomID)
-  await page3.getByRole('button', { name: 'Join', exact: true }).click()
+  await page3.locator('#submitJoinRoom').click()
 
-  await page1.getByRole('button', { name: 'Start Game' }).click()
+  await page1.locator('#startGame').click()
 
   // wait for the websocket to send the message of who the imposter is
   await page1.waitForFunction(
