@@ -210,7 +210,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
@@ -240,7 +239,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
@@ -522,15 +520,21 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
   const page2 = await context.newPage()
   await page2.goto('http://localhost:4000/landing')
   await page2.getByRole('button', { name: 'Join Room' }).click()
+  await page2.getByPlaceholder('Enter room ID').click()
   await page2.getByPlaceholder('Enter room ID').fill(roomID)
   await page2.locator('#submitJoinRoom').click()
 
   const page3 = await context.newPage()
   await page3.goto('http://localhost:4000/landing')
   await page3.getByRole('button', { name: 'Join Room' }).click()
+  await page3.getByPlaceholder('Enter room ID').click()
   await page3.getByPlaceholder('Enter room ID').fill(roomID)
   await page3.locator('#submitJoinRoom').click()
 
+  console.log(roomID)
+  console.log(await page3.locator('#membersCount').textContent())
+  console.log(await page2.locator('#membersCount').textContent())
+  console.log(await page1.locator('#membersCount').textContent())
   await page1.locator('#startGame').click()
 
   // wait for the websocket to send the message of who the imposter is
