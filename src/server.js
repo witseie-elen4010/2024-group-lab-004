@@ -40,9 +40,40 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('joinGameRoom', (roomID) => {
+    if (rooms[roomID]) {
+      rooms[roomID].members.push(socket.id)
+      socket.join(roomID)
+      currentRoom = roomID
+      io.to(roomID).emit('gameRoomJoined', {
+        roomId: roomID,
+        members: rooms[roomID].members,
+      })
+      console.log(`Joined room: ${roomID}`)
+
+      // only get the imposters once everyone has joined the room
+      if (rooms[roomID].members.length === rooms[roomID].gameSize) {
+        const imposter = getImposter(rooms[roomID])
+        rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
+
+        // Send a "no" message to all other members
+        rooms[roomID].members.forEach((member) => {
+          if (member === imposter) {
+            io.to(member).emit('imposter', true)
+          } else {
+            io.to(member).emit('normal', true)
+          }
+        })
+      }
+    } else {
+      socket.emit('roomJoinError', 'Room does not exist')
+    }
+  })
+
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
       io.to(roomID).emit('gameStarted')
+      rooms[roomID].gameSize = rooms[roomID].members.length
       console.log(`Game started in room: ${roomID}`)
     }
   })
@@ -63,7 +94,12 @@ io.on('connection', (socket) => {
 })
 
 function generateRoomId() {
-  return Math.random().toString(36).substring(2, 10)
+  return Math.random().toString(36).substring(2, 10) // make sure the room isnt already in use
+}
+
+function getImposter(room) {
+  const randomIndex = Math.floor(Math.random() * room.members.length)
+  return room.members[randomIndex]
 }
 
 server.listen(port, () => {

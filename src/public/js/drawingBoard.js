@@ -5,9 +5,9 @@ const roomId = localStorage.getItem('roomId')
 //   window.location.href = '/landing'
 // }
 
-socket.emit('joinRoom', roomId)
+socket.emit('joinGameRoom', roomId)
 
-socket.on('roomJoined', (data) => {
+socket.on('gameRoomJoined', (data) => {
   console.log(`Joined room: ${data.roomId}`)
   console.log(`Members: ${data.members.join(', ')}`)
 })
@@ -15,6 +15,19 @@ socket.on('roomJoined', (data) => {
 socket.on('updatePrompt', (prompt) => {
   inputPrompt.style.display = 'none'
   setPrompt(prompt)
+})
+
+let playerStatus = ''
+
+socket.on('imposter', () => {
+  playerStatus = 'imposter'
+  console.log(playerStatus)
+  setStatus()
+})
+socket.on('normal', () => {
+  playerStatus = 'normal'
+  console.log(playerStatus)
+  setStatus()
 })
 
 const canvas = document.getElementById('canvas')
@@ -42,6 +55,7 @@ const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
 const undoButton = document.getElementById('undo')
 const redoButton = document.getElementById('redo')
+const statusDisplay = document.getElementById('playerStatus')
 
 const context = canvas.getContext('2d')
 context.fillStyle = 'white'
@@ -57,6 +71,16 @@ let drawColour = 'black'
 
 let pastDrawings = []
 let index = -1
+
+function setStatus() {
+  if (playerStatus === 'imposter') {
+    statusDisplay.style.color = 'red'
+    statusDisplay.innerText = 'You ARE the imposter!'
+  } else {
+    statusDisplay.style.color = 'black'
+    statusDisplay.innerText = 'You are NOT the imposter!'
+  }
+}
 
 const urlParams = new URLSearchParams(window.location.search)
 const inputTimer = (urlParams.get('inputTimer') || 25) * 1000
