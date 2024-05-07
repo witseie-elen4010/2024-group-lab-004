@@ -1,9 +1,10 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
 
-// if (!roomId) {
-//   window.location.href = '/landing'
-// }
+// Redirect if no room ID is available
+if (!roomId) {
+  window.location.href = '/landing'
+}
 
 socket.emit('joinRoom', roomId)
 
@@ -13,8 +14,15 @@ socket.on('roomJoined', (data) => {
 })
 
 socket.on('updatePrompt', (prompt) => {
+  // Show the drawing board and assign the received prompt
   inputPrompt.style.display = 'none'
   setPrompt(prompt)
+})
+
+// Listen for the 'updateDrawing' event from the server and handle the received drawing
+socket.on('updateDrawing', (drawing) => {
+  console.log('Received drawing:', drawing)
+  activateInputPrompt(drawing)
 })
 
 const canvas = document.getElementById('canvas')
@@ -51,10 +59,8 @@ drawingDisplay.width = canvas.width / 4
 drawingDisplay.height = canvas.height / 4
 
 let isDrawing = false
-
 let drawWidth = '2'
 let drawColour = 'black'
-
 let pastDrawings = []
 let index = -1
 
@@ -99,7 +105,6 @@ undoButton.addEventListener('click', function () {
   if (index <= -1) {
     context.fillRect(0, 0, canvas.width, canvas.height)
     index = -1
-    return
   } else {
     context.putImageData(pastDrawings[index], 0, 0)
   }
@@ -118,24 +123,24 @@ redoButton.addEventListener('click', function () {
   }
 })
 
-function changeLineWidth(width) {
+function changeLineWidth (width) {
   drawWidth = width
   context.lineWidth = drawWidth
 }
 
-function changeColour(colour) {
+function changeColour (colour) {
   drawColour = colour
   context.strokeStyle = drawColour
 }
 
-function startDrawing(e) {
+function startDrawing (e) {
   isDrawing = true
   context.beginPath()
   context.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
   e.preventDefault()
 }
 
-function draw(e) {
+function draw (e) {
   if (isDrawing) {
     context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
     context.lineCap = 'round'
@@ -145,36 +150,100 @@ function draw(e) {
   e.preventDefault()
 }
 
-function stopDrawing(e) {
+function stopDrawing (e) {
   if (isDrawing) {
     context.stroke()
     context.closePath()
     isDrawing = false
 
     if (index < pastDrawings.length - 1) {
-      if (index === -1) {
-        pastDrawings = []
-      } else {
-        pastDrawings = pastDrawings.slice(0, index + 1)
-        index = pastDrawings.length - 1
-      }
+      pastDrawings = pastDrawings.slice(0, index + 1)
+      index = pastDrawings.length - 1
     }
     pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
     console.log(index)
-    if (index >= 0) {
-      undoButton.disabled = false
-    }
-    if (index === pastDrawings.length - 1) {
-      redoButton.disabled = true
-    }
+    undoButton.disabled = index <= 0
+    redoButton.disabled = index === pastDrawings.length - 1
   }
 }
 
-// stores the timeouts for the drawing bar, so that they can be ended from the submitdrawing function
-let endTimeout = function () {}
+const endTimeout = function () {}
 
-function submitDrawing() {
+// Prompt input is completed and sent to the server for aggregation
+function submitPrompt () {
+  const prompt = getInput.value || getInput.placeholder
+  getInput.value = ''
+  socket.emit('inputDone', { roomId, prompt })
+  inputPrompt.style.display = 'none'
+}
+
+// Activate input prompt and only call `submitPrompt` when all are done
+function activateInputPrompt (img = null) {
+  console.log('here')
+  drawing.style.display = img ? 'block' : 'none'
+  notDrawing.style.display = img ? 'none' : 'block'
+  if (img) {
+    drawingDisplay.src = img
+  }
+
+  inputPrompt.style.display = 'block'
+  inputCountdownBar.style.width = '100%'
+  inputCountdownBar.style.transitionDuration = `${inputTimer}ms`
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      inputCountdownBar.style.width = '0%'
+    })
+  })
+
+  // const timeoutId = setTimeout(submitPrompt, inputTimer)
+
+  function checkEnterKey (event) {
+    if (event.key === 'Enter') {
+      submitPrompt()
+    }
+  }
+
+  doneButton.addEventListener('click', submitPrompt)
+  getInput.addEventListener('keydown', checkEnterKey)
+
+  // endTimeout = function () {
+  //   clearTimeout(timeoutId)
+  //   inputCountdownBar.style.transition = 'none'
+  //   inputCountdownBar.style.width = '100%'
+  //   void inputCountdownBar.offsetWidth
+  //   inputCountdownBar.style.transition = ''
+  // }
+}
+
+function setPrompt (prompt) {
+  const promptText = document.getElementById('prompt')
+  promptText.innerText = prompt
+  // startDrawTimer()
+}
+
+function startDrawTimer () {
+  // drawingCountdownBar.style.width = '100%'
+  // drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
+  // requestAnimationFrame(() => {
+  //   requestAnimationFrame(() => {
+  //     drawingCountdownBar.style.width = '0%'
+  //   })
+  // })
+  // const countdownBarTimeout = setTimeout(() => {
+  //   submitDrawing()
+  // }, drawingTimer)
+  // endTimeout = function () {
+  //   clearTimeout(countdownBarTimeout)
+  //   drawingCountdownBar.style.transition = 'none'
+  //   drawingCountdownBar.style.width = '100%'
+  //   void drawingCountdownBar.offsetWidth
+  //   drawingCountdownBar.style.transition = ''
+  // }
+}
+
+function submitDrawing () {
   const image = canvas.toDataURL('image/png')
   stopDrawing({ type: 'mouseout' })
   context.fillRect(0, 0, canvas.width, canvas.height)
@@ -184,104 +253,14 @@ function submitDrawing() {
   redoButton.disabled = true
   endTimeout()
 
-  getPrompt(image)
+  // For example, emit the image to the server or process it as needed
+  console.log('Drawing submitted:', image)
+  // You could add a socket emit here if you want to send the image to the server
+  socket.emit('drawingSubmitted', { roomId, image })
+
+  // Activate the input prompt for the next round if applicable
+  activateInputPrompt()
 }
 
-function activateInputPrompt(img = null) {
-  return new Promise((resolve) => {
-    // the text displayed changes based on if an image is given (we are reviewing a drawing), or not (it is the start of the game)
-    drawing.style.display = img ? 'block' : 'none'
-    notDrawing.style.display = img ? 'none' : 'block'
-    if (img) {
-      drawingDisplay.src = img
-    }
-
-    // Show the inputPrompt
-    inputPrompt.style.display = 'block'
-
-    // Start the countdown
-    inputCountdownBar.style.width = '100%'
-    inputCountdownBar.style.transitionDuration = `${inputTimer}ms`
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        inputCountdownBar.style.width = '0%'
-      })
-    })
-
-    // Set a timeout to hide the inputPrompt
-    const timeoutId = setTimeout(inputDone, inputTimer)
-
-    function checkEnterKey(event) {
-      if (event.key === 'Enter') {
-        inputDone()
-      }
-    }
-
-    function inputDone() {
-      inputPrompt.style.display = 'none'
-      drawingDisplay.src = ''
-
-      // Reset the countdown bar and timer
-      inputCountdownBar.style.width = '100%'
-      void drawingCountdownBar.offsetWidth // force a reflow to apply the changes immediately
-      clearTimeout(timeoutId)
-
-      let prompt = getInput.value
-      if (prompt == '') {
-        prompt = getInput.placeholder
-      }
-      getInput.value = ''
-
-      // remove old event listeners, as they hold incorrect variable addresses
-      doneButton.removeEventListener('click', inputDone)
-      getInput.removeEventListener('keydown', checkEnterKey)
-      socket.emit('inputDone', { roomId, prompt }) // Emit the input value to the sockets in the room
-      resolve(prompt) // Resolve the Promise with the prompt
-    }
-
-    doneButton.addEventListener('click', inputDone)
-    getInput.addEventListener('keydown', checkEnterKey)
-  })
-}
-
-function getPrompt(image = null) {
-  if (image) {
-    activateInputPrompt(image).then((prompt) => setPrompt(prompt))
-  } else {
-    activateInputPrompt().then((prompt) => setPrompt(prompt))
-  }
-}
-
-function setPrompt(prompt) {
-  const promptText = document.getElementById('prompt')
-  promptText.innerText = prompt
-  startDrawTimer()
-}
-
-function startDrawTimer() {
-  drawingCountdownBar.style.width = '100%'
-  drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      drawingCountdownBar.style.width = '0%'
-    })
-  })
-
-  const countdownBarTimeout = setTimeout(() => {
-    submitDrawing()
-  }, drawingTimer)
-
-  endTimeout = function () {
-    clearTimeout(countdownBarTimeout)
-
-    drawingCountdownBar.style.transition = 'none'
-    drawingCountdownBar.style.width = '100%'
-    // Force a reflow to apply the changes immediately
-    void drawingCountdownBar.offsetWidth
-    // Re-enable the transition
-    drawingCountdownBar.style.transition = ''
-  }
-}
-
-// start the game by getting the user's first prompt
-getPrompt()
+// Begin the game by activating the user's first input prompt
+activateInputPrompt()
