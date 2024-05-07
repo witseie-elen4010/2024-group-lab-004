@@ -177,7 +177,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
