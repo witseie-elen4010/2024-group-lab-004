@@ -532,20 +532,14 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
   await page3.click('#submitJoinRoom')
 
   // Wait for the members count to update on all pages
-  await page1.waitForFunction(
-    (membersCount) =>
-      document.querySelector('#membersCount').textContent === membersCount,
-    '3'
+  await page3.waitForFunction(
+    () => document.querySelector('#membersCount').textContent === '3'
   )
   await page2.waitForFunction(
-    (membersCount) =>
-      document.querySelector('#membersCount').textContent === membersCount,
-    '3'
+    () => document.querySelector('#membersCount').textContent === '3'
   )
-  await page3.waitForFunction(
-    (membersCount) =>
-      document.querySelector('#membersCount').textContent === membersCount,
-    '3'
+  await page1.waitForFunction(
+    () => document.querySelector('#membersCount').textContent === '3'
   )
 
   await page1.locator('#startGame').click()
