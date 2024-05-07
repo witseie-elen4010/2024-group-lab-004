@@ -513,3 +513,58 @@ test('Redo button becomes disabled after redoing all drawings', async ({
     await page.getByRole('button', { name: 'Redo' }).isDisabled()
   ).toBeTruthy()
 })
+
+// this test starts from landing and goes to drawingBoard, so I didnt know which test file to put it in
+test('Exactly 1 imposter is chosen at the start of the game', async ({
+  context,
+}) => {
+  const page1 = await context.newPage()
+  await page1.goto('http://localhost:4000/landing')
+  await page1.getByRole('button', { name: 'Create Room' }).click()
+  const roomID = await page1.locator('#roomId').innerText()
+
+  const page2 = await context.newPage()
+  await page2.goto('http://localhost:4000/landing')
+  await page2.getByRole('button', { name: 'Join Room' }).click()
+  await page2.getByPlaceholder('Enter room ID').fill(roomID)
+  await page2.getByRole('button', { name: 'Join', exact: true }).click()
+
+  const page3 = await context.newPage()
+  await page3.goto('http://localhost:4000/landing')
+  await page3.getByRole('button', { name: 'Join Room' }).click()
+  await page3.getByPlaceholder('Enter room ID').fill(roomID)
+  await page3.getByRole('button', { name: 'Join', exact: true }).click()
+
+  await page1.getByRole('button', { name: 'Start Game' }).click()
+
+  // wait for the websocket to send the message of who the imposter is
+  await page1.waitForFunction(
+    () =>
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+  await page2.waitForFunction(
+    () =>
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+  await page3.waitForFunction(
+    () =>
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+
+  const playerStatus1 = await page1.locator('#playerStatus').innerText()
+  const playerStatus2 = await page2.locator('#playerStatus').innerText()
+  const playerStatus3 = await page3.locator('#playerStatus').innerText()
+
+  //make sure only one says "You ARE the imposter!"
+  const imposterCount = [playerStatus1, playerStatus2, playerStatus3].filter(
+    (status) => status === 'You ARE the imposter!'
+  ).length
+
+  expect(imposterCount).toBe(1)
+})
