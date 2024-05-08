@@ -39,29 +39,37 @@ exports.newGame = (names) => {
     })
   })
 }
-// exports.newGame = async (names) => {
-//   // Create an object to map names to user fields
-//   const game = {}
-//   game['gameName'] = 'why_is_this_needed'
-//   game['gameDate'] = new Date()
-//   for (let i = 0; i < names.length; i++) {
-//     game[`user${i + 1}`] = names[i]
-//   }
 
-//   const keys = Object.keys(game)
-//     .map((key) => `"${key}"`)
-//     .join(', ')
-//   const values = Object.values(game)
-//   const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
+// Non-exported function
+function getDrawings(query, values) {
+  return new Promise((resolve, reject) => {
+    db.query(query, values, (error, results) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(results.rows)
+      }
+    })
+  })
+}
 
-//   const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "gameID"`
-//   console.log(query)
-//   console.log(values)
+// Exported function for getting drawings by gameID
+exports.getDrawingsGame = (gameID) => {
+  if (!gameID) {
+    return Promise.reject('No gameID provided')
+  }
+  const query = 'SELECT * FROM drawings WHERE gameID = $1'
+  const values = [gameID]
+  return getDrawings(query, values)
+}
 
-//   await db.query(query, values, (error, results) => {
-//     if (error) throw error
+// Exported function for getting drawings by user_id
+exports.getDrawingsUser = (user_id) => {
+  if (!user_id) {
+    return Promise.reject('No user_id provided')
+  }
+  const query = 'SELECT * FROM drawings WHERE user_id = $1'
+  const values = [user_id]
+  return getDrawings(query, values)
+}
 
-//     console.log(`Created game with ID: ${results.rows[0].gameID}`)
-//     return results.rows[0].gameID
-//   })
-// }

@@ -15,6 +15,26 @@ const rounds = {}
 const drawingSubmissions = {}
 const users = new Map()
 
+const fs = require('fs')
+
+// example function showing how to save the data to an image as a file
+async function test() {
+  const gameID = await dbAccess.getDrawingsGame(39)
+  const data = gameID[0].data.toString()
+
+  // Remove the "data:image/png;base64," part
+  const base64Data = data.replace(/^data:image\/png;base64,/, '')
+
+  // Convert base64 to image
+  fs.writeFile('output.png', base64Data, 'base64', (err) => {
+    if (err) {
+      console.error('An error occurred:', err)
+    } else {
+      console.log('Image saved as output.png')
+    }
+  })
+}
+
 io.on('connection', (socket) => {
   console.log('New WebSocket connection')
   let currentRoom = null
