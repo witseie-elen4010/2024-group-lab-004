@@ -2,13 +2,13 @@ const socket = io()
 const roomId = localStorage.getItem('roomId')
 
 // Redirect if no room ID is available
-if (!roomId) {
-  window.location.href = '/landing'
-}
+// if (!roomId) {
+//   window.location.href = '/landing'
+// }
 
-socket.emit('joinRoom', roomId)
+socket.emit('joinGameRoom', roomId)
 
-socket.on('roomJoined', (data) => {
+socket.on('gameRoomJoined', (data) => {
   console.log(`Joined room: ${data.roomId}`)
   console.log(`Members: ${data.members.join(', ')}`)
 })
@@ -74,6 +74,17 @@ function showRoundOver(grid) {
   roundOverOverlay.style.display = 'flex'
 }
 
+let playerStatus = ''
+
+socket.on('imposter', () => {
+  playerStatus = 'imposter'
+  setStatus()
+})
+socket.on('normal', () => {
+  playerStatus = 'normal'
+  setStatus()
+})
+
 const canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth - 300
 canvas.height = window.innerHeight - 300
@@ -121,6 +132,7 @@ function hideRoundOverOverlay() {
   roundOverOverlay.style.display = 'none'
   waitingContainer.style.display = 'none'
 }
+const statusDisplay = document.getElementById('playerStatus')
 
 const context = canvas.getContext('2d')
 context.fillStyle = 'white'
@@ -134,6 +146,16 @@ let drawWidth = '2'
 let drawColour = 'black'
 let pastDrawings = []
 let index = -1
+
+function setStatus() {
+  if (playerStatus === 'imposter') {
+    statusDisplay.style.color = 'red'
+    statusDisplay.innerText = 'You ARE the imposter!'
+  } else {
+    statusDisplay.style.color = 'black'
+    statusDisplay.innerText = 'You are NOT the imposter!'
+  }
+}
 
 const urlParams = new URLSearchParams(window.location.search)
 const inputTimer = (urlParams.get('inputTimer') || 25) * 1000
@@ -241,15 +263,6 @@ function stopDrawing(e) {
 
 const endTimeout = function () {}
 
-// Prompt input is completed and sent to the server for aggregation
-function submitPrompt() {
-  const prompt = getInput.value || getInput.placeholder
-  getInput.value = ''
-  socket.emit('inputDone', { roomId, prompt })
-  inputPrompt.style.display = 'none'
-  showWaitingContainer()
-}
-
 // Activate input prompt and only call `submitPrompt` when all are done
 function activateInputPrompt(img = null) {
   console.log('here')
@@ -323,7 +336,7 @@ function submitDrawing() {
   pastDrawings = []
   undoButton.disabled = true
   redoButton.disabled = true
-  endTimeout()
+  //endTimeout()
 
   console.log('Drawing submitted:', image)
   socket.emit('drawingSubmitted', { roomId, image })
@@ -332,6 +345,165 @@ function submitDrawing() {
 
 function showWaitingContainer() {
   waitingContainer.style.display = 'flex'
+}
+
+const colors = [
+  'A red',
+  'A blue',
+  'A green',
+  'A yellow',
+  'An orange',
+  'A purple',
+  'A black',
+  'A white',
+  'A pink',
+  'A gray',
+]
+const objects = [
+  'cat',
+  'dog',
+  'car',
+  'tree',
+  'house',
+  'sun',
+  'moon',
+  'star',
+  'flower',
+  'bird',
+  'fish',
+  'schoolbus',
+  'spaceship',
+  'robot',
+  'unicorn',
+  'dragon',
+  'castle',
+  'raindbow',
+  'sword',
+  'hamburger',
+  'volcano',
+  'coffee',
+  'Einstein',
+  'zombie',
+  'T-Rex',
+  'octopus',
+  'elephant',
+  'printer',
+  'mouse',
+  'spider',
+  'alien',
+  'clock',
+]
+const actions = [
+  'jumping',
+  'sleeping',
+  'running',
+  'eating',
+  'dancing',
+  'flying',
+  'swimming',
+  'singing',
+  'crying',
+  'laughing',
+  'reading',
+  'writing',
+  'drawing',
+  'painting',
+  'cooking',
+  'exploding',
+  'recycling',
+  'driving',
+  'fishing',
+  'sneezing',
+  'sneaking',
+  'hiding',
+]
+
+// Function to generate a random prompt
+function getRandomPrompt() {
+  const color = colors[Math.floor(Math.random() * colors.length)]
+  const object = objects[Math.floor(Math.random() * objects.length)]
+  const action = actions[Math.floor(Math.random() * actions.length)]
+  return `${color} ${object} ${action}`
+}
+
+// Function to set a random prompt as the default input value
+function setRandomPrompt() {
+  const randomPrompt = getRandomPrompt()
+  const getInput = document.getElementById('getInput')
+  getInput.placeholder = randomPrompt // Set the random prompt as placeholder
+}
+
+function activateInputPrompt(img = null) {
+  setRandomPrompt()
+  return new Promise((resolve) => {
+    // the text displayed changes based on if an image is given (we are reviewing a drawing), or not (it is the start of the game)
+    drawing.style.display = img ? 'block' : 'none'
+    notDrawing.style.display = img ? 'none' : 'block'
+    if (img) {
+      drawingDisplay.src = img
+    }
+
+    // Show the inputPrompt
+    inputPrompt.style.display = 'block'
+
+    // Start the countdown
+    inputCountdownBar.style.width = '100%'
+    inputCountdownBar.style.transitionDuration = `${inputTimer}ms`
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        inputCountdownBar.style.width = '0%'
+      })
+    })
+
+    // Set a timeout to hide the inputPrompt
+    //const timeoutId = setTimeout(inputDone, inputTimer)
+
+    function checkEnterKey(event) {
+      if (event.key === 'Enter') {
+        inputDone()
+      }
+    }
+
+    function inputDone() {
+      inputPrompt.style.display = 'none'
+      drawingDisplay.src = ''
+
+      // Reset the countdown bar and timer
+      inputCountdownBar.style.width = '100%'
+      void drawingCountdownBar.offsetWidth // force a reflow to apply the changes immediately
+      //clearTimeout(timeoutId)
+
+      let prompt = getInput.value
+      if (prompt == '') {
+        prompt = getInput.placeholder
+      }
+      getInput.value = ''
+
+      // remove old event listeners, as they hold incorrect variable addresses
+      doneButton.removeEventListener('click', inputDone)
+      getInput.removeEventListener('keydown', checkEnterKey)
+      showWaitingContainer()
+      socket.emit('inputDone', { roomId, prompt }) // Emit the input value to the sockets in the room
+      resolve(prompt) // Resolve the Promise with the prompt
+    }
+
+    doneButton.addEventListener('click', inputDone)
+    getInput.addEventListener('keydown', checkEnterKey)
+  })
+}
+
+function getPrompt(image = null) {
+  if (image) {
+    activateInputPrompt(image).then((prompt) => setPrompt(prompt))
+  } else {
+    activateInputPrompt().then((prompt) => setPrompt(prompt))
+  }
+}
+
+function setPrompt(prompt) {
+  const promptText = document.getElementById('prompt')
+  promptText.innerText = prompt
+  startDrawTimer()
 }
 
 function hideWaitingContainer() {

@@ -29,15 +29,17 @@ startGameButton.addEventListener('click', () => {
   socket.emit('startGame', roomId)
 })
 
+let hostId = ''
 socket.on('roomCreated', (roomId) => {
+  startGameButton.style.display = 'none' // Show the "Start Game" button for the host
+  started = true
   createRoomButton.style.display = 'none'
   joinRoomButton.style.display = 'none'
   roomInfo.style.display = 'block'
   roomIdSpan.textContent = roomId
+  hostId = socket.id
   localStorage.setItem('roomId', roomId) // Store room ID in local storage
   localStorage.setItem('hostId', socket.id) // Store host ID in local storage
-  startGameButton.style.display = 'none' // Show the "Start Game" button for the host
-  started = true
 })
 
 socket.on('roomJoined', (data) => {
@@ -47,8 +49,10 @@ socket.on('roomJoined', (data) => {
   roomInfo.style.display = 'block'
   roomIdSpan.textContent = data.roomId
   localStorage.setItem('roomId', data.roomId) // Store room ID in local storage
-  if (localStorage.getItem('hostId') !== socket.id) {
+  if ((localStorage.getItem('hostId') || hostId) !== socket.id) {
     startGameButton.style.display = 'none' // Hide the "Start Game" button for non-host members
+  } else if (data.members.length >= 3) {
+    startGameButton.style.display = 'block'
   }
 })
 

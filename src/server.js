@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
         currentRoom = roomID
         updateAndEmitOrders(roomID)
         room.grid = createRoomGrid(room.members.length)
-        socket.emit('roomJoined', {
+        io.to(roomID).emit('roomJoined', {
           roomId: roomID,
           members: room.members,
         })
@@ -91,11 +91,44 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('joinGameRoom', (roomID) => {
+    if (rooms[roomID]) {
+      rooms[roomID].members.push(socket.id)
+      socket.join(roomID)
+      currentRoom = roomID
+      updateAndEmitOrders(roomID)
+      rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
+      io.to(roomID).emit('gameRoomJoined', {
+        roomId: roomID,
+        members: rooms[roomID].members,
+      })
+      console.log(`Joined room: ${roomID}`)
+
+      // only get the imposters once everyone has joined the room
+      if (rooms[roomID].members.length === rooms[roomID].gameSize) {
+        const imposter = getImposter(rooms[roomID])
+        rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
+
+        // Send a "no" message to all other members
+        rooms[roomID].members.forEach((member) => {
+          if (member === imposter) {
+            io.to(member).emit('imposter', true)
+          } else {
+            io.to(member).emit('normal', true)
+          }
+        })
+      }
+    } else {
+      socket.emit('roomJoinError', 'Room does not exist')
+    }
+  })
+
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
       rooms[roomID].gameStarted = true
       rooms[roomID].maxMembers = rooms[roomID].members.length * 2
       io.to(roomID).emit('gameStarted')
+      rooms[roomID].gameSize = rooms[roomID].members.length
       console.log(`Game started in room: ${roomID}`)
     }
   })
@@ -156,6 +189,10 @@ function generateRoomId() {
   return Math.random().toString(36).substring(2, 10)
 }
 
+function getImposter(room) {
+  const randomIndex = Math.floor(Math.random() * room.members.length)
+  return room.members[randomIndex]
+}
 function generateUniqueOrders(numPlayers) {
   const orders = Array.from({ length: numPlayers }, () =>
     Array(numPlayers).fill(0)
