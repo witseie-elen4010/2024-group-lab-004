@@ -10,6 +10,7 @@ const io = socketio(server)
 const port = process.env.PORT || process.env.APP_PORT
 
 const rooms = {}
+const publicRooms = {}
 const rounds = {}
 const drawingSubmissions = {}
 
@@ -17,24 +18,34 @@ io.on('connection', (socket) => {
   console.log('New WebSocket connection')
   let currentRoom = null
 
-  socket.on('createRoom', () => {
-    const roomID = generateRoomId()
-    rooms[roomID] = {
+  socket.on('createRoom', (options) => {
+    const roomId = generateRoomId()
+    const isPublic = options.public || false
+
+    rooms[roomId] = {
       members: [socket.id],
       host: socket.id,
       orders: {},
       prompts: {},
       grid: null,
+      isPublic,
     }
-    currentRoom = roomID
-    socket.join(roomID)
-    updateAndEmitOrders(roomID)
-    rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
-    socket.emit('roomCreated', roomID)
-    console.log(`Room created: ${roomID}`)
+    currentRoom = roomId
+    socket.join(roomId)
+    updateAndEmitOrders(roomId)
+    rooms[roomId].grid = createRoomGrid(rooms[roomId].members.length)
+    socket.emit('roomCreated', roomId)
+
+    if (isPublic) {
+      publicRooms[roomId] = rooms[roomId]
+    }
+
+    console.log(`${isPublic ? 'Public' : 'Private'} Room created: ${roomId}`)
   })
 
-  socket.on('joinRoom', (roomID) => {
+  socket.on('joinRoom', (data) => {
+    const roomID = data.roomId.trim()
+
     const room = rooms[roomID]
     if (room) {
       if (room.gameStarted && room.members.length >= room.maxMembers) {
@@ -45,16 +56,28 @@ io.on('connection', (socket) => {
         currentRoom = roomID
         updateAndEmitOrders(roomID)
         room.grid = createRoomGrid(room.members.length)
+
         io.to(roomID).emit('roomJoined', {
           roomId: roomID,
           members: room.members,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
+
         console.log(`Joined room: ${roomID}`)
       }
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
+      console.log(`Room ID "${roomID}" not found.`)
     }
+  })
+
+  socket.on('requestPublicRooms', () => {
+    const roomsList = Object.entries(publicRooms).map(([roomId, room]) => ({
+      roomId,
+      host: room.host,
+      members: room.members,
+    }))
+    socket.emit('publicRoomsList', roomsList)
   })
 
   socket.on('inputDone', (data) => {
@@ -127,6 +150,9 @@ io.on('connection', (socket) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
       rooms[roomID].gameStarted = true
       rooms[roomID].maxMembers = rooms[roomID].members.length * 2
+      if (rooms[roomID].isPublic) {
+        delete publicRooms[roomID]
+      }
       io.to(roomID).emit('gameStarted')
       rooms[roomID].gameSize = rooms[roomID].members.length
       console.log(`Game started in room: ${roomID}`)
@@ -166,6 +192,13 @@ io.on('connection', (socket) => {
 
       if (room.gameStarted) {
         room.maxMembers -= 1
+        delete publicRooms[currentRoom]
+      }
+
+      if (room.members.length === 0) {
+        if (room.isPublic) {
+          delete publicRooms[currentRoom]
+        }
       }
 
       if (room.orders[socket.id]) {
