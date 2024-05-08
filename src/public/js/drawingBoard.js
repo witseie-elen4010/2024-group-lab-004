@@ -14,9 +14,11 @@ async function fetchUser() {
     id: -1,
     username: Math.floor(Math.random() * 1000).toString(),
   }
-  return username.json()
+  console.log(username)
+  return username
 }
 fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
+// socket.emit('joinGameRoom', roomId, username)
 
 socket.on('gameRoomJoined', (data) => {
   console.log(`Joined room: ${data.roomId}`)

@@ -1,38 +1,67 @@
 const db = require('./database')
 
-exports.saveDrawing = async (gameID, username, user_id, turn, data) => {
+exports.saveDrawing = async (gameID, user_id, username, turn, data) => {
   const query =
-    'INSERT INTO drawings (gameID, username, user_id, turn, data) VALUES ($1, $2, $3, $4, $5)'
-  const values = [gameID, username, user_id, turn, data]
-  try {
-    const result = await db.query(query, values)
-    res.json({ message: 'Drawing saved' })
-  } catch (error) {
-    res.status(404).json({ message: 'Drawing not saved' })
-  }
+    'INSERT INTO drawings (gameID, user_id, username, turn, data) VALUES ($1, $2, $3, $4, $5)'
+  const values = [gameID, user_id, username, turn, data]
+
+  db.query(query, values, (error) => {
+    if (error) throw error
+  })
 }
 
-exports.newGame = async (names) => {
-  // Create an object to map names to user fields
-  const game = {}
-  for (let i = 0; i < names.length; i++) {
-    game[`user${i + 1}`] = names[i]
-  }
-
-  // Insert the new game into the database
-  db.query(
-    'INSERT INTO games SET ? RETURNING gameID',
-    game,
-    (error, results) => {
-      if (error) throw error
-
-      // Return the gameID of the newly created game
-      console.log(`Created game with ID: ${results.insertId}`)
-      return results.insertId
+exports.newGame = (names) => {
+  return new Promise((resolve, reject) => {
+    const game = {}
+    game['gameName'] = 'why_is_this_needed'
+    game['gameDate'] = new Date()
+    for (let i = 0; i < names.length; i++) {
+      game[`user${i + 1}`] = names[i]
     }
-  )
+
+    const keys = Object.keys(game)
+      .map((key) => `"${key}"`)
+      .join(', ')
+    const values = Object.values(game)
+    const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
+
+    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "gameID"`
+    console.log(query)
+    console.log(values)
+
+    db.query(query, values, (error, results) => {
+      if (error) {
+        reject(error)
+      } else {
+        console.log(`Created game with ID: ${results.rows[0].gameID}`)
+        resolve(results.rows[0].gameID)
+      }
+    })
+  })
 }
+// exports.newGame = async (names) => {
+//   // Create an object to map names to user fields
+//   const game = {}
+//   game['gameName'] = 'why_is_this_needed'
+//   game['gameDate'] = new Date()
+//   for (let i = 0; i < names.length; i++) {
+//     game[`user${i + 1}`] = names[i]
+//   }
 
-// fix the joinRoom to send in a username
-// socket ID is needed for sending messages and shit
+//   const keys = Object.keys(game)
+//     .map((key) => `"${key}"`)
+//     .join(', ')
+//   const values = Object.values(game)
+//   const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
 
+//   const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "gameID"`
+//   console.log(query)
+//   console.log(values)
+
+//   await db.query(query, values, (error, results) => {
+//     if (error) throw error
+
+//     console.log(`Created game with ID: ${results.rows[0].gameID}`)
+//     return results.rows[0].gameID
+//   })
+// }

@@ -47,7 +47,7 @@ exports.history = async (req, res) => {
 
 exports.guest = async (req, res) => {
   req.session.user = {
-    id: null,
+    id: -1,
     username: req.query.nickname,
   }
   return res.redirect('/draw')

@@ -19,7 +19,7 @@ io.on('connection', (socket) => {
   console.log('New WebSocket connection')
   let currentRoom = null
 
-  socket.on('createRoom', () => {
+  socket.on('createRoom', (username) => {
     const roomID = generateRoomId()
     rooms[roomID] = {
       members: [socket.id],
@@ -28,6 +28,7 @@ io.on('connection', (socket) => {
       prompts: {},
       grid: null,
     }
+    users.set(socket.id, username)
     currentRoom = roomID
     socket.join(roomID)
     updateAndEmitOrders(roomID)
@@ -36,14 +37,13 @@ io.on('connection', (socket) => {
     console.log(`Room created: ${roomID}`)
   })
 
-  socket.on('joinRoom', (roomID, username) => {
+  socket.on('joinRoom', (roomID) => {
     const room = rooms[roomID]
     if (room) {
       if (room.gameStarted && room.members.length >= room.maxMembers) {
         socket.emit('roomJoinError', 'Game has already started')
       } else {
         room.members.push(socket.id)
-        users.set(socket.id, username) // ********** //
         socket.join(roomID)
         currentRoom = roomID
         updateAndEmitOrders(roomID)
@@ -89,17 +89,14 @@ io.on('connection', (socket) => {
     updateGridSubmission(roomId, socket.id, 'drawing', image)
     console.log('here:')
     console.log(rooms[roomId].gameID)
-    console.log(users(socket.id).username)
-    console.log(users(socket.id).id)
-    console.log(rounds[roomId])
 
     dbAccess.saveDrawing(
       rooms[roomId].gameID,
-      users(socket.id).username,
-      users(socket.id).id,
+      users.get(socket.id).id,
+      users.get(socket.id).username,
       rounds[roomId],
       image
-    ) // ***** //
+    )
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -109,6 +106,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('joinGameRoom', (roomID, username) => {
+    console.log(roomID)
     if (rooms[roomID]) {
       rooms[roomID].members.push(socket.id)
       users.set(socket.id, username)
@@ -127,7 +125,15 @@ io.on('connection', (socket) => {
       console.log(`Joined room: ${roomID}`)
 
       // only get the imposters once everyone has joined the room
+      console.log(rooms[roomID].members)
+      console.log(rooms[roomID].gameSize)
       if (rooms[roomID].members.length === rooms[roomID].gameSize) {
+        // create the gameroom in the database
+        const allUsernames = rooms[roomID].members.map(
+          (member) => users.get(member).id
+        )
+        assignGameID(roomID, allUsernames).then((val) => console.log('hi', val))
+
         const imposter = getImposter(rooms[roomID])
         rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
 
@@ -145,18 +151,18 @@ io.on('connection', (socket) => {
     }
   })
 
+  async function assignGameID(roomID, allUsernames) {
+    rooms[roomID].gameID = await dbAccess.newGame(allUsernames)
+    console.log('yo', rooms[roomID].gameID)
+    return rooms[roomID].gameID
+  }
+
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
-      const allUsernames = rooms[roomID].members.map((member) =>
-        users.get(member)
-      )
-      rooms[roomID].gameID = dbAccess.newGame(allUsernames) // *****//
-      console.log('Game id:')
-      console.log(rooms[roomID].gameID)
       rooms[roomID].gameStarted = true
       rooms[roomID].maxMembers = rooms[roomID].members.length * 2
-      io.to(roomID).emit('gameStarted')
       rooms[roomID].gameSize = rooms[roomID].members.length
+      io.to(roomID).emit('gameStarted')
       console.log(`Game started in room: ${roomID}`)
     }
   })
