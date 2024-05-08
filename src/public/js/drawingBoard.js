@@ -21,12 +21,10 @@ let playerStatus = ''
 
 socket.on('imposter', () => {
   playerStatus = 'imposter'
-  console.log(playerStatus)
   setStatus()
 })
 socket.on('normal', () => {
   playerStatus = 'normal'
-  console.log(playerStatus)
   setStatus()
 })
 

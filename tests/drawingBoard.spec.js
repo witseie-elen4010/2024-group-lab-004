@@ -545,27 +545,7 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
   await page1.locator('#startGame').click()
 
   // wait for the websocket to send the message of who the imposter is
-  await page1.waitForFunction(
-    () =>
-      document.querySelector('#playerStatus') &&
-      !document
-        .querySelector('#playerStatus')
-        .innerText.includes('Are you an imposter?')
-  )
-  await page2.waitForFunction(
-    () =>
-      document.querySelector('#playerStatus') &&
-      !document
-        .querySelector('#playerStatus')
-        .innerText.includes('Are you an imposter?')
-  )
-  await page3.waitForFunction(
-    () =>
-      document.querySelector('#playerStatus') &&
-      !document
-        .querySelector('#playerStatus')
-        .innerText.includes('Are you an imposter?')
-  )
+  await page1.waitForTimeout(2000)
 
   const playerStatus1 = await page1.locator('#playerStatus').innerText()
   const playerStatus2 = await page2.locator('#playerStatus').innerText()
