@@ -24,12 +24,53 @@ socket.on('updateDrawing', (drawing) => {
   activateInputPrompt(drawing)
 })
 
-// Initialize the round-over event handler
 socket.on('roundOver', (submissionGrid) => {
-  showRoundOver()
+  showRoundOver(submissionGrid)
 })
 
-function showRoundOver() {
+function showRoundOver(grid) {
+  const gridContainer = document.getElementById('roundGridContainer')
+  gridContainer.innerHTML = '' // Clear previous contents
+
+  // Loop through each row and render them into separate columns
+  grid.forEach((row, rowIndex) => {
+    const columnDiv = document.createElement('div')
+    columnDiv.className = 'round-grid-column'
+
+    row.forEach((submission, colIndex) => {
+      const submissionDiv = document.createElement('div')
+      submissionDiv.className = 'round-grid-item'
+
+      // Add member info
+      const memberInfo = document.createElement('h4')
+      memberInfo.textContent = `Submitted by: ${submission.member}`
+      submissionDiv.appendChild(memberInfo)
+
+      // Common box dimensions
+      const boxSize = 150
+
+      // Display submission based on type (prompt or drawing)
+      if (submission.type === 'drawing') {
+        const img = document.createElement('img')
+        img.src = submission.content
+        img.alt = `Drawing ${colIndex + 1}`
+        img.style.width = `${boxSize}px`
+        img.style.height = `${boxSize}px`
+        submissionDiv.appendChild(img)
+      } else if (submission.type === 'prompt') {
+        const prompt = document.createElement('p')
+        prompt.textContent = submission.content
+        prompt.style.width = `${boxSize}px`
+        prompt.style.height = `${boxSize}px`
+        submissionDiv.appendChild(prompt)
+      }
+
+      columnDiv.appendChild(submissionDiv)
+    })
+
+    gridContainer.appendChild(columnDiv)
+  })
+
   roundOverOverlay.style.display = 'flex'
 }
 

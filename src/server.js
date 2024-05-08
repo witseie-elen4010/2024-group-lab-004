@@ -24,10 +24,12 @@ io.on('connection', (socket) => {
       host: socket.id,
       orders: {},
       prompts: {},
+      grid: null,
     }
     currentRoom = roomID
     socket.join(roomID)
     updateAndEmitOrders(roomID)
+    rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
     socket.emit('roomCreated', roomID)
     console.log(`Room created: ${roomID}`)
   })
@@ -42,6 +44,7 @@ io.on('connection', (socket) => {
         socket.join(roomID)
         currentRoom = roomID
         updateAndEmitOrders(roomID)
+        room.grid = createRoomGrid(room.members.length)
         socket.emit('roomJoined', {
           roomId: roomID,
           members: room.members,
@@ -59,7 +62,7 @@ io.on('connection', (socket) => {
 
     if (rooms[roomId]) {
       rooms[roomId].prompts[socket.id] = prompt
-      console.log(`Received prompt from member ${socket.id} in room ${roomId}`)
+      updateGridSubmission(roomId, socket.id, 'prompt', prompt)
 
       if (
         Object.keys(rooms[roomId].prompts).length ===
@@ -79,7 +82,7 @@ io.on('connection', (socket) => {
     }
 
     drawingSubmissions[roomId][socket.id] = image
-    console.log(`Drawing submitted by member ${socket.id} in room ${roomId}`)
+    updateGridSubmission(roomId, socket.id, 'drawing', image)
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -102,6 +105,7 @@ io.on('connection', (socket) => {
       rounds[roomID] = 0
       rooms[roomID].prompts = {}
       drawingSubmissions[roomID] = {}
+      rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
 
       updateAndEmitOrders(roomID)
 
@@ -202,7 +206,6 @@ function distributePrompts(roomID) {
 
       const prompt = prompts[sourceMember] || 'No prompt'
       io.to(member).emit('updatePrompt', prompt)
-      console.log(`Sent prompt from member ${sourceMember} to ${member}`)
     })
   } else {
     emitRoundOver(roomID)
@@ -232,7 +235,6 @@ function distributeDrawings(roomID) {
 
       const drawing = drawings[sourceMember] || 'No drawing'
       io.to(member).emit('updateDrawing', drawing)
-      console.log(`Sent drawing from member ${sourceMember} to ${member}`)
     })
   } else {
     emitRoundOver(roomID)
@@ -240,8 +242,33 @@ function distributeDrawings(roomID) {
   }
 }
 
+function createRoomGrid(size) {
+  return Array.from({ length: size }, () =>
+    Array(size).fill({ type: null, content: null, member: null })
+  )
+}
+
+function updateGridSubmission(roomID, memberID, type, content) {
+  const orders = rooms[roomID].orders
+  const members = rooms[roomID].members
+  if (!rounds[roomID]) {
+    rounds[roomID] = 0
+  }
+  const currentRound = rounds[roomID]
+
+  const order = orders[memberID]
+  const targetIndex = order[currentRound] - 1
+
+  rooms[roomID].grid[currentRound][targetIndex] = {
+    type,
+    content,
+    member: memberID,
+  }
+}
+
 function emitRoundOver(roomID) {
-  io.to(roomID).emit('roundOver')
+  const grid = rooms[roomID].grid
+  io.to(roomID).emit('roundOver', grid)
 }
 
 server.listen(port, () => {
