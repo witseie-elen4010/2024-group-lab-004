@@ -1,12 +1,13 @@
 const { test, expect } = require('@playwright/test')
 
+// Test if the Start Game button becomes visible after three members join
 test('start button becomes visible when 3 members join the room', async ({
   context,
 }) => {
-  // Create a room on page1
+  // Create a private room on page1
   const page1 = await context.newPage()
   await page1.goto('http://localhost:4000/landing')
-  await page1.click('#createRoom')
+  await page1.click('#createPrivateRoom')
   await page1.waitForSelector('#roomId')
   const roomId = await page1.$eval('#roomId', (el) => el.textContent)
 
@@ -33,7 +34,7 @@ test('start button becomes visible when 3 members join the room', async ({
     '3'
   )
 
-  // Check if the start game button is visible on page1
+  // Check if the Start Game button is visible on page1
   const isStartGameButtonVisible = await page1.$eval(
     '#startGame',
     (el) => el.style.display !== 'none'
@@ -45,10 +46,10 @@ test.describe('Getting to game page', () => {
   let page1, page2, page3, roomId
 
   test.beforeEach(async ({ context }) => {
-    // Create a room on page1
+    // Create a private room on page1
     page1 = await context.newPage()
     await page1.goto('http://localhost:4000/landing')
-    await page1.click('#createRoom')
+    await page1.click('#createPrivateRoom')
     await page1.waitForSelector('#roomId')
     roomId = await page1.$eval('#roomId', (el) => el.textContent)
 
@@ -76,8 +77,8 @@ test.describe('Getting to game page', () => {
     )
   })
 
+  // Test if the Start Game button becomes visible after three members join
   test('start game button becomes visible when 3 members join the room', async () => {
-    // Check if the start game button is visible on page1
     const isStartGameButtonVisible = await page1.$eval(
       '#startGame',
       (el) => el.style.display !== 'none'
@@ -85,36 +86,26 @@ test.describe('Getting to game page', () => {
     expect(isStartGameButtonVisible).toBe(true)
   })
 
+  // Test navigation to the /draw page
   test('clicking start game button loads /draw page', async () => {
-    // Start listening for the navigation event before clicking the start game button
     const navigationPromise = page1.waitForNavigation()
-
-    // Click the start game button on page1
     await page1.click('#startGame')
-
-    // Wait for navigation to complete
     await navigationPromise
-
-    // Check if the current URL includes '/draw'
     const currentURL = page1.url()
     expect(currentURL).toContain('/draw')
   })
 
+  // Test if the /draw page is loaded on all pages
   test('clicking start game button on page1 loads /draw page on all pages', async () => {
-    // Start listening for the navigation event before clicking the start game button
     const navigationPromise1 = page1.waitForNavigation()
     const navigationPromise2 = page2.waitForNavigation()
     const navigationPromise3 = page3.waitForNavigation()
 
-    // Click the start game button on page1
     await page1.click('#startGame')
-
-    // Wait for navigation to complete on all pages
     await navigationPromise1
     await navigationPromise2
     await navigationPromise3
 
-    // Check if the current URL includes '/draw' on all pages
     const currentURL1 = page1.url()
     const currentURL2 = page2.url()
     const currentURL3 = page3.url()
@@ -128,10 +119,10 @@ test.describe('Gameplay tests', () => {
   let page1, page2, page3, roomId
 
   test.beforeEach(async ({ context }) => {
-    // Create a room on page1
+    // Create a private room on page1
     page1 = await context.newPage()
     await page1.goto('http://localhost:4000/landing')
-    await page1.click('#createRoom')
+    await page1.click('#createPrivateRoom')
     await page1.waitForSelector('#roomId')
     roomId = await page1.$eval('#roomId', (el) => el.textContent)
 
@@ -162,30 +153,25 @@ test.describe('Gameplay tests', () => {
     const navigationPromise2 = page2.waitForNavigation()
     const navigationPromise3 = page3.waitForNavigation()
 
-    // Click the start game button on page1
     await page1.click('#startGame')
-
-    // Wait for navigation to complete on all pages
     await navigationPromise1
     await navigationPromise2
     await navigationPromise3
   })
 
+  // Test if the waiting container is shown after filling and submitting the input
   test('pressing enter on page1 makes waiting container visible', async () => {
-    // Press enter on page1
-
     let isVisible = await page1.locator('#waitingContainer').isVisible()
     expect(isVisible).toBe(false)
     await page1.locator('#getInput').fill('test prompt')
     await page1.locator('#doneButton').click()
 
-    // Check if the waitingContainer is visible on page1
     isVisible = await page1.locator('#waitingContainer').isVisible()
     expect(isVisible).toBe(true)
   })
 
+  // Test if the waiting container is hidden after all pages complete input
   test('waitingContainer is no longer visible when all pages fill input and click done button', async () => {
-    // Fill the input and click the done button on all pages
     await Promise.all([
       page1.locator('#getInput').fill('test prompt'),
       page2.locator('#getInput').fill('test prompt'),
@@ -198,7 +184,6 @@ test.describe('Gameplay tests', () => {
       page3.locator('#doneButton').click(),
     ])
 
-    // Check if the waitingContainer is no longer visible on all pages
     const isVisible1 = await page1.locator('#waitingContainer').isVisible()
     const isVisible2 = await page2.locator('#waitingContainer').isVisible()
     const isVisible3 = await page3.locator('#waitingContainer').isVisible()
@@ -208,15 +193,14 @@ test.describe('Gameplay tests', () => {
     expect(isVisible3).toBe(false)
   })
 
+  // Test if the canvas is visible after all pages submit
   test('canvas is visible when all pages click done button', async () => {
-    // Click the done button on all pages
     await Promise.all([
       page1.locator('#doneButton').click(),
       page2.locator('#doneButton').click(),
       page3.locator('#doneButton').click(),
     ])
 
-    // Check if the canvas is visible on all pages
     const isCanvasVisible1 = await page1.locator('#canvas').isVisible()
     const isCanvasVisible2 = await page2.locator('#canvas').isVisible()
     const isCanvasVisible3 = await page3.locator('#canvas').isVisible()
@@ -226,22 +210,19 @@ test.describe('Gameplay tests', () => {
     expect(isCanvasVisible3).toBe(true)
   })
 
+  // Test if the prompt from page1 is displayed on either page2 or page3
   test('prompt from page1 is displayed on either page2 or page3 after all pages click done button', async () => {
-    // Set the text content of getInput on page1 to "apples"
     await page1.locator('#getInput').fill('apples')
 
-    // Click the done button on all pages
     await Promise.all([
       page1.locator('#doneButton').click(),
       page2.locator('#doneButton').click(),
       page3.locator('#doneButton').click(),
     ])
 
-    // Get the prompts displayed on page2 and page3
     const promptPage2 = await page2.locator('#prompt').textContent()
     const promptPage3 = await page3.locator('#prompt').textContent()
 
-    // Check if the prompt from page1 is displayed on either page2 or page3
     expect([promptPage2, promptPage3]).toContain('apples')
   })
 })
