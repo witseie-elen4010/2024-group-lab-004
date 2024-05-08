@@ -177,7 +177,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
@@ -211,7 +210,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
@@ -241,7 +239,6 @@ test.describe('testing that the timer bar decreases in width', () => {
     // the difference in percentage must be less than a certain percentage
     const difPercentage =
       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-    console.log(difPercentage)
 
     //check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
@@ -509,4 +506,72 @@ test('Redo button becomes disabled after redoing all drawings', async ({
   expect(
     await page.getByRole('button', { name: 'Redo' }).isDisabled()
   ).toBeTruthy()
+})
+
+// this test starts from landing and goes to drawingBoard, so I didnt know which test file to put it in
+test('Exactly 1 imposter is chosen at the start of the game', async ({
+  context,
+  browserName,
+}) => {
+  if (browserName === 'chromium') {
+    test.fixme() // this test needs to be fixed
+    return
+  }
+  const page1 = await context.newPage()
+  await page1.goto('http://localhost:4000/landing')
+  await page1.getByRole('button', { name: 'Create Room' }).click()
+  const roomId = await page1.locator('#roomId').innerText()
+
+  const page2 = await context.newPage()
+  await page2.goto('http://localhost:4000/landing')
+  await page2.click('#joinRoom')
+  await page2.waitForSelector('#roomToJoin')
+  await page2.fill('#roomToJoin', roomId)
+  await page2.click('#submitJoinRoom')
+
+  const page3 = await context.newPage()
+  await page3.goto('http://localhost:4000/landing')
+  await page3.click('#joinRoom')
+  await page3.waitForSelector('#roomToJoin')
+  await page3.fill('#roomToJoin', roomId)
+  await page3.click('#submitJoinRoom')
+
+  // Wait for the members count to update on all pages
+  await page1.waitForTimeout(2000)
+
+  await page1.locator('#startGame').click()
+
+  // wait for the websocket to send the message of who the imposter is
+  await page1.waitForFunction(
+    () =>
+      document.querySelector('#playerStatus') &&
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+  await page2.waitForFunction(
+    () =>
+      document.querySelector('#playerStatus') &&
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+  await page3.waitForFunction(
+    () =>
+      document.querySelector('#playerStatus') &&
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+
+  const playerStatus1 = await page1.locator('#playerStatus').innerText()
+  const playerStatus2 = await page2.locator('#playerStatus').innerText()
+  const playerStatus3 = await page3.locator('#playerStatus').innerText()
+
+  //make sure only one says "You ARE the imposter!"
+  const imposterCount = [playerStatus1, playerStatus2, playerStatus3].filter(
+    (status) => status === 'You ARE the imposter!'
+  ).length
+
+  expect(imposterCount).toBe(1)
 })
