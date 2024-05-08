@@ -151,13 +151,32 @@
       </div>
     </div>
     <div id="roundOverOverlay" style="display: none;">
+      <div id="RoundOverHeading">
+        <h1>Round Over</h1>
+      </div>
+      <div id="NextSetButtonBlock">
+        <button id="prevSetButton">&#9668;</button>
+        <strong id="CurrentSet"> Image Set 1 </strong>
+        <button id="nextSetButton">&#9658;</button>
+      </div>
+      <div id="EndScreenUpperPrompt" >
+        <button id="upButton">&#9650;</button>
+        <strong id=UpperPrompt>Here is the prompt you were given by x: </strong> <!-- Up arrow button -->
+        <button id="downButton">&#9660;</button> <!-- Down arrow button -->
+        <div id="upperPromptContainer">
+        TestingTextInHtml
+        </div>
+      </div>
       <div id="roundOverContainer">
-        <h2>Round Over</h2>
-        <div id="roundGridContainer"></div> 
-        <div id="roundOverButtons">
+        <div id="roundGridContainer" style="width: 50%;"></div> 
+        <div id="roundOverButtons" style="display: none;">
           <button id="leaveGameButton">Leave Game</button>
           <button id="nextRoundButton">Next Round</button>
         </div>
+      </div>
+      <div id="EndScreenLowerPrompt">
+        <h3>What x thought it was:</h3>
+        <p id="lowerPrompt">Guess</p>
       </div>
     </div>
   

@@ -71,7 +71,7 @@ function showRoundOver(grid) {
     gridContainer.appendChild(columnDiv)
   })
 
-  roundOverOverlay.style.display = 'flex'
+  roundOverOverlay.style.display = 'block'
 }
 
 let playerStatus = ''
