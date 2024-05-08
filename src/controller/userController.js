@@ -8,7 +8,7 @@ exports.createUserAccount = async (req, res) => {
 
   try {
     const result = await db.query(query, values)
-    return res.redirect('/draw')
+    return res.redirect('/landing')
   } catch (error) {
     return res.status(500).json({ message: error.message })
   }
@@ -28,7 +28,7 @@ exports.checkUserAccount = async (req, res) => {
         id: result.rows[0].user_id,
         username: result.rows[0].username,
       }
-      return res.redirect('/draw')
+      return res.redirect('/landing')
     }
   } catch (error) {
     return res.status(500).json({ message: error.message })
@@ -50,7 +50,7 @@ exports.guest = async (req, res) => {
     id: null,
     username: req.query.nickname,
   }
-  return res.redirect('/draw')
+  return res.redirect('/landing')
 }
 
 exports.logout = async (req, res) => {
