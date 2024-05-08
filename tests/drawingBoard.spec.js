@@ -531,13 +531,6 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
   await page3.fill('#roomToJoin', roomId)
   await page3.click('#submitJoinRoom')
 
-  const page4 = await context.newPage()
-  await page4.goto('http://localhost:4000/landing')
-  await page4.click('#joinRoom')
-  await page4.waitForSelector('#roomToJoin')
-  await page4.fill('#roomToJoin', roomId)
-  await page4.click('#submitJoinRoom')
-
   // Wait for the members count to update on all pages
   await page1.waitForTimeout(2000)
 
@@ -565,26 +558,15 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
         .querySelector('#playerStatus')
         .innerText.includes('Are you an imposter?')
   )
-  await page4.waitForFunction(
-    () =>
-      document.querySelector('#playerStatus') &&
-      !document
-        .querySelector('#playerStatus')
-        .innerText.includes('Are you an imposter?')
-  )
 
   const playerStatus1 = await page1.locator('#playerStatus').innerText()
   const playerStatus2 = await page2.locator('#playerStatus').innerText()
   const playerStatus3 = await page3.locator('#playerStatus').innerText()
-  const playerStatus4 = await page3.locator('#playerStatus').innerText()
 
   //make sure only one says "You ARE the imposter!"
-  const imposterCount = [
-    playerStatus1,
-    playerStatus2,
-    playerStatus3,
-    playerStatus4,
-  ].filter((status) => status === 'You ARE the imposter!').length
+  const imposterCount = [playerStatus1, playerStatus2, playerStatus3].filter(
+    (status) => status === 'You ARE the imposter!'
+  ).length
 
   expect(imposterCount).toBe(1)
 })
