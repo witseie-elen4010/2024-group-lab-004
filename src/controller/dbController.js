@@ -1,4 +1,5 @@
 const db = require('../db/database')
+const dbAccess = require('../db/dbAccess')
 
 // exports.fetchGames = async (req, res) => {
 //   if (req.session.user) {
@@ -68,4 +69,8 @@ exports.fetchPrompts = async (req, res) => {
   } catch (error) {
     res.status(404).json({ message: 'No prompts found' })
   }
+}
+
+exports.fetchDrawings = async (req, res) => {
+  res.json(await dbAccess.getDrawingsGame(req.query.gameId))
 }

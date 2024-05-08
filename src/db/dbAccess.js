@@ -13,7 +13,7 @@ exports.saveDrawing = async (gameID, user_id, username, turn, data) => {
 exports.newGame = (names) => {
   return new Promise((resolve, reject) => {
     const game = {}
-    game['gameName'] = 'why_is_this_needed'
+    game['gameName'] = 'some_default_game_name'
     game['gameDate'] = new Date()
     for (let i = 0; i < names.length; i++) {
       game[`user${i + 1}`] = names[i]

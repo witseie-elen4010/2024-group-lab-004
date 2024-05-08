@@ -36,6 +36,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  async function fetchDrawings(gameId) {
+    try {
+      const response = await fetch(`/fetchDrawings?gameId=${gameId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch prompts')
+      }
+      const prompts = await response.json()
+      return prompts
+    } catch (error) {
+      console.error('Error fetching prompts:', error)
+      return []
+    }
+  }
+
   function renderGames() {
     // Clear current list
     gameListElement.innerHTML = ''

@@ -212,6 +212,11 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('getUserDrawings', async (username) => {
+    const drawings = await dbAccess.getDrawingsUser(users.get(username).id)
+    socket.emit('userDrawings', drawings)
+  })
+
   socket.on('disconnect', () => {
     console.log('User disconnected')
     if (currentRoom) {
