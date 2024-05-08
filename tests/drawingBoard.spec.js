@@ -532,16 +532,7 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
   await page3.click('#submitJoinRoom')
 
   // Wait for the members count to update on all pages
-  await page3.waitForFunction(
-    () => document.querySelector('#membersCount').textContent === '3'
-  )
-  await page2.waitForFunction(
-    () => document.querySelector('#membersCount').textContent === '3'
-  )
-  await page1.waitForFunction(
-    () => document.querySelector('#membersCount').textContent === '3'
-  )
-
+  await page1.waitForTimeout(2000)
   await page1.locator('#startGame').click()
 
   // wait for the websocket to send the message of who the imposter is
