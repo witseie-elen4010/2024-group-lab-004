@@ -51,6 +51,8 @@ socket.on('roomJoined', (data) => {
   localStorage.setItem('roomId', data.roomId) // Store room ID in local storage
   if ((localStorage.getItem('hostId') || hostId) !== socket.id) {
     startGameButton.style.display = 'none' // Hide the "Start Game" button for non-host members
+  } else if (data.members.length >= 3) {
+    startGameButton.style.display = 'block'
   }
 })
 
