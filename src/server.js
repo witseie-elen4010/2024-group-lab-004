@@ -265,6 +265,8 @@ function distributeDrawings(roomID) {
   const drawings = drawingSubmissions[roomID]
   const orders = rooms[roomID].orders
 
+  drawingSubmissions[roomID] = {}
+
   if (!rounds[roomID]) {
     rounds[roomID] = 0
   }
@@ -286,7 +288,7 @@ function distributeDrawings(roomID) {
     })
   } else {
     emitRoundOver(roomID)
-    drawingSubmissions[roomID] = {}
+    // drawingSubmissions[roomID] = {}
   }
 }
 
