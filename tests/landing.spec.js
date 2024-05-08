@@ -5,15 +5,27 @@ test.describe('Landing page tests', () => {
     await page.goto('http://localhost:4000/landing')
   })
 
-  test('createRoomButton is visible', async ({ page }) => {
-    const createRoomButton = await page.$('#createRoom')
-    const isVisible = await createRoomButton.isVisible()
+  test('createPrivateRoomButton is visible', async ({ page }) => {
+    const createPrivateRoomButton = await page.$('#createPrivateRoom')
+    const isVisible = await createPrivateRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
+
+  test('createPublicRoomButton is visible', async ({ page }) => {
+    const createPublicRoomButton = await page.$('#createPublicRoom')
+    const isVisible = await createPublicRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
   test('joinRoomButton is visible', async ({ page }) => {
     const joinRoomButton = await page.$('#joinRoom')
     const isVisible = await joinRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
+
+  test('joinPublicRoomButton is visible', async ({ page }) => {
+    const joinPublicRoomButton = await page.$('#joinPublicRoom')
+    const isVisible = await joinPublicRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
@@ -62,12 +74,12 @@ test.describe('Landing page tests', () => {
     expect(isVisible).toBe(true)
   })
 
-  // this test doesnt seem to work on webkit, something about the dialog box?
   test('join room with invalid id', async ({ page, browserName }) => {
     if (browserName === 'webkit') {
       test.fixme()
       return
     }
+
     await page.click('#joinRoom')
     await page.fill('#roomToJoin', 'invalidRoomId')
     page.on('dialog', (dialog) => {
@@ -81,7 +93,7 @@ test.describe('Landing page tests', () => {
     // Create a room on page1
     const page1 = await context.newPage()
     await page1.goto('http://localhost:4000/landing')
-    await page1.click('#createRoom')
+    await page1.click('#createPrivateRoom')
     await page1.waitForSelector('#roomId')
     const roomId = await page1.$eval('#roomId', (el) => el.textContent)
 
@@ -116,5 +128,37 @@ test.describe('Landing page tests', () => {
     )
     expect(membersCount1).toBe('2')
     expect(membersCount2).toBe('2')
+  })
+
+  test('private room form is not visible after pressing join public room button', async ({
+    page,
+  }) => {
+    // Click on the join private room button
+    await page.click('#joinRoom')
+
+    // Click on the join public room button
+    await page.click('#joinPublicRoom')
+
+    // Check if the private room form is not visible
+    const joinRoomForm = await page.$('#joinRoomForm')
+    const isVisible = await joinRoomForm.isVisible()
+    expect(isVisible).toBe(false)
+  })
+
+  test('createPublicRoom button, when pressed, removes buttons and shows room ID with members: 1', async ({
+    context,
+  }) => {
+    // Go to landing page
+    const page = await context.newPage()
+    await page.goto('http://localhost:4000/landing')
+
+    // Click on the create public room button
+    await page.click('#createPublicRoom')
+
+    // Check if the buttons are not visible
+    const createPublicRoomButton = await page.$('#createPublicRoom')
+    const joinPublicRoomButton = await page.$('#joinPublicRoom')
+    expect(await createPublicRoomButton.isVisible()).toBe(false)
+    expect(await joinPublicRoomButton.isVisible()).toBe(false)
   })
 })
