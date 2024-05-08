@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test('logout button destroys session', async ({ page }) => {
-  await page.goto('http://localhost:4000/')
+  await page.goto('http://localhost:4000')
   await page.getByRole('button', { name: 'Sign In' }).click()
   await page.getByLabel('Username:').click()
   await page.getByLabel('Username:').fill('test')
@@ -21,4 +21,3 @@ test('logout button destroys session', async ({ page }) => {
       .isVisible()
   )
 })
-

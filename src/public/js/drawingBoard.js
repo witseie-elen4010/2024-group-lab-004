@@ -1,6 +1,7 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
 
+// Redirect if no room ID is available
 // if (!roomId) {
 //   window.location.href = '/landing'
 // }
@@ -13,9 +14,65 @@ socket.on('gameRoomJoined', (data) => {
 })
 
 socket.on('updatePrompt', (prompt) => {
+  hideWaitingContainer()
   inputPrompt.style.display = 'none'
   setPrompt(prompt)
 })
+
+socket.on('updateDrawing', (drawing) => {
+  hideWaitingContainer()
+  activateInputPrompt(drawing)
+})
+
+socket.on('roundOver', (submissionGrid) => {
+  showRoundOver(submissionGrid)
+})
+
+function showRoundOver(grid) {
+  const gridContainer = document.getElementById('roundGridContainer')
+  gridContainer.innerHTML = '' // Clear previous contents
+
+  // Loop through each row and render them into separate columns
+  grid.forEach((row, rowIndex) => {
+    const columnDiv = document.createElement('div')
+    columnDiv.className = 'round-grid-column'
+
+    row.forEach((submission, colIndex) => {
+      const submissionDiv = document.createElement('div')
+      submissionDiv.className = 'round-grid-item'
+
+      // Add member info
+      const memberInfo = document.createElement('h4')
+      memberInfo.textContent = `Submitted by: ${submission.member}`
+      submissionDiv.appendChild(memberInfo)
+
+      // Common box dimensions
+      const boxSize = 150
+
+      // Display submission based on type (prompt or drawing)
+      if (submission.type === 'drawing') {
+        const img = document.createElement('img')
+        img.src = submission.content
+        img.alt = `Drawing ${colIndex + 1}`
+        img.style.width = `${boxSize}px`
+        img.style.height = `${boxSize}px`
+        submissionDiv.appendChild(img)
+      } else if (submission.type === 'prompt') {
+        const prompt = document.createElement('p')
+        prompt.textContent = submission.content
+        prompt.style.width = `${boxSize}px`
+        prompt.style.height = `${boxSize}px`
+        submissionDiv.appendChild(prompt)
+      }
+
+      columnDiv.appendChild(submissionDiv)
+    })
+
+    gridContainer.appendChild(columnDiv)
+  })
+
+  roundOverOverlay.style.display = 'flex'
+}
 
 let playerStatus = ''
 
@@ -53,6 +110,28 @@ const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
 const undoButton = document.getElementById('undo')
 const redoButton = document.getElementById('redo')
+const waitingContainer = document.getElementById('waitingContainer')
+const roundOverOverlay = document.getElementById('roundOverOverlay')
+const leaveGameButton = document.getElementById('leaveGameButton')
+const nextRoundButton = document.getElementById('nextRoundButton')
+
+leaveGameButton.addEventListener('click', () => {
+  window.location.href = '/landing'
+})
+
+nextRoundButton.addEventListener('click', () => {
+  socket.emit('nextRound', roomId)
+})
+
+socket.on('newRound', () => {
+  hideRoundOverOverlay()
+  activateInputPrompt()
+})
+
+function hideRoundOverOverlay() {
+  roundOverOverlay.style.display = 'none'
+  waitingContainer.style.display = 'none'
+}
 const statusDisplay = document.getElementById('playerStatus')
 
 const context = canvas.getContext('2d')
@@ -63,10 +142,8 @@ drawingDisplay.width = canvas.width / 4
 drawingDisplay.height = canvas.height / 4
 
 let isDrawing = false
-
 let drawWidth = '2'
 let drawColour = 'black'
-
 let pastDrawings = []
 let index = -1
 
@@ -121,7 +198,6 @@ undoButton.addEventListener('click', function () {
   if (index <= -1) {
     context.fillRect(0, 0, canvas.width, canvas.height)
     index = -1
-    return
   } else {
     context.putImageData(pastDrawings[index], 0, 0)
   }
@@ -174,27 +250,83 @@ function stopDrawing(e) {
     isDrawing = false
 
     if (index < pastDrawings.length - 1) {
-      if (index === -1) {
-        pastDrawings = []
-      } else {
-        pastDrawings = pastDrawings.slice(0, index + 1)
-        index = pastDrawings.length - 1
-      }
+      pastDrawings = pastDrawings.slice(0, index + 1)
+      index = pastDrawings.length - 1
     }
     pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
     console.log(index)
-    if (index >= 0) {
-      undoButton.disabled = false
-    }
-    if (index === pastDrawings.length - 1) {
-      redoButton.disabled = true
-    }
+    undoButton.disabled = index <= 0
+    redoButton.disabled = index === pastDrawings.length - 1
   }
 }
 
-// stores the timeouts for the drawing bar, so that they can be ended from the submitdrawing function
-let endTimeout = function () {}
+const endTimeout = function () {}
+
+// Activate input prompt and only call `submitPrompt` when all are done
+function activateInputPrompt(img = null) {
+  console.log('here')
+  drawing.style.display = img ? 'block' : 'none'
+  notDrawing.style.display = img ? 'none' : 'block'
+  if (img) {
+    drawingDisplay.src = img
+  }
+
+  inputPrompt.style.display = 'block'
+  inputCountdownBar.style.width = '100%'
+  inputCountdownBar.style.transitionDuration = `${inputTimer}ms`
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      inputCountdownBar.style.width = '0%'
+    })
+  })
+
+  // const timeoutId = setTimeout(submitPrompt, inputTimer)
+
+  function checkEnterKey(event) {
+    if (event.key === 'Enter') {
+      submitPrompt()
+    }
+  }
+
+  doneButton.addEventListener('click', submitPrompt)
+  getInput.addEventListener('keydown', checkEnterKey)
+
+  // endTimeout = function () {
+  //   clearTimeout(timeoutId)
+  //   inputCountdownBar.style.transition = 'none'
+  //   inputCountdownBar.style.width = '100%'
+  //   void inputCountdownBar.offsetWidth
+  //   inputCountdownBar.style.transition = ''
+  // }
+}
+
+function setPrompt(prompt) {
+  const promptText = document.getElementById('prompt')
+  promptText.innerText = prompt
+  startDrawTimer()
+}
+
+function startDrawTimer() {
+  // drawingCountdownBar.style.width = '100%'
+  // drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
+  // requestAnimationFrame(() => {
+  //   requestAnimationFrame(() => {
+  //     drawingCountdownBar.style.width = '0%'
+  //   })
+  // })
+  // const countdownBarTimeout = setTimeout(() => {
+  //   submitDrawing()
+  // }, drawingTimer)
+  // endTimeout = function () {
+  //   clearTimeout(countdownBarTimeout)
+  //   drawingCountdownBar.style.transition = 'none'
+  //   drawingCountdownBar.style.width = '100%'
+  //   void drawingCountdownBar.offsetWidth
+  //   drawingCountdownBar.style.transition = ''
+  // }
+}
 
 function submitDrawing() {
   const image = canvas.toDataURL('image/png')
@@ -204,9 +336,15 @@ function submitDrawing() {
   pastDrawings = []
   undoButton.disabled = true
   redoButton.disabled = true
-  endTimeout()
+  //endTimeout()
 
-  getPrompt(image)
+  console.log('Drawing submitted:', image)
+  socket.emit('drawingSubmitted', { roomId, image })
+  showWaitingContainer()
+}
+
+function showWaitingContainer() {
+  waitingContainer.style.display = 'flex'
 }
 
 const colors = [
@@ -318,7 +456,7 @@ function activateInputPrompt(img = null) {
     })
 
     // Set a timeout to hide the inputPrompt
-    const timeoutId = setTimeout(inputDone, inputTimer)
+    //const timeoutId = setTimeout(inputDone, inputTimer)
 
     function checkEnterKey(event) {
       if (event.key === 'Enter') {
@@ -333,17 +471,20 @@ function activateInputPrompt(img = null) {
       // Reset the countdown bar and timer
       inputCountdownBar.style.width = '100%'
       void drawingCountdownBar.offsetWidth // force a reflow to apply the changes immediately
-      clearTimeout(timeoutId)
+      //clearTimeout(timeoutId)
 
       let prompt = getInput.value
       if (prompt == '') {
         prompt = getInput.placeholder
       }
       getInput.value = ''
+      const promptText = document.getElementById('prompt')
+      promptText.innerText = prompt
 
       // remove old event listeners, as they hold incorrect variable addresses
       doneButton.removeEventListener('click', inputDone)
       getInput.removeEventListener('keydown', checkEnterKey)
+      showWaitingContainer()
       socket.emit('inputDone', { roomId, prompt }) // Emit the input value to the sockets in the room
       resolve(prompt) // Resolve the Promise with the prompt
     }
@@ -367,30 +508,8 @@ function setPrompt(prompt) {
   startDrawTimer()
 }
 
-function startDrawTimer() {
-  drawingCountdownBar.style.width = '100%'
-  drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      drawingCountdownBar.style.width = '0%'
-    })
-  })
-
-  const countdownBarTimeout = setTimeout(() => {
-    submitDrawing()
-  }, drawingTimer)
-
-  endTimeout = function () {
-    clearTimeout(countdownBarTimeout)
-
-    drawingCountdownBar.style.transition = 'none'
-    drawingCountdownBar.style.width = '100%'
-    // Force a reflow to apply the changes immediately
-    void drawingCountdownBar.offsetWidth
-    // Re-enable the transition
-    drawingCountdownBar.style.transition = ''
-  }
+function hideWaitingContainer() {
+  waitingContainer.style.display = 'none'
 }
 
-// start the game by getting the user's first prompt
-getPrompt()
+activateInputPrompt()
