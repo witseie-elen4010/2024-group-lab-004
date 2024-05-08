@@ -5,8 +5,18 @@ const roomId = localStorage.getItem('roomId')
 // if (!roomId) {
 //   window.location.href = '/landing'
 // }
-
-socket.emit('joinGameRoom', roomId)
+let username = ''
+async function fetchUser() {
+  username = await fetch(`/getUser`)
+  username = {
+    // this temporarily gives a guest username when going directly into /landing
+    // TODO *** GUEST USER ID MUST BE SET TO -1 FOR THE SERVER CODE TO WORK ***
+    id: -1,
+    username: Math.floor(Math.random() * 1000).toString(),
+  }
+  return username.json()
+}
+fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
 
 socket.on('gameRoomJoined', (data) => {
   console.log(`Joined room: ${data.roomId}`)
@@ -185,6 +195,7 @@ penSizeSlider.addEventListener('input', () =>
 )
 
 submitButton.addEventListener('click', submitDrawing)
+
 multiColourButton.addEventListener('input', () =>
   changeColour(multiColourButton.value)
 )
@@ -330,6 +341,8 @@ function startDrawTimer() {
 
 function submitDrawing() {
   const image = canvas.toDataURL('image/png')
+  // Get the length of the data URL in bytes
+
   stopDrawing({ type: 'mouseout' })
   context.fillRect(0, 0, canvas.width, canvas.height)
   index = -1

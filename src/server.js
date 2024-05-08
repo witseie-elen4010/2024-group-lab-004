@@ -6,12 +6,14 @@ dotenv.config({ path: './config.env' })
 const app = require('./app')
 const server = http.createServer(app)
 const io = socketio(server)
+const dbAccess = require('./db/dbAccess')
 
 const port = process.env.PORT || process.env.APP_PORT
 
 const rooms = {}
 const rounds = {}
 const drawingSubmissions = {}
+const users = new Map()
 
 io.on('connection', (socket) => {
   console.log('New WebSocket connection')
@@ -34,20 +36,22 @@ io.on('connection', (socket) => {
     console.log(`Room created: ${roomID}`)
   })
 
-  socket.on('joinRoom', (roomID) => {
+  socket.on('joinRoom', (roomID, username) => {
     const room = rooms[roomID]
     if (room) {
       if (room.gameStarted && room.members.length >= room.maxMembers) {
         socket.emit('roomJoinError', 'Game has already started')
       } else {
         room.members.push(socket.id)
+        users.set(socket.id, username) // ********** //
         socket.join(roomID)
         currentRoom = roomID
         updateAndEmitOrders(roomID)
         room.grid = createRoomGrid(room.members.length)
+        const allUsernames = room.members.map((member) => users.get(member)) // ********** //
         io.to(roomID).emit('roomJoined', {
           roomId: roomID,
-          members: room.members,
+          members: allUsernames,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
         console.log(`Joined room: ${roomID}`)
@@ -83,6 +87,19 @@ io.on('connection', (socket) => {
 
     drawingSubmissions[roomId][socket.id] = image
     updateGridSubmission(roomId, socket.id, 'drawing', image)
+    console.log('here:')
+    console.log(rooms[roomId].gameID)
+    console.log(users(socket.id).username)
+    console.log(users(socket.id).id)
+    console.log(rounds[roomId])
+
+    dbAccess.saveDrawing(
+      rooms[roomId].gameID,
+      users(socket.id).username,
+      users(socket.id).id,
+      rounds[roomId],
+      image
+    ) // ***** //
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -91,16 +108,21 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('joinGameRoom', (roomID) => {
+  socket.on('joinGameRoom', (roomID, username) => {
     if (rooms[roomID]) {
       rooms[roomID].members.push(socket.id)
+      users.set(socket.id, username)
       socket.join(roomID)
       currentRoom = roomID
       updateAndEmitOrders(roomID)
       rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
+      const allUsernames = rooms[roomID].members.map((member) =>
+        users.get(member)
+      )
+      console.log(allUsernames)
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
-        members: rooms[roomID].members,
+        members: allUsernames,
       })
       console.log(`Joined room: ${roomID}`)
 
@@ -125,6 +147,12 @@ io.on('connection', (socket) => {
 
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
+      const allUsernames = rooms[roomID].members.map((member) =>
+        users.get(member)
+      )
+      rooms[roomID].gameID = dbAccess.newGame(allUsernames) // *****//
+      console.log('Game id:')
+      console.log(rooms[roomID].gameID)
       rooms[roomID].gameStarted = true
       rooms[roomID].maxMembers = rooms[roomID].members.length * 2
       io.to(roomID).emit('gameStarted')
@@ -163,6 +191,7 @@ io.on('connection', (socket) => {
     if (currentRoom) {
       const room = rooms[currentRoom]
       room.members = room.members.filter((id) => id !== socket.id)
+      users.delete(socket.id)
 
       if (room.gameStarted) {
         room.maxMembers -= 1

@@ -63,3 +63,7 @@ exports.logout = async (req, res) => {
     }
   })
 }
+
+exports.getUser = async (req, res) => {
+  res.json(req.session.user)
+}
