@@ -141,6 +141,17 @@ io.on('connection', (socket) => {
       rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
 
       updateAndEmitOrders(roomID)
+      const imposter = getImposter(rooms[roomID])
+      rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
+
+      // Send a "no" message to all other members
+      rooms[roomID].members.forEach((member) => {
+        if (member === imposter) {
+          io.to(member).emit('imposter', true)
+        } else {
+          io.to(member).emit('normal', true)
+        }
+      })
 
       io.to(roomID).emit('newRound')
       console.log(`New round started in room: ${roomID}`)

@@ -305,7 +305,7 @@ function activateInputPrompt(img = null) {
 function setPrompt(prompt) {
   const promptText = document.getElementById('prompt')
   promptText.innerText = prompt
-  // startDrawTimer()
+  startDrawTimer()
 }
 
 function startDrawTimer() {
@@ -478,6 +478,8 @@ function activateInputPrompt(img = null) {
         prompt = getInput.placeholder
       }
       getInput.value = ''
+      const promptText = document.getElementById('prompt')
+      promptText.innerText = prompt
 
       // remove old event listeners, as they hold incorrect variable addresses
       doneButton.removeEventListener('click', inputDone)
