@@ -15,7 +15,6 @@ const rounds = {}
 const drawingSubmissions = {}
 
 io.on('connection', (socket) => {
-  console.log('New WebSocket connection')
   let currentRoom = null
 
   socket.on('createRoom', (options) => {
@@ -39,8 +38,6 @@ io.on('connection', (socket) => {
     if (isPublic) {
       publicRooms[roomId] = rooms[roomId]
     }
-
-    console.log(`${isPublic ? 'Public' : 'Private'} Room created: ${roomId}`)
   })
 
   socket.on('joinRoom', (data) => {
@@ -62,12 +59,9 @@ io.on('connection', (socket) => {
           members: room.members,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
-
-        console.log(`Joined room: ${roomID}`)
       }
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
-      console.log(`Room ID "${roomID}" not found.`)
     }
   })
 
@@ -125,7 +119,6 @@ io.on('connection', (socket) => {
         roomId: roomID,
         members: rooms[roomID].members,
       })
-      console.log(`Joined room: ${roomID}`)
 
       // only get the imposters once everyone has joined the room
       if (rooms[roomID].members.length === rooms[roomID].gameSize) {
@@ -155,7 +148,6 @@ io.on('connection', (socket) => {
       }
       io.to(roomID).emit('gameStarted')
       rooms[roomID].gameSize = rooms[roomID].members.length
-      console.log(`Game started in room: ${roomID}`)
     }
   })
 
@@ -180,12 +172,10 @@ io.on('connection', (socket) => {
       })
 
       io.to(roomID).emit('newRound')
-      console.log(`New round started in room: ${roomID}`)
     }
   })
 
   socket.on('disconnect', () => {
-    console.log('User disconnected')
     if (currentRoom) {
       const room = rooms[currentRoom]
       room.members = room.members.filter((id) => id !== socket.id)
@@ -256,9 +246,7 @@ function updateAndEmitOrders(roomID) {
   const orders = rooms[roomID].orders
   const members = rooms[roomID].members
 
-  console.log(`Updated orders for room ${roomID}:`)
   for (const [member, order] of Object.entries(orders)) {
-    console.log(`Member ID: ${member}, Order: ${order.join(', ')}`)
   }
 
   io.to(roomID).emit('updateOrders', orders)
