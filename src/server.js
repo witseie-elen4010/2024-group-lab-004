@@ -99,10 +99,11 @@ io.on('connection', (socket) => {
 
   socket.on('nextRound', (roomID) => {
     if (rooms[roomID]) {
-      // Reset rounds, prompts, and drawings
       rounds[roomID] = 0
       rooms[roomID].prompts = {}
       drawingSubmissions[roomID] = {}
+
+      updateAndEmitOrders(roomID)
 
       io.to(roomID).emit('newRound')
       console.log(`New round started in room: ${roomID}`)
@@ -137,6 +138,16 @@ io.on('connection', (socket) => {
   })
 })
 
+function generateAndAssignOrders(roomID) {
+  const members = rooms[roomID].members
+  const uniqueOrders = generateUniqueOrders(members.length)
+
+  rooms[roomID].orders = Object.fromEntries(
+    members.map((member, index) => [member, uniqueOrders[index]])
+  )
+  return rooms[roomID].orders
+}
+
 function generateRoomId() {
   return Math.random().toString(36).substring(2, 10)
 }
@@ -151,43 +162,47 @@ function generateUniqueOrders(numPlayers) {
       orders[j][(i + j) % numPlayers] = i + 1
     }
   }
-
   return orders.sort(() => Math.random() - 0.5)
 }
 
 function updateAndEmitOrders(roomID) {
+  generateAndAssignOrders(roomID)
+
+  const orders = rooms[roomID].orders
   const members = rooms[roomID].members
-  const uniqueOrders = generateUniqueOrders(members.length)
-  rooms[roomID].orders = Object.fromEntries(
-    members.map((member, index) => [member, uniqueOrders[index]])
-  )
 
   console.log(`Updated orders for room ${roomID}:`)
-  for (const [member, order] of Object.entries(rooms[roomID].orders)) {
+  for (const [member, order] of Object.entries(orders)) {
     console.log(`Member ID: ${member}, Order: ${order.join(', ')}`)
   }
 
-  io.to(roomID).emit('updateOrders', rooms[roomID].orders)
+  io.to(roomID).emit('updateOrders', orders)
 }
 
 function distributePrompts(roomID) {
   const members = rooms[roomID].members
   const prompts = rooms[roomID].prompts
+  const orders = rooms[roomID].orders
+
   if (!rounds[roomID]) {
     rounds[roomID] = 0
   }
-  rounds[roomID]++
-  if (rounds[roomID] < rooms[roomID].members.length) {
-    members.forEach((member, index) => {
-      let nextIndex = (index + 1) % members.length
-      while (members[nextIndex] === member) {
-        nextIndex = (nextIndex + 1) % members.length
-      }
-      const nextMember = members[nextIndex]
-      const prompt = prompts[nextMember] || 'No prompt'
+  const currentRound = rounds[roomID]++
 
+  if (currentRound < members.length - 1) {
+    members.forEach((member) => {
+      const order = orders[member]
+      const nextIndex = currentRound + 1
+
+      // Find the member who had this index in the previous round
+      const currentRoundIndex = order[nextIndex]
+      const sourceMember = members.find(
+        (m) => orders[m][currentRound] === currentRoundIndex
+      )
+
+      const prompt = prompts[sourceMember] || 'No prompt'
       io.to(member).emit('updatePrompt', prompt)
-      console.log(`Sent prompt to member ${member}: ${prompt}`)
+      console.log(`Sent prompt from member ${sourceMember} to ${member}`)
     })
   } else {
     emitRoundOver(roomID)
@@ -197,17 +212,27 @@ function distributePrompts(roomID) {
 function distributeDrawings(roomID) {
   const members = rooms[roomID].members
   const drawings = drawingSubmissions[roomID]
-  rounds[roomID]++
-  if (rounds[roomID] < rooms[roomID].members.length) {
-    members.forEach((member, index) => {
-      let nextIndex = (index + 1) % members.length
-      while (members[nextIndex] === member) {
-        nextIndex = (nextIndex + 1) % members.length
-      }
-      const nextMember = members[nextIndex]
-      const drawing = drawings[nextMember] || 'No drawing'
+  const orders = rooms[roomID].orders
 
+  if (!rounds[roomID]) {
+    rounds[roomID] = 0
+  }
+  const currentRound = rounds[roomID]++
+
+  if (currentRound < members.length - 1) {
+    members.forEach((member) => {
+      const order = orders[member]
+      const nextIndex = currentRound + 1
+
+      // Find the member who had this index in the previous round
+      const currentRoundIndex = order[nextIndex]
+      const sourceMember = members.find(
+        (m) => orders[m][currentRound] === currentRoundIndex
+      )
+
+      const drawing = drawings[sourceMember] || 'No drawing'
       io.to(member).emit('updateDrawing', drawing)
+      console.log(`Sent drawing from member ${sourceMember} to ${member}`)
     })
   } else {
     emitRoundOver(roomID)
