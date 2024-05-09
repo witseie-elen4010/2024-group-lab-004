@@ -1,24 +1,25 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
+console.log(roomId)
+let CurrentSetIndex = 0
+let CurrentImageIndex = 0
+let CurrentImage = null
+let CurrentGrid = null
+let PlayerCount = 0
 
-// Redirect if no room ID is available
-// if (!roomId) {
-//   window.location.href = '/landing'
-// }
 let username = ''
 async function fetchUser() {
-  username = await fetch(`/getUser`)
-  username = {
-    // this temporarily gives a guest username when going directly into /landing
-    // TODO *** GUEST USER ID MUST BE SET TO -1 FOR THE SERVER CODE TO WORK ***
-    id: -1,
-    username: Math.floor(Math.random() * 1000).toString(),
+  const response = await fetch(`/getUser`)
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  } else {
+    const user = await response.json()
+    console.log(user.username)
+    username = user.username
+    return user
   }
-  console.log(username)
-  return username
 }
 fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
-// socket.emit('joinGameRoom', roomId, username)
 
 socket.on('gameRoomJoined', (data) => {})
 
@@ -34,51 +35,52 @@ socket.on('updateDrawing', (drawing) => {
 })
 
 socket.on('roundOver', (submissionGrid) => {
-  showRoundOver(submissionGrid)
+  PlayerCount = submissionGrid.length
+  console.log(PlayerCount)
+  showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
+  console.log(submissionGrid)
+  CurrentGrid = submissionGrid
+
+  const buttons = document.getElementById('RoundOverButtons')
+  buttons.style.display = 'flex'
 })
 
-function showRoundOver(grid) {
-  const gridContainer = document.getElementById('roundGridContainer')
-  gridContainer.innerHTML = '' // Clear previous contents
-
+function showRoundOver(grid, setIndex, imageIndex) {
+  const gridContainer = document.getElementById('roundOverOverlay')
   // Loop through each row and render them into separate columns
-  grid.forEach((row, rowIndex) => {
-    const columnDiv = document.createElement('div')
-    columnDiv.className = 'round-grid-column'
 
-    row.forEach((submission, colIndex) => {
-      const submissionDiv = document.createElement('div')
-      submissionDiv.className = 'round-grid-item'
+  submissionUpper = grid[imageIndex][setIndex]
+  submissionMiddle = grid[imageIndex + 1][setIndex]
+  if (imageIndex + 2 < PlayerCount) {
+    submissionLower = grid[imageIndex + 2][setIndex]
+    const enablelower = document.getElementById('EndScreenLowerPrompt')
+    enablelower.style.display = 'block'
+  } else {
+    submissionLower = { member: 'No one', content: 'No one' }
+    const disablelower = document.getElementById('EndScreenLowerPrompt')
+    disablelower.style.display = 'none'
+  }
 
-      // Add member info
-      const memberInfo = document.createElement('h4')
-      memberInfo.textContent = `Submitted by: ${submission.member}`
-      submissionDiv.appendChild(memberInfo)
+  const memberInfo = document.getElementById('UpperPrompt')
+  memberInfo.textContent = `Submitted by: ${submissionUpper.member}`
+  const memberInfoContainer = document.getElementById('upperPromptContainer')
+  memberInfoContainer.textContent = ` ${submissionUpper.content} `
 
-      // Common box dimensions
-      const boxSize = 150
+  const imagecontainer = document.getElementById('roundGridContainer')
 
-      // Display submission based on type (prompt or drawing)
-      if (submission.type === 'drawing') {
-        const img = document.createElement('img')
-        img.src = submission.content
-        img.alt = `Drawing ${colIndex + 1}`
-        img.style.width = `${boxSize}px`
-        img.style.height = `${boxSize}px`
-        submissionDiv.appendChild(img)
-      } else if (submission.type === 'prompt') {
-        const prompt = document.createElement('p')
-        prompt.textContent = submission.content
-        prompt.style.width = `${boxSize}px`
-        prompt.style.height = `${boxSize}px`
-        submissionDiv.appendChild(prompt)
-      }
+  imagecontainer.src = submissionMiddle.content
 
-      columnDiv.appendChild(submissionDiv)
-    })
+  imagecontainer.alt = `Drawing ${imageIndex + 1}`
 
-    gridContainer.appendChild(columnDiv)
-  })
+  const DrawnByPrompt = document.getElementById('DrawnByPrompt')
+  DrawnByPrompt.textContent = `Drawn by: ${submissionMiddle.member}`
+  //imagecontainer.style.height = `60%`
+
+  const prompt = document.getElementById('EndScreenLowerPromptAlter')
+  prompt.textContent = `What ${submissionLower.member} thought it was: `
+
+  const lowerPrompt = document.getElementById('lowerPrompt')
+  lowerPrompt.textContent = ` ${submissionLower.content} `
 
   roundOverOverlay.style.display = 'flex'
 }
@@ -123,6 +125,42 @@ const waitingContainer = document.getElementById('waitingContainer')
 const roundOverOverlay = document.getElementById('roundOverOverlay')
 const leaveGameButton = document.getElementById('leaveGameButton')
 const nextRoundButton = document.getElementById('nextRoundButton')
+const upButton = document.getElementById('upButton')
+const downButton = document.getElementById('downButton')
+const prevSetButton = document.getElementById('prevSetButton')
+const nextSetButton = document.getElementById('nextSetButton')
+
+upButton.addEventListener('click', () => {
+  if (CurrentImageIndex > 0) {
+    CurrentImageIndex -= 2
+  }
+  showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
+})
+
+downButton.addEventListener('click', () => {
+  if (CurrentImageIndex < PlayerCount - 3) {
+    CurrentImageIndex += 2
+  }
+  showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
+})
+
+prevSetButton.addEventListener('click', () => {
+  if (CurrentSetIndex > 0) {
+    CurrentSetIndex -= 1
+    const setbuttoncaption = document.getElementById('CurrentSet')
+    setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
+  }
+  showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
+})
+
+nextSetButton.addEventListener('click', () => {
+  if (CurrentSetIndex < PlayerCount - 1) {
+    CurrentSetIndex += 1
+    const setbuttoncaption = document.getElementById('CurrentSet')
+    setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
+  }
+  showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
+})
 
 leaveGameButton.addEventListener('click', () => {
   window.location.href = '/landing'
@@ -348,6 +386,7 @@ function submitDrawing() {
   redoButton.disabled = true
   //endTimeout()
 
+  //console.log('Drawing submitted:', image)
   socket.emit('drawingSubmitted', { roomId, image })
   showWaitingContainer()
 }

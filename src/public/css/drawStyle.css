@@ -135,11 +135,11 @@ body {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2500;
+  z-index: 2000;
 }
 
 .waiting-content {
-  z-index: 3500;
+  z-index: 2000;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -161,32 +161,40 @@ body {
 
 #roundOverOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(85, 96, 155, 0.95); /* Semi-opaque overlay */
-  z-index: 4000;
+  background-color: #55609b;
+  z-index: 10000;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
   justify-content: center;
   align-items: center;
 }
-
-#roundOverContainer {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  z-index: 4500;
-  max-width: 90%;
-  max-height: 80%;
+#RoundOverHeading,
+#EndScreenUpperPrompt,
+#roundOverContainer,
+#EndScreenLowerPrompt,
+#NextSetButtonBlock {
+  width: 80%;
+  background-color: #ffffff;
+  padding: 10px;
+  border: 2px solid #000000;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px; /* Add margin between sections */
 }
 
-#roundOverTitle {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
+#prevSetButton,
+#nextSetButton,
+#upButton,
+#downButton {
+  margin: 0 10px; /* Adjust the margin as needed */
 }
 
 #roundGridContainer {

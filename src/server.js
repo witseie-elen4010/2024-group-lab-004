@@ -83,7 +83,13 @@ io.on('connection', (socket) => {
 
     if (rooms[roomId]) {
       rooms[roomId].prompts[socket.id] = prompt
-      updateGridSubmission(roomId, socket.id, 'prompt', prompt)
+      updateGridSubmission(
+        roomId,
+        users.get(socket.id).username,
+        'prompt',
+        prompt,
+        socket.id
+      )
 
       if (
         Object.keys(rooms[roomId].prompts).length ===
@@ -103,10 +109,13 @@ io.on('connection', (socket) => {
     }
 
     drawingSubmissions[roomId][socket.id] = image
-    updateGridSubmission(roomId, socket.id, 'drawing', image)
-    console.log('here:')
-    console.log(rooms[roomId].gameID)
-
+    updateGridSubmission(
+      roomId,
+      users.get(socket.id).username,
+      'drawing',
+      image,
+      socket.id
+    )
     dbController.saveDrawing(
       rooms[roomId].gameID,
       users.get(socket.id).id,
@@ -123,7 +132,6 @@ io.on('connection', (socket) => {
   })
 
   socket.on('joinGameRoom', (roomID, username) => {
-    console.log(roomID)
     if (rooms[roomID]) {
       rooms[roomID].members.push(socket.id)
       users.set(socket.id, username)
@@ -134,22 +142,18 @@ io.on('connection', (socket) => {
       const allUsernames = rooms[roomID].members.map((member) =>
         users.get(member)
       )
-      console.log(allUsernames)
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
         members: allUsernames,
       })
 
       // only get the imposters once everyone has joined the room
-      console.log(rooms[roomID].members)
-      console.log(rooms[roomID].gameSize)
       if (rooms[roomID].members.length === rooms[roomID].gameSize) {
         // create the gameroom in the database
         const allUsernames = rooms[roomID].members.map(
           (member) => users.get(member).id
         )
-        assignGameID(roomID, allUsernames).then((val) => console.log('hi', val))
-
+        assignGameID(roomID, allUsernames)
         const imposter = getImposter(rooms[roomID])
         rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
 
@@ -169,7 +173,6 @@ io.on('connection', (socket) => {
 
   async function assignGameID(roomID, allUsernames) {
     rooms[roomID].gameID = await dbController.newGame(allUsernames)
-    console.log('yo', rooms[roomID].gameID)
     return rooms[roomID].gameID
   }
 
@@ -359,7 +362,7 @@ function createRoomGrid(size) {
   )
 }
 
-function updateGridSubmission(roomID, memberID, type, content) {
+function updateGridSubmission(roomID, memberID, type, content, socketID) {
   const orders = rooms[roomID].orders
   const members = rooms[roomID].members
   if (!rounds[roomID]) {
@@ -367,7 +370,7 @@ function updateGridSubmission(roomID, memberID, type, content) {
   }
   const currentRound = rounds[roomID]
 
-  const order = orders[memberID]
+  const order = orders[socketID]
   const targetIndex = order[currentRound] - 1
 
   rooms[roomID].grid[currentRound][targetIndex] = {
