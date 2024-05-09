@@ -6,7 +6,7 @@ dotenv.config({ path: './config.env' })
 const app = require('./app')
 const server = http.createServer(app)
 const io = socketio(server)
-const dbAccess = require('./db/dbAccess')
+const dbController = require('./controller/dbController')
 
 const port = process.env.PORT || process.env.APP_PORT
 
@@ -17,24 +17,6 @@ const drawingSubmissions = {}
 const users = new Map()
 
 const fs = require('fs')
-
-// example function showing how to save the data to an image as a file
-async function test() {
-  const gameID = await dbAccess.getDrawingsGame(39)
-  const data = gameID[0].data.toString()
-
-  // Remove the "data:image/png;base64," part
-  const base64Data = data.replace(/^data:image\/png;base64,/, '')
-
-  // Convert base64 to image
-  fs.writeFile('output.png', base64Data, 'base64', (err) => {
-    if (err) {
-      console.error('An error occurred:', err)
-    } else {
-      console.log('Image saved as output.png')
-    }
-  })
-}
 
 io.on('connection', (socket) => {
   let currentRoom = null
@@ -125,7 +107,7 @@ io.on('connection', (socket) => {
     console.log('here:')
     console.log(rooms[roomId].gameID)
 
-    dbAccess.saveDrawing(
+    getDrawingsGame.saveDrawing(
       rooms[roomId].gameID,
       users.get(socket.id).id,
       users.get(socket.id).username,
@@ -186,7 +168,7 @@ io.on('connection', (socket) => {
   })
 
   async function assignGameID(roomID, allUsernames) {
-    rooms[roomID].gameID = await dbAccess.newGame(allUsernames)
+    rooms[roomID].gameID = await dbController.newGame(allUsernames)
     console.log('yo', rooms[roomID].gameID)
     return rooms[roomID].gameID
   }
@@ -228,7 +210,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('getUserDrawings', async (username) => {
-    const drawings = await dbAccess.getDrawingsUser(users.get(username).id)
+    const drawings = await dbController.getDrawingsUser(users.get(username).id)
     socket.emit('userDrawings', drawings)
   })
 
