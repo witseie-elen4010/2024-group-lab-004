@@ -24,7 +24,9 @@ io.on('connection', (socket) => {
   socket.on('createRoom', (options) => {
     const roomId = generateRoomId()
     const isPublic = options.public || false
+    // console.log('socket.id:', socket.id)
 
+    // console.log(username)
     rooms[roomId] = {
       members: [socket.id],
       host: socket.id,
@@ -83,7 +85,14 @@ io.on('connection', (socket) => {
 
     if (rooms[roomId]) {
       rooms[roomId].prompts[socket.id] = prompt
-      updateGridSubmission(roomId, socket.id, 'prompt', prompt)
+      updateGridSubmission(
+        roomId,
+        users.get(socket.id).username,
+        'prompt',
+        prompt,
+        socket.id
+      )
+      console.log('InputDoneUsers: ', users.get(socket.id).username)
 
       if (
         Object.keys(rooms[roomId].prompts).length ===
@@ -103,7 +112,17 @@ io.on('connection', (socket) => {
     }
 
     drawingSubmissions[roomId][socket.id] = image
-    updateGridSubmission(roomId, socket.id, 'drawing', image)
+    updateGridSubmission(
+      roomId,
+      users.get(socket.id).username,
+      'drawing',
+      image,
+      socket.id
+    )
+    console.log('UserID: ', users.get(socket.id).id)
+    console.log('SID: ', socket.id)
+    console.log('SIDGet', users.get(socket.id))
+    console.log('uSERmAp', users)
     console.log('here:')
     console.log(rooms[roomId].gameID)
 
@@ -359,7 +378,7 @@ function createRoomGrid(size) {
   )
 }
 
-function updateGridSubmission(roomID, memberID, type, content) {
+function updateGridSubmission(roomID, memberID, type, content, socketID) {
   const orders = rooms[roomID].orders
   const members = rooms[roomID].members
   if (!rounds[roomID]) {
@@ -367,7 +386,7 @@ function updateGridSubmission(roomID, memberID, type, content) {
   }
   const currentRound = rounds[roomID]
 
-  const order = orders[memberID]
+  const order = orders[socketID]
   const targetIndex = order[currentRound] - 1
 
   rooms[roomID].grid[currentRound][targetIndex] = {

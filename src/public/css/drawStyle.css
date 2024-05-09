@@ -161,8 +161,6 @@ body {
 
 #roundOverOverlay {
   position: fixed;
-  /* top: 0;
-  left: 0; */
   width: 100%;
   height: 100%;
   background-color: #55609b;
@@ -198,12 +196,6 @@ body {
 #downButton {
   margin: 0 10px; /* Adjust the margin as needed */
 }
-
-/* #roundOverTitle {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-} */
 
 #roundGridContainer {
   display: flex;

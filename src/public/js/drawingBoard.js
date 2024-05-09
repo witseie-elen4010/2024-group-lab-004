@@ -1,5 +1,6 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
+console.log(roomId)
 let CurrentSetIndex = 0
 let CurrentImageIndex = 0
 let CurrentImage = null
@@ -8,15 +9,15 @@ let PlayerCount = 0
 
 let username = ''
 async function fetchUser() {
-  username = await fetch(`/getUser`)
-  username = {
-    // this temporarily gives a guest username when going directly into /landing
-    // TODO *** GUEST USER ID MUST BE SET TO -1 FOR THE SERVER CODE TO WORK ***
-    id: -1,
-    username: Math.floor(Math.random() * 1000).toString(),
+  const response = await fetch(`/getUser`)
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  } else {
+    const user = await response.json()
+    console.log(user.username)
+    username = user.username
+    return user
   }
-  console.log(username)
-  return username
 }
 fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
 
@@ -39,6 +40,9 @@ socket.on('roundOver', (submissionGrid) => {
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
   console.log(submissionGrid)
   CurrentGrid = submissionGrid
+
+  const buttons = document.getElementById('RoundOverButtons')
+  buttons.style.display = 'flex'
 })
 
 function showRoundOver(grid, setIndex, imageIndex) {
