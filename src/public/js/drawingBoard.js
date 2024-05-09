@@ -4,6 +4,7 @@ let CurrentSetIndex = 0
 let CurrentImageIndex = 0
 let CurrentImage = null
 let CurrentGrid = null
+let PlayerCount = 0
 
 let username = ''
 async function fetchUser() {
@@ -33,6 +34,8 @@ socket.on('updateDrawing', (drawing) => {
 })
 
 socket.on('roundOver', (submissionGrid) => {
+  PlayerCount = submissionGrid.length
+  console.log(PlayerCount)
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
   console.log(submissionGrid)
   CurrentGrid = submissionGrid
@@ -44,7 +47,15 @@ function showRoundOver(grid, setIndex, imageIndex) {
 
   submissionUpper = grid[imageIndex][setIndex]
   submissionMiddle = grid[imageIndex + 1][setIndex]
-  submissionLower = grid[imageIndex + 2][setIndex]
+  if (imageIndex + 2 < PlayerCount) {
+    submissionLower = grid[imageIndex + 2][setIndex]
+    const enablelower = document.getElementById('EndScreenLowerPrompt')
+    enablelower.style.display = 'block'
+  } else {
+    submissionLower = { member: 'No one', content: 'No one' }
+    const disablelower = document.getElementById('EndScreenLowerPrompt')
+    disablelower.style.display = 'none'
+  }
 
   const memberInfo = document.getElementById('UpperPrompt')
   memberInfo.textContent = `Submitted by: ${submissionUpper.member}`
@@ -53,11 +64,13 @@ function showRoundOver(grid, setIndex, imageIndex) {
 
   const imagecontainer = document.getElementById('roundGridContainer')
 
-  imagecontainer.src = grid[imageIndex + 1][setIndex].content
+  imagecontainer.src = submissionMiddle.content
 
   imagecontainer.alt = `Drawing ${imageIndex + 1}`
 
-  imagecontainer.style.height = `45%`
+  const DrawnByPrompt = document.getElementById('DrawnByPrompt')
+  DrawnByPrompt.textContent = `Drawn by: ${submissionMiddle.member}`
+  //imagecontainer.style.height = `60%`
 
   const prompt = document.getElementById('EndScreenLowerPromptAlter')
   prompt.textContent = `What ${submissionLower.member} thought it was: `
@@ -65,7 +78,7 @@ function showRoundOver(grid, setIndex, imageIndex) {
   const lowerPrompt = document.getElementById('lowerPrompt')
   lowerPrompt.textContent = ` ${submissionLower.content} `
 
-  roundOverOverlay.style.display = 'block'
+  roundOverOverlay.style.display = 'flex'
 }
 
 let playerStatus = ''
@@ -114,27 +127,35 @@ const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
 
 upButton.addEventListener('click', () => {
-  CurrentImageIndex -= 2
+  if (CurrentImageIndex > 0) {
+    CurrentImageIndex -= 2
+  }
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
 downButton.addEventListener('click', () => {
-  CurrentImageIndex += 2
+  if (CurrentImageIndex < PlayerCount - 3) {
+    CurrentImageIndex += 2
+  }
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
 prevSetButton.addEventListener('click', () => {
-  CurrentSetIndex -= 1
+  if (CurrentSetIndex > 0) {
+    CurrentSetIndex -= 1
+    const setbuttoncaption = document.getElementById('CurrentSet')
+    setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
+  }
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
-  const setbuttoncaption = document.getElementById('CurrentSet')
-  setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
 })
 
 nextSetButton.addEventListener('click', () => {
-  CurrentSetIndex += 1
+  if (CurrentSetIndex < PlayerCount - 1) {
+    CurrentSetIndex += 1
+    const setbuttoncaption = document.getElementById('CurrentSet')
+    setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
+  }
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
-  const setbuttoncaption = document.getElementById('CurrentSet')
-  setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
 })
 
 leaveGameButton.addEventListener('click', () => {
