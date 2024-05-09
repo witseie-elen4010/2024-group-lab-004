@@ -382,6 +382,7 @@ function updateGridSubmission(roomID, memberID, type, content, socketID) {
 
 function emitRoundOver(roomID) {
   const grid = rooms[roomID].grid
+  dbController.saveGrid(rooms[roomID].gameID, grid)
   io.to(roomID).emit('roundOver', grid)
 }
 

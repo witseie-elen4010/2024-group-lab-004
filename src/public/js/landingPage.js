@@ -127,11 +127,11 @@ socket.on('userDisconnected', () => {
 })
 
 // Join Public Room Function
-function joinPublicRoom (roomId) {
+function joinPublicRoom(roomId) {
   socket.emit('joinRoom', { roomId })
 }
 
-function hideCreateJoinButtons () {
+function hideCreateJoinButtons() {
   createPrivateRoomButton.style.display = 'none'
   createPublicRoomButton.style.display = 'none'
   joinRoomButton.style.display = 'none'
