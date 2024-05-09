@@ -2,6 +2,57 @@ const { test, expect } = require('@playwright/test')
 test('random true test to pass', async ({ page }) => {
   expect(true).toBe(true)
 })
+test('canvas exists', async ({ context }) => {
+  // Create a room on page1
+
+  // const { page1, page2, page3 } = getToDrawing(context)
+
+  const page1 = await context.newPage()
+  await page1.goto('http://localhost:4000/')
+  const page2 = await context.newPage()
+  await page2.goto('http://localhost:4000/')
+  const page3 = await context.newPage()
+  await page3.goto('http://localhost:4000/')
+
+  await page1.getByRole('button', { name: 'Sign In' }).click()
+  await page1.getByLabel('Username:').click()
+  await page1.getByLabel('Username:').fill('test')
+  await page1.getByLabel('Password:').click()
+  await page1.getByLabel('Password:').fill('test')
+  await page1
+    .locator('#loginForm')
+    .getByRole('button', { name: 'Login' })
+    .click()
+  await page1.getByRole('button', { name: 'Create Public Game' }).click()
+
+  await page2.getByRole('button', { name: 'Sign In' }).click()
+  await page2.getByLabel('Username:').click()
+  await page2.getByLabel('Username:').fill('test')
+  await page2.getByLabel('Password:').click()
+  await page2.getByLabel('Password:').fill('test')
+  await page2
+    .locator('#loginForm')
+    .getByRole('button', { name: 'Login' })
+    .click()
+  await page2.getByRole('button', { name: 'Join Public Game' }).click()
+  await page2.getByRole('button', { name: /^Join$/ }).click()
+
+  await page3.getByRole('button', { name: 'Sign In' }).click()
+  await page3.getByLabel('Username:').click()
+  await page3.getByLabel('Username:').fill('test')
+  await page3.getByLabel('Password:').click()
+  await page3.getByLabel('Password:').fill('test')
+  await page3
+    .locator('#loginForm')
+    .getByRole('button', { name: 'Login' })
+    .click()
+  await page3.getByRole('button', { name: 'Join Public Game' }).click()
+  await page3.getByRole('button', { name: /^Join$/ }).click()
+
+  await page1.getByRole('button', { name: 'Start Game' }).click()
+  const canvas = await page1.$('canvas')
+  expect(canvas).toBeTruthy()
+})
 // test('canvas exists', async ({ context }) => {
 //   // Create a room on page1
 //   const page1 = await context.newPage()
