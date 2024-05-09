@@ -6,35 +6,47 @@ dotenv.config({ path: './config.env' })
 const app = require('./app')
 const server = http.createServer(app)
 const io = socketio(server)
+const dbController = require('./controller/dbController')
 
 const port = process.env.PORT || process.env.APP_PORT
 
 const rooms = {}
+const publicRooms = {}
 const rounds = {}
 const drawingSubmissions = {}
+const users = new Map()
+
+const fs = require('fs')
 
 io.on('connection', (socket) => {
-  console.log('New WebSocket connection')
   let currentRoom = null
 
-  socket.on('createRoom', () => {
-    const roomID = generateRoomId()
-    rooms[roomID] = {
+  socket.on('createRoom', (options) => {
+    const roomId = generateRoomId()
+    const isPublic = options.public || false
+
+    rooms[roomId] = {
       members: [socket.id],
       host: socket.id,
       orders: {},
       prompts: {},
       grid: null,
+      isPublic,
     }
-    currentRoom = roomID
-    socket.join(roomID)
-    updateAndEmitOrders(roomID)
-    rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
-    socket.emit('roomCreated', roomID)
-    console.log(`Room created: ${roomID}`)
+    currentRoom = roomId
+    socket.join(roomId)
+    updateAndEmitOrders(roomId)
+    rooms[roomId].grid = createRoomGrid(rooms[roomId].members.length)
+    socket.emit('roomCreated', roomId)
+
+    if (isPublic) {
+      publicRooms[roomId] = rooms[roomId]
+    }
   })
 
-  socket.on('joinRoom', (roomID) => {
+  socket.on('joinRoom', (data) => {
+    const roomID = data.roomId.trim()
+
     const room = rooms[roomID]
     if (room) {
       if (room.gameStarted && room.members.length >= room.maxMembers) {
@@ -45,16 +57,25 @@ io.on('connection', (socket) => {
         currentRoom = roomID
         updateAndEmitOrders(roomID)
         room.grid = createRoomGrid(room.members.length)
+        const allUsernames = room.members.map((member) => users.get(member)) // ********** //
         io.to(roomID).emit('roomJoined', {
           roomId: roomID,
-          members: room.members,
+          members: allUsernames,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
-        console.log(`Joined room: ${roomID}`)
       }
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
     }
+  })
+
+  socket.on('requestPublicRooms', () => {
+    const roomsList = Object.entries(publicRooms).map(([roomId, room]) => ({
+      roomId,
+      host: room.host,
+      members: room.members,
+    }))
+    socket.emit('publicRoomsList', roomsList)
   })
 
   socket.on('inputDone', (data) => {
@@ -83,6 +104,16 @@ io.on('connection', (socket) => {
 
     drawingSubmissions[roomId][socket.id] = image
     updateGridSubmission(roomId, socket.id, 'drawing', image)
+    console.log('here:')
+    console.log(rooms[roomId].gameID)
+
+    dbController.saveDrawing(
+      rooms[roomId].gameID,
+      users.get(socket.id).id,
+      users.get(socket.id).username,
+      rounds[roomId],
+      image
+    )
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -91,21 +122,34 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('joinGameRoom', (roomID) => {
+  socket.on('joinGameRoom', (roomID, username) => {
+    console.log(roomID)
     if (rooms[roomID]) {
       rooms[roomID].members.push(socket.id)
+      users.set(socket.id, username)
       socket.join(roomID)
       currentRoom = roomID
       updateAndEmitOrders(roomID)
       rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
+      const allUsernames = rooms[roomID].members.map((member) =>
+        users.get(member)
+      )
+      console.log(allUsernames)
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
-        members: rooms[roomID].members,
+        members: allUsernames,
       })
-      console.log(`Joined room: ${roomID}`)
 
       // only get the imposters once everyone has joined the room
+      console.log(rooms[roomID].members)
+      console.log(rooms[roomID].gameSize)
       if (rooms[roomID].members.length === rooms[roomID].gameSize) {
+        // create the gameroom in the database
+        const allUsernames = rooms[roomID].members.map(
+          (member) => users.get(member).id
+        )
+        assignGameID(roomID, allUsernames).then((val) => console.log('hi', val))
+
         const imposter = getImposter(rooms[roomID])
         rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
 
@@ -123,13 +167,21 @@ io.on('connection', (socket) => {
     }
   })
 
+  async function assignGameID(roomID, allUsernames) {
+    rooms[roomID].gameID = await dbController.newGame(allUsernames)
+    console.log('yo', rooms[roomID].gameID)
+    return rooms[roomID].gameID
+  }
+
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
       rooms[roomID].gameStarted = true
       rooms[roomID].maxMembers = rooms[roomID].members.length * 2
+      if (rooms[roomID].isPublic) {
+        delete publicRooms[roomID]
+      }
       io.to(roomID).emit('gameStarted')
       rooms[roomID].gameSize = rooms[roomID].members.length
-      console.log(`Game started in room: ${roomID}`)
     }
   })
 
@@ -154,18 +206,29 @@ io.on('connection', (socket) => {
       })
 
       io.to(roomID).emit('newRound')
-      console.log(`New round started in room: ${roomID}`)
     }
   })
 
+  socket.on('getUserDrawings', async (username) => {
+    const drawings = await dbController.getDrawingsUser(users.get(username).id)
+    socket.emit('userDrawings', drawings)
+  })
+
   socket.on('disconnect', () => {
-    console.log('User disconnected')
     if (currentRoom) {
       const room = rooms[currentRoom]
       room.members = room.members.filter((id) => id !== socket.id)
+      users.delete(socket.id)
 
       if (room.gameStarted) {
         room.maxMembers -= 1
+        delete publicRooms[currentRoom]
+      }
+
+      if (room.members.length === 0) {
+        if (room.isPublic) {
+          delete publicRooms[currentRoom]
+        }
       }
 
       if (room.orders[socket.id]) {
@@ -223,9 +286,7 @@ function updateAndEmitOrders(roomID) {
   const orders = rooms[roomID].orders
   const members = rooms[roomID].members
 
-  console.log(`Updated orders for room ${roomID}:`)
   for (const [member, order] of Object.entries(orders)) {
-    console.log(`Member ID: ${member}, Order: ${order.join(', ')}`)
   }
 
   io.to(roomID).emit('updateOrders', orders)
@@ -265,6 +326,8 @@ function distributeDrawings(roomID) {
   const drawings = drawingSubmissions[roomID]
   const orders = rooms[roomID].orders
 
+  drawingSubmissions[roomID] = {}
+
   if (!rounds[roomID]) {
     rounds[roomID] = 0
   }
@@ -286,7 +349,7 @@ function distributeDrawings(roomID) {
     })
   } else {
     emitRoundOver(roomID)
-    drawingSubmissions[roomID] = {}
+    // drawingSubmissions[roomID] = {}
   }
 }
 

@@ -4,17 +4,22 @@ let CurrentSetIndex = 0
 let CurrentImageIndex = 0
 let CurrentImage = null
 let CurrentGrid = null
-// Redirect if no room ID is available
-// if (!roomId) {
-//   window.location.href = '/landing'
-// }
 
-socket.emit('joinGameRoom', roomId)
+let username = ''
+async function fetchUser() {
+  username = await fetch(`/getUser`)
+  username = {
+    // this temporarily gives a guest username when going directly into /landing
+    // TODO *** GUEST USER ID MUST BE SET TO -1 FOR THE SERVER CODE TO WORK ***
+    id: -1,
+    username: Math.floor(Math.random() * 1000).toString(),
+  }
+  console.log(username)
+  return username
+}
+fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
 
-socket.on('gameRoomJoined', (data) => {
-  console.log(`Joined room: ${data.roomId}`)
-  console.log(`Members: ${data.members.join(', ')}`)
-})
+socket.on('gameRoomJoined', (data) => {})
 
 socket.on('updatePrompt', (prompt) => {
   hideWaitingContainer()
@@ -52,7 +57,7 @@ function showRoundOver(grid, setIndex, imageIndex) {
 
   imagecontainer.alt = `Drawing ${imageIndex + 1}`
 
-  imagecontainer.style.height = `400px`
+  imagecontainer.style.height = `45%`
 
   const prompt = document.getElementById('EndScreenLowerPromptAlter')
   prompt.textContent = `What ${submissionLower.member} thought it was: `
@@ -202,6 +207,7 @@ penSizeSlider.addEventListener('input', () =>
 )
 
 submitButton.addEventListener('click', submitDrawing)
+
 multiColourButton.addEventListener('input', () =>
   changeColour(multiColourButton.value)
 )
@@ -272,7 +278,6 @@ function stopDrawing(e) {
     }
     pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
-    console.log(index)
     undoButton.disabled = index <= 0
     redoButton.disabled = index === pastDrawings.length - 1
   }
@@ -282,7 +287,6 @@ const endTimeout = function () {}
 
 // Activate input prompt and only call `submitPrompt` when all are done
 function activateInputPrompt(img = null) {
-  console.log('here')
   drawing.style.display = img ? 'block' : 'none'
   notDrawing.style.display = img ? 'none' : 'block'
   if (img) {
@@ -347,6 +351,8 @@ function startDrawTimer() {
 
 function submitDrawing() {
   const image = canvas.toDataURL('image/png')
+  // Get the length of the data URL in bytes
+
   stopDrawing({ type: 'mouseout' })
   context.fillRect(0, 0, canvas.width, canvas.height)
   index = -1

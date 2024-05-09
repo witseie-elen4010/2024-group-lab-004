@@ -90,3 +90,30 @@ input[type='text'] {
   border-radius: 5px;
   border: 1px solid #ccc;
 }
+
+/* Public Rooms List styles */
+#publicRoomsList {
+  margin-top: 20px;
+}
+
+.public-room {
+  background-color: #f7f7f7;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin: 10px 0;
+  padding: 10px 15px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.public-room button {
+  background-color: #008cba;
+  padding: 5px 10px;
+  margin-left: 10px;
+}
+
+.public-room button:hover {
+  background-color: #007ba7;
+}
