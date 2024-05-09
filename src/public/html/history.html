@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./css/historyStyle.css" />
   </head>
   <body>
-    <div class="container">
+    <div id="gameScreen" class="container">
       <header>
         <h1>Game History</h1>
         <button id="backButton" class="nav-button">Back to Home</button>
@@ -21,6 +21,37 @@
           <button id="nextButton" class="nav-button">Next 10</button>
         </nav>
       </main>
+    </div>
+    <div id="gridOverlay" style="display: none;">
+      <div id="RoundOverHeading">
+        <h1>Round Over</h1>
+      </div>
+      <div id="NextSetButtonBlock">
+        <button id="prevSetButton">&#9668;</button>
+        <strong id="CurrentSet"> Set 1 </strong>
+        <button id="nextSetButton">&#9658;</button>
+      </div>
+      <div id="EndScreenUpperPrompt" >
+        <button id="upButton">&#9650;</button>
+        <strong id=UpperPrompt>Here is the prompt you were given by x: </strong> <!-- Up arrow button -->
+        <button id="downButton">&#9660;</button> <!-- Down arrow button -->
+        <div id="upperPromptContainer">
+        TestingTextInHtml
+        </div>
+      </div>
+      <div id="roundOverContainer" >
+        <img id="roundGridContainer" style="width: 50%;"></img> 
+        <strong id="DrawnByPrompt">Drawn by: x</strong>
+      </div>
+      <div id="EndScreenLowerPrompt">
+        <strong id="EndScreenLowerPromptAlter">What x thought it was:</strong>
+        <div id="lowerPrompt">
+        Guess
+        </div>
+      </div>
+      <div id="RoundOverButtons">
+        <button id="leaveGrid">Back to game list</button>
+      </div>
     </div>
     <script type="module" src="./js/history.js"></script>
   </body>

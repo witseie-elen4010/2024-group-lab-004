@@ -94,10 +94,36 @@ exports.saveDrawing = async (gameID, user_id, username, turn, data) => {
   })
 }
 
+exports.saveGrid = async (gameID, grid) => {
+  const query = 'INSERT INTO grids (grid, "game_id") VALUES ($1, $2)'
+  const values = [grid, gameID]
+  db.query(query, values, (error) => {
+    if (error) throw error
+  })
+}
+
+exports.fetchGrid = async (req, res) => {
+  const query = 'SELECT * FROM grids WHERE "game_id" = $1'
+  const values = [req.query.gameId]
+  await console.log('log something')
+  try {
+    const result = await db.query(query, values)
+    await console.log(result)
+    if (result.length === 0) {
+      res.status(404).json({ message: 'No grid found' })
+    } else {
+      await console.log('return result')
+      res.json(result.rows)
+    }
+  } catch (error) {
+    res.status(404).json(error)
+  }
+}
+
 exports.newGame = (names) => {
   return new Promise((resolve, reject) => {
     const game = {}
-    game['gameName'] = 'some_default_game_name'
+    game['gameName'] = 'NEW'
     game['gameDate'] = new Date()
     for (let i = 0; i < names.length; i++) {
       game[`user${i + 1}`] = names[i]
