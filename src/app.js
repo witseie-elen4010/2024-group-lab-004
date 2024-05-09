@@ -6,8 +6,8 @@ const Router = require('./routes/router')
 
 const app = express()
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json({ limit: '10mb' }))
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }))
 
 app.use(express.json())
 app.use(express.static(`${__dirname}/public`))

@@ -26,8 +26,6 @@ exports.newGame = (names) => {
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
 
     const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "gameID"`
-    console.log(query)
-    console.log(values)
 
     db.query(query, values, (error, results) => {
       if (error) {

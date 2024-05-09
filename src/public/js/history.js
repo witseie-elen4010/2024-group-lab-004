@@ -37,13 +37,19 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   async function fetchDrawings(gameId) {
+    console.log('game: ', gameId)
     try {
-      const response = await fetch(`/fetchDrawings?gameId=${gameId}`)
+      let response = await fetch(`/fetchDrawings?gameId=${gameId}`)
+
+      console.log(response.body)
       if (!response.ok) {
         throw new Error('Failed to fetch prompts')
       }
-      const prompts = await response.json()
-      return prompts
+
+      response = await response.blob()
+      console.log(response)
+      // console.log(response[0].data.data)
+      return response //.data.data
     } catch (error) {
       console.error('Error fetching prompts:', error)
       return []
@@ -90,6 +96,54 @@ document.addEventListener('DOMContentLoaded', function () {
       backButton.textContent = 'Back to Games'
       backButton.onclick = () => renderGames() // Render games again when clicked
       gameListElement.appendChild(backButton)
+    })
+    fetchDrawings(gameId).then((drawings) => {
+      drawings.forEach((drawing) => {
+        // const div = document.createElement('div')
+
+        // // Create a new image element
+        // const img = document.createElement('img')
+
+        // // Convert buffer data to data URL and set it as the image source
+        // img.src = 'data:image/png;base64,' + buffer.toString('base64');bufferToDataURL()
+
+        // // Append the image to the div
+        // div.appendChild(img)
+
+        // // Append the div to the document body or any other container element
+        // document.body.appendChild(div)
+        console.log(drawing.data.data)
+        var uint8Array = new Uint8Array(drawing.data.data)
+
+        // Convert the Uint8Array to a Blob object
+        var blob = new Blob([uint8Array])
+
+        // Create an object URL from the Blob
+        var url = URL.createObjectURL(blob)
+
+        // Create an <img> element
+        var img = document.createElement('img')
+
+        // Set the src attribute of the <img> element to the object URL
+        img.src = url
+
+        // const base64Image = Buffer.from(new Uint8Array(drawing.data)).toString(
+        //   'base64'
+        // )
+
+        // console.log(drawing)
+        // console.log(drawing.data)
+        // const drawingItem = document.createElement('img')
+        // // Convert the Buffer to a base64 string
+        // const base64Image = btoa(
+        //   new Uint8Array(drawing.data).reduce(
+        //     (data, byte) => data + String.fromCharCode(byte),
+        //     ''
+        //   )
+        // )
+        // drawingItem.src = `data:image/jpeg;base64,${base64Image}` // Assuming the image is in jpeg format
+        gameListElement.appendChild(img)
+      })
     })
   }
 
