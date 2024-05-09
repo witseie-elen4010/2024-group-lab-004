@@ -107,7 +107,7 @@ io.on('connection', (socket) => {
     console.log('here:')
     console.log(rooms[roomId].gameID)
 
-    getDrawingsGame.saveDrawing(
+    dbController.saveDrawing(
       rooms[roomId].gameID,
       users.get(socket.id).id,
       users.get(socket.id).username,
