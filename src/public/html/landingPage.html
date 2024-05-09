@@ -19,8 +19,11 @@
     </div>
     <div id="name">Art Among Us</div>
     <div id="container">
-      <button id="createRoom">Create Room</button>
-      <button id="joinRoom">Join Room</button>
+      <button id="createPrivateRoom">Create Private Game</button>
+      <button id="createPublicRoom">Create Public Game</button>
+      <button id="joinRoom">Join Private Game</button>
+      <button id="joinPublicRoom">Join Public Game</button>
+
       <div id="roomInfo" style="display: none">
         <p>Room ID: <span id="roomId"></span></p>
         <p>Members: <span id="membersCount">1</span></p>
@@ -30,6 +33,7 @@
         <input type="text" id="roomToJoin" placeholder="Enter room ID" />
         <button id="submitJoinRoom">Join</button>
       </div>
+      <div id="publicRoomsList" style="display: none"></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>

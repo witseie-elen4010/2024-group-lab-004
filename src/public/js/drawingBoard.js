@@ -20,10 +20,7 @@ async function fetchUser() {
 fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
 // socket.emit('joinGameRoom', roomId, username)
 
-socket.on('gameRoomJoined', (data) => {
-  console.log(`Joined room: ${data.roomId}`)
-  console.log(`Members: ${data.members.join(', ')}`)
-})
+socket.on('gameRoomJoined', (data) => {})
 
 socket.on('updatePrompt', (prompt) => {
   hideWaitingContainer()
@@ -268,7 +265,6 @@ function stopDrawing(e) {
     }
     pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
-    console.log(index)
     undoButton.disabled = index <= 0
     redoButton.disabled = index === pastDrawings.length - 1
   }
@@ -278,7 +274,6 @@ const endTimeout = function () {}
 
 // Activate input prompt and only call `submitPrompt` when all are done
 function activateInputPrompt(img = null) {
-  console.log('here')
   drawing.style.display = img ? 'block' : 'none'
   notDrawing.style.display = img ? 'none' : 'block'
   if (img) {
@@ -353,7 +348,6 @@ function submitDrawing() {
   redoButton.disabled = true
   //endTimeout()
 
-  console.log('Drawing submitted:', image)
   socket.emit('drawingSubmitted', { roomId, image })
   showWaitingContainer()
 }

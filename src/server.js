@@ -11,6 +11,7 @@ const dbAccess = require('./db/dbAccess')
 const port = process.env.PORT || process.env.APP_PORT
 
 const rooms = {}
+const publicRooms = {}
 const rounds = {}
 const drawingSubmissions = {}
 const users = new Map()
@@ -36,28 +37,34 @@ async function test() {
 }
 
 io.on('connection', (socket) => {
-  console.log('New WebSocket connection')
   let currentRoom = null
 
-  socket.on('createRoom', (username) => {
-    const roomID = generateRoomId()
-    rooms[roomID] = {
+  socket.on('createRoom', (options) => {
+    const roomId = generateRoomId()
+    const isPublic = options.public || false
+
+    rooms[roomId] = {
       members: [socket.id],
       host: socket.id,
       orders: {},
       prompts: {},
       grid: null,
+      isPublic,
     }
-    users.set(socket.id, username)
-    currentRoom = roomID
-    socket.join(roomID)
-    updateAndEmitOrders(roomID)
-    rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
-    socket.emit('roomCreated', roomID)
-    console.log(`Room created: ${roomID}`)
+    currentRoom = roomId
+    socket.join(roomId)
+    updateAndEmitOrders(roomId)
+    rooms[roomId].grid = createRoomGrid(rooms[roomId].members.length)
+    socket.emit('roomCreated', roomId)
+
+    if (isPublic) {
+      publicRooms[roomId] = rooms[roomId]
+    }
   })
 
-  socket.on('joinRoom', (roomID) => {
+  socket.on('joinRoom', (data) => {
+    const roomID = data.roomId.trim()
+
     const room = rooms[roomID]
     if (room) {
       if (room.gameStarted && room.members.length >= room.maxMembers) {
@@ -74,11 +81,19 @@ io.on('connection', (socket) => {
           members: allUsernames,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
-        console.log(`Joined room: ${roomID}`)
       }
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
     }
+  })
+
+  socket.on('requestPublicRooms', () => {
+    const roomsList = Object.entries(publicRooms).map(([roomId, room]) => ({
+      roomId,
+      host: room.host,
+      members: room.members,
+    }))
+    socket.emit('publicRoomsList', roomsList)
   })
 
   socket.on('inputDone', (data) => {
@@ -142,7 +157,6 @@ io.on('connection', (socket) => {
         roomId: roomID,
         members: allUsernames,
       })
-      console.log(`Joined room: ${roomID}`)
 
       // only get the imposters once everyone has joined the room
       console.log(rooms[roomID].members)
@@ -181,9 +195,11 @@ io.on('connection', (socket) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
       rooms[roomID].gameStarted = true
       rooms[roomID].maxMembers = rooms[roomID].members.length * 2
-      rooms[roomID].gameSize = rooms[roomID].members.length
+      if (rooms[roomID].isPublic) {
+        delete publicRooms[roomID]
+      }
       io.to(roomID).emit('gameStarted')
-      console.log(`Game started in room: ${roomID}`)
+      rooms[roomID].gameSize = rooms[roomID].members.length
     }
   })
 
@@ -208,7 +224,6 @@ io.on('connection', (socket) => {
       })
 
       io.to(roomID).emit('newRound')
-      console.log(`New round started in room: ${roomID}`)
     }
   })
 
@@ -218,7 +233,6 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    console.log('User disconnected')
     if (currentRoom) {
       const room = rooms[currentRoom]
       room.members = room.members.filter((id) => id !== socket.id)
@@ -226,6 +240,13 @@ io.on('connection', (socket) => {
 
       if (room.gameStarted) {
         room.maxMembers -= 1
+        delete publicRooms[currentRoom]
+      }
+
+      if (room.members.length === 0) {
+        if (room.isPublic) {
+          delete publicRooms[currentRoom]
+        }
       }
 
       if (room.orders[socket.id]) {
@@ -283,9 +304,7 @@ function updateAndEmitOrders(roomID) {
   const orders = rooms[roomID].orders
   const members = rooms[roomID].members
 
-  console.log(`Updated orders for room ${roomID}:`)
   for (const [member, order] of Object.entries(orders)) {
-    console.log(`Member ID: ${member}, Order: ${order.join(', ')}`)
   }
 
   io.to(roomID).emit('updateOrders', orders)
