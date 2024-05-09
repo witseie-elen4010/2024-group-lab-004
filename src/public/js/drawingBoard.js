@@ -129,6 +129,11 @@ const upButton = document.getElementById('upButton')
 const downButton = document.getElementById('downButton')
 const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
+const eraserButton = document.getElementById('eraser')
+
+eraserButton.addEventListener('click', () => {
+  changeColour('white')
+})
 
 upButton.addEventListener('click', () => {
   if (CurrentImageIndex > 0) {
