@@ -24,9 +24,7 @@ io.on('connection', (socket) => {
   socket.on('createRoom', (options) => {
     const roomId = generateRoomId()
     const isPublic = options.public || false
-    // console.log('socket.id:', socket.id)
 
-    // console.log(username)
     rooms[roomId] = {
       members: [socket.id],
       host: socket.id,
@@ -92,7 +90,6 @@ io.on('connection', (socket) => {
         prompt,
         socket.id
       )
-      console.log('InputDoneUsers: ', users.get(socket.id).username)
 
       if (
         Object.keys(rooms[roomId].prompts).length ===
@@ -119,13 +116,6 @@ io.on('connection', (socket) => {
       image,
       socket.id
     )
-    console.log('UserID: ', users.get(socket.id).id)
-    console.log('SID: ', socket.id)
-    console.log('SIDGet', users.get(socket.id))
-    console.log('uSERmAp', users)
-    console.log('here:')
-    console.log(rooms[roomId].gameID)
-
     dbController.saveDrawing(
       rooms[roomId].gameID,
       users.get(socket.id).id,
@@ -142,7 +132,6 @@ io.on('connection', (socket) => {
   })
 
   socket.on('joinGameRoom', (roomID, username) => {
-    console.log(roomID)
     if (rooms[roomID]) {
       rooms[roomID].members.push(socket.id)
       users.set(socket.id, username)
@@ -153,22 +142,18 @@ io.on('connection', (socket) => {
       const allUsernames = rooms[roomID].members.map((member) =>
         users.get(member)
       )
-      console.log(allUsernames)
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
         members: allUsernames,
       })
 
       // only get the imposters once everyone has joined the room
-      console.log(rooms[roomID].members)
-      console.log(rooms[roomID].gameSize)
       if (rooms[roomID].members.length === rooms[roomID].gameSize) {
         // create the gameroom in the database
         const allUsernames = rooms[roomID].members.map(
           (member) => users.get(member).id
         )
-        assignGameID(roomID, allUsernames).then((val) => console.log('hi', val))
-
+        assignGameID(roomID, allUsernames)
         const imposter = getImposter(rooms[roomID])
         rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
 
@@ -188,7 +173,6 @@ io.on('connection', (socket) => {
 
   async function assignGameID(roomID, allUsernames) {
     rooms[roomID].gameID = await dbController.newGame(allUsernames)
-    console.log('yo', rooms[roomID].gameID)
     return rooms[roomID].gameID
   }
 
