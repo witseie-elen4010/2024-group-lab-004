@@ -36,6 +36,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  async function fetchDrawings(gameId) {
+    console.log('Fetching drawings for game: ', gameId)
+    try {
+      let response = await fetch(`/fetchDrawings?gameId=${gameId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch drawings')
+      }
+
+      const drawings = await response.json()
+      return drawings
+    } catch (error) {
+      console.error('Error fetching drawings:', error)
+      return []
+    }
+  }
+
   function renderGames() {
     // Clear current list
     gameListElement.innerHTML = ''
@@ -76,6 +92,20 @@ document.addEventListener('DOMContentLoaded', function () {
       backButton.textContent = 'Back to Games'
       backButton.onclick = () => renderGames() // Render games again when clicked
       gameListElement.appendChild(backButton)
+    })
+
+    fetchDrawings(gameId).then((drawings) => {
+      drawings.forEach((drawing) => {
+        // Assuming 'drawing.data.data' contains the base64 encoded image data
+        const base64String = drawing.data.data.reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ''
+        )
+        const img = document.createElement('img')
+        img.src = `${base64String}`
+        img.width = 400
+        gameListElement.appendChild(img)
+      })
     })
   }
 
