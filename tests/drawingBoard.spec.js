@@ -1,9 +1,57 @@
 const { test, expect } = require('@playwright/test')
 
-test('canvas exists', async ({ page }) => {
-  await page.goto('http://localhost:4000/draw')
+test('canvas exists', async ({ context }) => {
+  // Create a room on page1
+  const page1 = await context.newPage()
+  await page1.goto('http://localhost:4000/')
+  await page1.getByRole('button', { name: 'Sign In' }).click()
+  await page1.getByLabel('Username:').click()
+  await page1.getByLabel('Username:').fill('test')
+  await page1.getByLabel('Password:').click()
+  await page1.getByLabel('Password:').fill('test')
+  await page1
+    .locator('#loginForm')
+    .getByRole('button', { name: 'Login' })
+    .click()
+  await page1.getByRole('button', { name: 'Create Room' }).click()
+  await page1.waitForSelector('#roomId')
+  const roomId = await page1.$eval('#roomId', (el) => el.textContent)
 
-  const canvas = await page.$('canvas')
+  // Join the room on page2
+  const page2 = await context.newPage()
+  await page2.goto('http://localhost:4000/')
+  await page2.getByRole('button', { name: 'Sign In' }).click()
+  await page2.getByLabel('Username:').click()
+  await page2.getByLabel('Username:').fill('test')
+  await page2.getByLabel('Password:').click()
+  await page2.getByLabel('Password:').fill('test')
+  await page2
+    .locator('#loginForm')
+    .getByRole('button', { name: 'Login' })
+    .click()
+  await page2.click('#joinRoom')
+  await page2.getByRole('button', { name: 'Join Room' }).click()
+  await page2.fill('#roomToJoin', roomId)
+  await page2.click('#submitJoinRoom')
+
+  // Join the room on page3
+  const page3 = await context.newPage()
+  await page3.goto('http://localhost:4000/')
+  await page3.getByRole('button', { name: 'Sign In' }).click()
+  await page3.getByLabel('Username:').click()
+  await page3.getByLabel('Username:').fill('test')
+  await page3.getByLabel('Password:').click()
+  await page3.getByLabel('Password:').fill('test')
+  await page3
+    .locator('#loginForm')
+    .getByRole('button', { name: 'Login' })
+    .click()
+  await page3.click('#joinRoom')
+  await page3.getByRole('button', { name: 'Join Room' }).click()
+  await page3.fill('#roomToJoin', roomId)
+  await page3.click('#submitJoinRoom')
+
+  const canvas = await page3.$('canvas')
   expect(canvas).toBeTruthy()
 })
 
