@@ -29,6 +29,7 @@ socket.on('updateDrawing', (drawing) => {
 
 socket.on('roundOver', (submissionGrid) => {
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
+  console.log(submissionGrid)
   CurrentGrid = submissionGrid
 })
 
@@ -108,12 +109,12 @@ const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
 
 upButton.addEventListener('click', () => {
-  CurrentImageIndex -= 1
+  CurrentImageIndex -= 2
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
 downButton.addEventListener('click', () => {
-  CurrentImageIndex += 1
+  CurrentImageIndex += 2
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
