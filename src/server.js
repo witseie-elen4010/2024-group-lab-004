@@ -77,16 +77,33 @@ io.on('connection', (socket) => {
   })
 
   socket.on('inputDone', (data) => {
-    const { roomId, prompt } = data
+    const { roomId } = data
+    const room = rooms[roomId]
 
-    if (rooms[roomId]) {
-      rooms[roomId].prompts[socket.id] = prompt
+    if (!room) {
+      return
+    }
+    if (!room.todo) {
+      room.todo = []
+    }
+    data.socketID = socket.id
+    room.todo.push(data)
+    if (room.members.length !== room.gameSize) {
+      //wait for everyone to join, then do this process
+      return
+    }
+
+    room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
+    for (const entry of room.todo) {
+      const { roomId, prompt, socketID } = entry
+
+      rooms[roomId].prompts[socketID] = prompt
       updateGridSubmission(
         roomId,
-        users.get(socket.id).username,
+        users.get(socketID).username,
         'prompt',
         prompt,
-        socket.id
+        socketID
       )
 
       if (
@@ -97,6 +114,7 @@ io.on('connection', (socket) => {
         rooms[roomId].prompts = {}
       }
     }
+    room.todo = []
   })
 
   socket.on('drawingSubmitted', (data) => {
@@ -204,6 +222,10 @@ io.on('connection', (socket) => {
       if (room.gameStarted) {
         room.maxMembers -= 1
         delete publicRooms[currentRoom]
+      }
+
+      if (room.allJoined) {
+        room.gameSize -= 1
       }
 
       if (room.members.length === 0) {

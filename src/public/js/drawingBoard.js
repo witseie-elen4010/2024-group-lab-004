@@ -333,14 +333,14 @@ function activateInputPrompt(img = null) {
 
   // const timeoutId = setTimeout(submitPrompt, inputTimer)
 
-  function checkEnterKey(event) {
-    if (event.key === 'Enter') {
-      submitPrompt()
-    }
-  }
+  // function checkEnterKey(event) {
+  //   if (event.key === 'Enter') {
+  //     submitPrompt()
+  //   }
+  // }
 
-  doneButton.addEventListener('click', submitPrompt)
-  getInput.addEventListener('keydown', checkEnterKey)
+  // doneButton.addEventListener('click', submitPrompt)
+  // getInput.addEventListener('keydown', checkEnterKey)
 
   // endTimeout = function () {
   //   clearTimeout(timeoutId)
