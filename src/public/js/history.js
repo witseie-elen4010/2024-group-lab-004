@@ -118,36 +118,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  async function fetchPrompts(gameId) {
-    try {
-      const response = await fetch(`/fetchPrompts?gameId=${gameId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch prompts')
-      }
-      const prompts = await response.json()
-      return prompts
-    } catch (error) {
-      console.error('Error fetching prompts:', error)
-      return []
-    }
-  }
-
-  async function fetchDrawings(gameId) {
-    console.log('Fetching drawings for game: ', gameId)
-    try {
-      let response = await fetch(`/fetchDrawings?gameId=${gameId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch drawings')
-      }
-
-      const drawings = await response.json()
-      return drawings
-    } catch (error) {
-      console.error('Error fetching drawings:', error)
-      return []
-    }
-  }
-
   function parseObjectArray(array) {
     return array.map((innerArray) =>
       innerArray.map((item) => {
@@ -209,42 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
     nextButton.style.visibility =
       end < currentGames.length ? 'visible' : 'hidden'
   }
-
-  // function viewPrompts(gameId) {
-  //   prevButton.style.visibility = 'hidden'
-  //   nextButton.style.visibility = 'hidden'
-  //   fetchPrompts(gameId).then((prompts) => {
-  //     gameListElement.innerHTML = '' // Clear current list
-  //     prompts.forEach((prompt) => {
-  //       const promptItem = document.createElement('li')
-  //       promptItem.textContent = prompt.prompt // Assuming the prompt object has a description property
-  //       gameListElement.appendChild(promptItem)
-  //     })
-  //     // Add a back button to return to game list
-  //     const backButton = document.createElement('button')
-  //     backButton.textContent = 'Back to Games'
-  //     backButton.onclick = () => renderGames() // Render games again when clicked
-  //     gameListElement.appendChild(backButton)
-  //   })
-
-  //   // fetchGrid(243).then((grid) => {
-  //   //   console.log('grid: ', grid)
-  //   // })
-
-  //   fetchDrawings(gameId).then((drawings) => {
-  //     drawings.forEach((drawing) => {
-  //       // Assuming 'drawing.data.data' contains the base64 encoded image data
-  //       const base64String = drawing.data.data.reduce(
-  //         (data, byte) => data + String.fromCharCode(byte),
-  //         ''
-  //       )
-  //       const img = document.createElement('img')
-  //       img.src = `${base64String}`
-  //       img.width = 400
-  //       gameListElement.appendChild(img)
-  //     })
-  //   })
-  // }
 
   prevButton.addEventListener('click', () => {
     if (currentPage > 0) {

@@ -16,45 +16,6 @@ exports.fetchGames = async (req, res) => {
   }
 }
 
-exports.fetchPrompts = async (req, res) => {
-  const query = 'SELECT * FROM prompts WHERE "gameID" = $1'
-  const values = [req.query.gameId]
-  try {
-    const result = await db.query(query, values)
-    if (result.rowCount === 0) {
-      res.status(404).json({ message: 'No prompts found' })
-    } else {
-      res.json(result.rows)
-    }
-  } catch (error) {
-    res.status(404).json({ message: 'No prompts found' })
-  }
-}
-
-exports.fetchDrawings = async (req, res) => {
-  try {
-    const result = await exports.getDrawingsGame(req.query.gameId)
-
-    if (result.length === 0) {
-      res.status(404).json({ message: 'No prompts found' })
-    } else {
-      res.json(result)
-    }
-  } catch (error) {
-    res.status(404).json({ message: 'No prompts found' })
-  }
-}
-
-exports.saveDrawing = async (gameID, user_id, username, turn, data) => {
-  const query =
-    'INSERT INTO drawings (gameID, user_id, username, turn, data) VALUES ($1, $2, $3, $4, $5)'
-  const values = [gameID, user_id, username, turn, data]
-
-  db.query(query, values, (error) => {
-    if (error) throw error
-  })
-}
-
 exports.saveGrid = async (gameID, grid) => {
   const query = 'INSERT INTO grids (grid, "game_id") VALUES ($1, $2)'
   const values = [grid, gameID]
@@ -104,37 +65,4 @@ exports.newGame = (names) => {
       }
     })
   })
-}
-
-// Non-exported function
-function getDrawings(query, values) {
-  return new Promise((resolve, reject) => {
-    db.query(query, values, (error, results) => {
-      if (error) {
-        reject(error)
-      } else {
-        resolve(results.rows)
-      }
-    })
-  })
-}
-
-// Exported function for getting drawings by gameID
-exports.getDrawingsGame = (gameID) => {
-  if (!gameID) {
-    return Promise.reject('No gameID provided')
-  }
-  const query = 'SELECT * FROM drawings WHERE gameID = $1'
-  const values = [gameID]
-  return getDrawings(query, values)
-}
-
-// Exported function for getting drawings by user_id
-exports.getDrawingsUser = (user_id) => {
-  if (!user_id) {
-    return Promise.reject('No user_id provided')
-  }
-  const query = 'SELECT * FROM drawings WHERE user_id = $1'
-  const values = [user_id]
-  return getDrawings(query, values)
 }

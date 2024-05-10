@@ -16,8 +16,6 @@ const rounds = {}
 const drawingSubmissions = {}
 const users = new Map() // stores userDetails in the form {id, username}
 
-const fs = require('fs')
-
 io.on('connection', (socket) => {
   let currentRoom = null
 
@@ -113,17 +111,10 @@ io.on('connection', (socket) => {
     console.log(socket.id)
     updateGridSubmission(
       roomId,
-      users.get(socket.id).username, // TOFIX this sometimes gives an error "cannot read properties of undefined"
+      users.get(socket.id).username, // TOFIX: this sometimes gives an error "cannot read properties of undefined"
       'drawing',
       image,
       socket.id
-    )
-    dbController.saveDrawing(
-      rooms[roomId].gameID,
-      users.get(socket.id).id,
-      users.get(socket.id).username,
-      rounds[roomId],
-      image
     )
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
@@ -213,12 +204,6 @@ io.on('connection', (socket) => {
       io.to(roomID).emit('newRound')
     }
   })
-
-  // this is not currently used
-  // socket.on('getUserDrawings', async (socketID) => {
-  //   const drawings = await dbController.getDrawingsUser(users.get(socketID).id)
-  //   socket.emit('userDrawings', drawings)
-  // })
 
   socket.on('disconnect', () => {
     if (currentRoom) {
