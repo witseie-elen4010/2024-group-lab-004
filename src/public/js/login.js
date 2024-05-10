@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const loginForm = document.getElementById('loginForm')
   const registerForm = document.getElementById('registerForm')
 
-  loginButton.classList.add('active')
   registerButton.addEventListener('click', function () {
     registerForm.style.display = 'block'
     loginForm.style.display = 'none'
