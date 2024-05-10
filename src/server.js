@@ -107,8 +107,6 @@ io.on('connection', (socket) => {
     }
 
     drawingSubmissions[roomId][socket.id] = image
-    console.log(users)
-    console.log(socket.id)
     updateGridSubmission(
       roomId,
       users.get(socket.id).username, // TOFIX: this sometimes gives an error "cannot read properties of undefined"
@@ -342,9 +340,8 @@ function createRoomGrid(size) {
   )
 }
 
-function updateGridSubmission(roomID, memberID, type, content, socketID) {
+function updateGridSubmission(roomID, username, type, content, socketID) {
   const orders = rooms[roomID].orders
-  const members = rooms[roomID].members
   if (!rounds[roomID]) {
     rounds[roomID] = 0
   }
@@ -356,7 +353,7 @@ function updateGridSubmission(roomID, memberID, type, content, socketID) {
   rooms[roomID].grid[currentRound][targetIndex] = {
     type,
     content,
-    member: memberID,
+    member: username,
   }
 }
 

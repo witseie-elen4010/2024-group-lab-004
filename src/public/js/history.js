@@ -131,10 +131,9 @@ document.addEventListener('DOMContentLoaded', function () {
     )
   }
 
-  async function fetchGrid(gameId) {
-    console.log('Fetching grid for game: ', gameId)
+  async function fetchGrid(gameID) {
     try {
-      let response = await fetch(`/fetchGrid?gameId=${gameId}`)
+      let response = await fetch(`/fetchGrid?gameID=${gameID}`)
       if (!response.ok) {
         throw new Error('Failed to fetch grid')
       }
@@ -165,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
       listItem.onclick = () => {
         gameScreen.style.display = 'none'
         gridOverlay.style.display = 'flex'
-        fetchGrid(game.gameID).then((grid) => {
+        fetchGrid(game.game_id).then((grid) => {
           PlayerCount = grid.length
           CurrentGrid = grid
           showRoundOver(grid, setIndex, imageIndex)

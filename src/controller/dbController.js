@@ -17,7 +17,7 @@ exports.fetchGames = async (req, res) => {
 }
 
 exports.saveGrid = async (gameID, grid) => {
-  const query = 'INSERT INTO grids (grid, "game_id") VALUES ($1, $2)'
+  const query = 'INSERT INTO grids (grid, game_id) VALUES ($1, $2)'
   const values = [grid, gameID]
   db.query(query, values, (error) => {
     if (error) throw error
@@ -26,7 +26,7 @@ exports.saveGrid = async (gameID, grid) => {
 
 exports.fetchGrid = async (req, res) => {
   const query = 'SELECT * FROM grids WHERE game_id = $1'
-  const values = [req.query.gameId]
+  const values = [req.query.gameID]
   try {
     const result = await db.query(query, values)
     if (result.length === 0) {
@@ -54,7 +54,7 @@ exports.newGame = (names) => {
     const values = Object.values(game)
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
 
-    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "game_id"`
+    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING game_id`
 
     db.query(query, values, (error, results) => {
       if (error) {
