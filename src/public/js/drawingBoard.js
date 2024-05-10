@@ -128,6 +128,7 @@ const downButton = document.getElementById('downButton')
 const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
 const eraserButton = document.getElementById('eraser')
+const exitButton = document.getElementById('exitButton')
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')
@@ -171,6 +172,10 @@ leaveGameButton.addEventListener('click', () => {
 
 nextRoundButton.addEventListener('click', () => {
   socket.emit('nextRound', roomId)
+})
+
+exitButton.addEventListener('click', () => {
+  window.location.href = '/landing'
 })
 
 socket.on('newRound', () => {
