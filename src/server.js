@@ -77,16 +77,32 @@ io.on('connection', (socket) => {
   })
 
   socket.on('inputDone', (data) => {
-    const { roomId, prompt } = data
+    const { roomId } = data
+    const room = rooms[roomId]
 
-    if (rooms[roomId]) {
-      rooms[roomId].prompts[socket.id] = prompt
+    if (!room) {
+      return
+    }
+    if (!room.todo) {
+      room.todo = []
+    }
+    data.socketID = socket.id
+    room.todo.push(data)
+    if (room.members.length !== room.gameSize) {
+      //wait for everyone to join, then do this process
+      return
+    }
+
+    for (const entry of room.todo) {
+      const { roomId, prompt, socketID } = entry
+
+      rooms[roomId].prompts[socketID] = prompt
       updateGridSubmission(
         roomId,
-        users.get(socket.id).username,
+        users.get(socketID).username,
         'prompt',
         prompt,
-        socket.id
+        socketID
       )
 
       if (
@@ -97,6 +113,7 @@ io.on('connection', (socket) => {
         rooms[roomId].prompts = {}
       }
     }
+    room.todo = []
   })
 
   socket.on('drawingSubmitted', (data) => {
