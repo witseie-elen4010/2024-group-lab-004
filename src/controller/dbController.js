@@ -54,14 +54,14 @@ exports.newGame = (names) => {
     const values = Object.values(game)
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
 
-    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING game_id`
+    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "game_id"`
 
     db.query(query, values, (error, results) => {
       if (error) {
         reject(error)
       } else {
-        console.log(`Created game with ID: ${results.rows[0].gameID}`)
-        resolve(results.rows[0].gameID)
+        console.log(`Created game with ID: ${results.rows[0].game_id}`)
+        resolve(results.rows[0].game_id)
       }
     })
   })

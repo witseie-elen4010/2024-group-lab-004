@@ -369,7 +369,6 @@ async function emitRoundOver(roomID) {
 
 async function assignGameID(roomID, allUserIDs) {
   rooms[roomID].gameID = await dbController.newGame(allUserIDs)
-  return rooms[roomID].gameID
 }
 
 server.listen(port, () => {
