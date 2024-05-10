@@ -86,6 +86,22 @@ function showRoundOver(grid, setIndex, imageIndex) {
   roundOverOverlay.style.display = 'flex'
 }
 
+function fetchLeaderboard() {
+  socket.emit('requestLeaderboard')
+}
+
+socket.on('receiveLeaderboard', (data) => {
+  leaderboardEntries.innerHTML = '' // Clear previous entries
+  data.forEach((player) => {
+    const username = player.username || 'Unknown'
+    const points = player.points || 0
+    const entryDiv = document.createElement('div')
+    entryDiv.className = 'leaderboard-entry'
+    entryDiv.innerHTML = `<span>${username}</span><span>${points}</span>`
+    leaderboardEntries.appendChild(entryDiv)
+  })
+})
+
 let playerStatus = ''
 
 socket.on('imposter', () => {
@@ -133,6 +149,37 @@ const downButton = document.getElementById('downButton')
 const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
 const eraserButton = document.getElementById('eraser')
+const leaderboardButton = document.getElementById('leaderboardButton')
+const leaderboardContainer = document.getElementById('leaderboardContainer')
+const leaderboardCloseButton = document.getElementById('leaderboardCloseButton')
+const leaderboardEntries = document.getElementById('leaderboardEntries')
+
+leaderboardButton.addEventListener('click', () => {
+  leaderboardEntries.innerHTML = ''
+
+  const buttonRect = leaderboardButton.getBoundingClientRect()
+  leaderboardContainer.style.top = `${buttonRect.bottom + 5}px`
+  leaderboardContainer.style.right = `${
+    window.innerWidth - buttonRect.right - 15
+  }px`
+  fetchLeaderboard()
+  leaderboardContainer.style.display = 'block'
+})
+
+leaderboardCloseButton.addEventListener('click', () => {
+  leaderboardContainer.style.display = 'none'
+  leaderboardEntries.innerHTML = ''
+})
+
+document.addEventListener('click', (e) => {
+  if (
+    !leaderboardContainer.contains(e.target) &&
+    e.target !== leaderboardButton
+  ) {
+    leaderboardContainer.style.display = 'none'
+    leaderboardEntries.innerHTML = ''
+  }
+})
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')

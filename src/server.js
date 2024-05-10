@@ -32,6 +32,7 @@ io.on('connection', (socket) => {
       prompts: {},
       grid: null,
       isPublic,
+      leaderboard: {},
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -116,6 +117,12 @@ io.on('connection', (socket) => {
       image,
       socket.id
     )
+
+    const username = users.get(socket.id).username
+    const room = rooms[roomId]
+    if (username && room.leaderboard) {
+      room.leaderboard[username] += 10
+    }
     dbController.saveDrawing(
       rooms[roomId].gameID,
       users.get(socket.id).id,
@@ -137,6 +144,9 @@ io.on('connection', (socket) => {
       users.set(socket.id, username)
       socket.join(roomID)
       currentRoom = roomID
+      if (!(username in rooms[roomID].leaderboard)) {
+        rooms[roomID].leaderboard[username.username] = 0
+      }
       updateAndEmitOrders(roomID)
       rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
       const allUsernames = rooms[roomID].members.map((member) =>
@@ -215,6 +225,15 @@ io.on('connection', (socket) => {
   socket.on('getUserDrawings', async (username) => {
     const drawings = await dbController.getDrawingsUser(users.get(username).id)
     socket.emit('userDrawings', drawings)
+  })
+
+  socket.on('requestLeaderboard', () => {
+    if (currentRoom) {
+      const leaderboardEntries = Object.entries(
+        rooms[currentRoom].leaderboard
+      ).map(([username, points]) => ({ username, points }))
+      socket.emit('receiveLeaderboard', leaderboardEntries)
+    }
   })
 
   socket.on('disconnect', () => {

@@ -249,3 +249,28 @@ body {
 #roundOverButtons button:hover {
   background-color: #444b8b;
 }
+
+#leaderboardButton {
+  background-color: #55609b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 10001; /* Higher than waitingContainer and roundOverOverlay */
+}
+
+#leaderboardContainer {
+  z-index: 10002; /* Higher than other overlays */
+}
+
+#leaderboardContainer div {
+  margin-bottom: 5px;
+}
+
+.leaderboard-entry {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding: 5px 0;
+}

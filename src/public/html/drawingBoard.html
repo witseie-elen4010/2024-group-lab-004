@@ -185,6 +185,31 @@
         <button id="nextRoundButton" style="background-color: #fff;">Next Round</button>
       </div>
     </div>
+        <!-- Leaderboard button -->
+    <button id="leaderboardButton" style="position: fixed; top: 10px; right: 10px;">
+      Leaderboard
+    </button>
+
+    <!-- Leaderboard container -->
+    <div id="leaderboardContainer" style="
+      position: fixed;
+      top: 10%;
+      right: 10%;
+      width: 300px;
+      background-color: white;
+      border: 1px solid black;
+      border-radius: 10px;
+      display: none;
+      z-index: 5000;
+    ">
+      <div style="text-align: right; padding: 5px;">
+        <button id="leaderboardCloseButton">Close</button>
+      </div>
+      <div id="leaderboardEntries" style="padding: 10px;">
+        <!-- Player entries will be appended here -->
+      </div>
+    </div>
+
   
 
     <button onclick="window.location.href='/history';" style="position: fixed; bottom: 50px; right: 10px;">History</button>
