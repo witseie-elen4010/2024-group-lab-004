@@ -2,7 +2,7 @@ const db = require('../db/database')
 
 exports.fetchGames = async (req, res) => {
   const query =
-    'SELECT * FROM games WHERE user1 = $1 OR user2 = $1 OR user3 = $1 OR user4 = $1 OR user5 = $1 OR user6 = $1 OR user7 = $1 OR user8 = $1 ORDER BY "gameID"'
+    'SELECT * FROM games WHERE user1 = $1 OR user2 = $1 OR user3 = $1 OR user4 = $1 OR user5 = $1 OR user6 = $1 OR user7 = $1 OR user8 = $1 ORDER BY game_id DESC'
   const values = [req.session.user.id]
   try {
     const result = await db.query(query, values)
@@ -17,7 +17,7 @@ exports.fetchGames = async (req, res) => {
 }
 
 exports.saveGrid = async (gameID, grid) => {
-  const query = 'INSERT INTO grids (grid, "game_id") VALUES ($1, $2)'
+  const query = 'INSERT INTO grids (grid, game_id) VALUES ($1, $2)'
   const values = [grid, gameID]
   db.query(query, values, (error) => {
     if (error) throw error
@@ -25,8 +25,8 @@ exports.saveGrid = async (gameID, grid) => {
 }
 
 exports.fetchGrid = async (req, res) => {
-  const query = 'SELECT * FROM grids WHERE "game_id" = $1'
-  const values = [req.query.gameId]
+  const query = 'SELECT * FROM grids WHERE game_id = $1'
+  const values = [req.query.gameID]
   try {
     const result = await db.query(query, values)
     if (result.length === 0) {
@@ -42,8 +42,8 @@ exports.fetchGrid = async (req, res) => {
 exports.newGame = (names) => {
   return new Promise((resolve, reject) => {
     const game = {}
-    game['gameName'] = 'NEW'
-    game['gameDate'] = new Date()
+    game['game_name'] = 'NEW'
+    game['game_date'] = new Date()
     for (let i = 0; i < names.length; i++) {
       game[`user${i + 1}`] = names[i]
     }
@@ -54,14 +54,14 @@ exports.newGame = (names) => {
     const values = Object.values(game)
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
 
-    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "gameID"`
+    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING game_id`
 
     db.query(query, values, (error, results) => {
       if (error) {
         reject(error)
       } else {
-        console.log(`Created game with ID: ${results.rows[0].gameID}`)
-        resolve(results.rows[0].gameID)
+        console.log(`Created game with ID: ${results.rows[0].game_id}`)
+        resolve(results.rows[0].game_id)
       }
     })
   })
