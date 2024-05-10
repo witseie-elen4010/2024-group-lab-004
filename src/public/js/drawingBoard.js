@@ -105,6 +105,7 @@ const greenButton = document.getElementById('greenButton')
 const blueButton = document.getElementById('blueButton')
 const pinkButton = document.getElementById('pinkButton')
 const multiColourButton = document.getElementById('colour-picker')
+const clearButton = document.getElementById('clear')
 const submitButton = document.getElementById('submit')
 const drawingDisplay = document.getElementById('drawingDisplay')
 const penSizeSlider = document.getElementById('size-picker')
@@ -266,6 +267,18 @@ submitButton.addEventListener('click', submitDrawing)
 multiColourButton.addEventListener('input', () =>
   changeColour(multiColourButton.value)
 )
+
+clearButton.addEventListener('click', function () {
+  const previousFillStyle = context.fillStyle
+  context.fillStyle = '#FFFFFF' // Set fillStyle to white
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = previousFillStyle // Reset fillStyle to previous value
+
+  index = -1
+  pastDrawings = []
+  undoButton.disabled = true
+  redoButton.disabled = true
+})
 
 undoButton.addEventListener('click', function () {
   if (index <= 0) {
