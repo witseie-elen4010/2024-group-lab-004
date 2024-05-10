@@ -1,6 +1,8 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
-console.log(roomId)
+if (!roomId) {
+  window.location.href = '/landing'
+}
 let CurrentSetIndex = 0
 let CurrentImageIndex = 0
 let CurrentImage = null
@@ -47,7 +49,6 @@ socket.on('roundOver', (submissionGrid) => {
 
 function showRoundOver(grid, setIndex, imageIndex) {
   const gridContainer = document.getElementById('roundOverOverlay')
-  // Loop through each row and render them into separate columns
 
   submissionUpper = grid[imageIndex][setIndex]
   submissionMiddle = grid[imageIndex + 1][setIndex]
@@ -88,10 +89,12 @@ function showRoundOver(grid, setIndex, imageIndex) {
 let playerStatus = ''
 
 socket.on('imposter', () => {
+  localStorage.removeItem('roomId')
   playerStatus = 'imposter'
   setStatus()
 })
 socket.on('normal', () => {
+  localStorage.removeItem('roomId')
   playerStatus = 'normal'
   setStatus()
 })
