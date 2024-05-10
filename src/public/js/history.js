@@ -159,8 +159,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Create list items for each game
     gamesToShow.forEach((game) => {
       const listItem = document.createElement('li')
-      listItem.innerHTML = `<strong>${game.gameName}</strong> - <em>${new Date(
-        game.gameDate
+      listItem.innerHTML = `<strong>${game.game_name}</strong> - <em>${new Date(
+        game.game_date
       ).toLocaleDateString()}</em>`
       listItem.onclick = () => {
         gameScreen.style.display = 'none'

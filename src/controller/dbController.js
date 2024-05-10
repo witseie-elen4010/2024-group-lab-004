@@ -2,7 +2,7 @@ const db = require('../db/database')
 
 exports.fetchGames = async (req, res) => {
   const query =
-    'SELECT * FROM games WHERE user1 = $1 OR user2 = $1 OR user3 = $1 OR user4 = $1 OR user5 = $1 OR user6 = $1 OR user7 = $1 OR user8 = $1 ORDER BY "gameID" DESC'
+    'SELECT * FROM games WHERE user1 = $1 OR user2 = $1 OR user3 = $1 OR user4 = $1 OR user5 = $1 OR user6 = $1 OR user7 = $1 OR user8 = $1 ORDER BY game_id DESC'
   const values = [req.session.user.id]
   try {
     const result = await db.query(query, values)
@@ -25,7 +25,7 @@ exports.saveGrid = async (gameID, grid) => {
 }
 
 exports.fetchGrid = async (req, res) => {
-  const query = 'SELECT * FROM grids WHERE "game_id" = $1'
+  const query = 'SELECT * FROM grids WHERE game_id = $1'
   const values = [req.query.gameId]
   try {
     const result = await db.query(query, values)
@@ -42,8 +42,8 @@ exports.fetchGrid = async (req, res) => {
 exports.newGame = (names) => {
   return new Promise((resolve, reject) => {
     const game = {}
-    game['gameName'] = 'NEW'
-    game['gameDate'] = new Date()
+    game['game_name'] = 'NEW'
+    game['game_date'] = new Date()
     for (let i = 0; i < names.length; i++) {
       game[`user${i + 1}`] = names[i]
     }
@@ -54,7 +54,7 @@ exports.newGame = (names) => {
     const values = Object.values(game)
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
 
-    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING "gameID"`
+    const query = `INSERT INTO games (${keys}) VALUES (${placeholders}) RETURNING game_id`
 
     db.query(query, values, (error, results) => {
       if (error) {
