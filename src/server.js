@@ -143,10 +143,7 @@ io.on('connection', (socket) => {
       // only get the imposters once everyone has joined the room
       if (rooms[roomID].members.length === rooms[roomID].gameSize) {
         // create the gameroom in the database
-        const allUserIDs = rooms[roomID].members.map(
-          (member) => users.get(member).id
-        )
-        assignGameID(roomID, allUserIDs)
+
         const imposter = getImposter(rooms[roomID])
         rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
 
@@ -163,11 +160,6 @@ io.on('connection', (socket) => {
       socket.emit('roomJoinError', 'Room does not exist')
     }
   })
-
-  async function assignGameID(roomID, allUserIDs) {
-    rooms[roomID].gameID = await dbController.newGame(allUserIDs)
-    return rooms[roomID].gameID
-  }
 
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
@@ -368,10 +360,16 @@ function updateGridSubmission(roomID, memberID, type, content, socketID) {
   }
 }
 
-function emitRoundOver(roomID) {
-  const grid = rooms[roomID].grid
-  dbController.saveGrid(rooms[roomID].gameID, grid)
-  io.to(roomID).emit('roundOver', grid)
+async function emitRoundOver(roomID) {
+  const allUserIDs = rooms[roomID].members.map((member) => users.get(member).id)
+  await assignGameID(roomID, allUserIDs)
+  dbController.saveGrid(rooms[roomID].gameID, rooms[roomID].grid)
+  io.to(roomID).emit('roundOver', rooms[roomID].grid)
+}
+
+async function assignGameID(roomID, allUserIDs) {
+  rooms[roomID].gameID = await dbController.newGame(allUserIDs)
+  return rooms[roomID].gameID
 }
 
 server.listen(port, () => {
