@@ -93,6 +93,7 @@ io.on('connection', (socket) => {
       return
     }
 
+    room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
     for (const entry of room.todo) {
       const { roomId, prompt, socketID } = entry
 
@@ -221,6 +222,10 @@ io.on('connection', (socket) => {
       if (room.gameStarted) {
         room.maxMembers -= 1
         delete publicRooms[currentRoom]
+      }
+
+      if (room.allJoined) {
+        room.gameSize -= 1
       }
 
       if (room.members.length === 0) {
