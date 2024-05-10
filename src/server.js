@@ -93,6 +93,10 @@ io.on('connection', (socket) => {
       return
     }
 
+    sendPrompts(room)
+  })
+
+  function sendPrompts(room) {
     room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
     for (const entry of room.todo) {
       const { roomId, prompt, socketID } = entry
@@ -115,7 +119,7 @@ io.on('connection', (socket) => {
       }
     }
     room.todo = []
-  })
+  }
 
   socket.on('drawingSubmitted', (data) => {
     const { roomId, image } = data
@@ -141,30 +145,29 @@ io.on('connection', (socket) => {
   })
 
   socket.on('joinGameRoom', (roomID, userDetails) => {
-    if (rooms[roomID]) {
-      rooms[roomID].members.push(socket.id)
+    const room = rooms[roomID]
+    if (room) {
+      room.members.push(socket.id)
       users.set(socket.id, userDetails)
       socket.join(roomID)
       currentRoom = roomID
       updateAndEmitOrders(roomID)
-      rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
-      const allUserDetails = rooms[roomID].members.map((member) =>
-        users.get(member)
-      )
+      room.grid = createRoomGrid(room.members.length)
+      const allUserDetails = room.members.map((member) => users.get(member))
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
         members: allUserDetails,
       })
 
       // only get the imposters once everyone has joined the room
-      if (rooms[roomID].members.length === rooms[roomID].gameSize) {
+      if (room.members.length === room.gameSize) {
         // create the gameroom in the database
 
-        const imposter = getImposter(rooms[roomID])
-        rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
+        const imposter = getImposter(room)
+        room.imposter = imposter // store the imposter so the server knows who it is
 
         // Send a "no" message to all other members
-        rooms[roomID].members.forEach((member) => {
+        room.members.forEach((member) => {
           if (member === imposter) {
             io.to(member).emit('imposter', true)
           } else {
@@ -174,6 +177,11 @@ io.on('connection', (socket) => {
       }
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
+    }
+
+    if (room.todo && room.todo.length == room.gameSize) {
+      // the prompt's have arrived before the game room was joined
+      sendPrompts(room)
     }
   })
 
