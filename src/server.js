@@ -109,9 +109,11 @@ io.on('connection', (socket) => {
     }
 
     drawingSubmissions[roomId][socket.id] = image
+    console.log(users)
+    console.log(socket.id)
     updateGridSubmission(
       roomId,
-      users.get(socket.id).username,
+      users.get(socket.id).username, // TOFIX this sometimes gives an error "cannot read properties of undefined"
       'drawing',
       image,
       socket.id

@@ -1,25 +1,24 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
-console.log(roomId)
 let CurrentSetIndex = 0
 let CurrentImageIndex = 0
 let CurrentImage = null
 let CurrentGrid = null
 let PlayerCount = 0
 
-let username = ''
+let userDetails = ''
 async function fetchUser() {
   const response = await fetch(`/getUser`)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   } else {
-    const user = await response.json()
-    console.log(user.username)
-    username = user.username
-    return user
+    userDetails = await response.json()
+    return userDetails
   }
 }
-fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
+fetchUser().then((userDetails) =>
+  socket.emit('joinGameRoom', roomId, userDetails)
+)
 
 socket.on('gameRoomJoined', (data) => {})
 
@@ -36,7 +35,6 @@ socket.on('updateDrawing', (drawing) => {
 
 socket.on('roundOver', (submissionGrid) => {
   PlayerCount = submissionGrid.length
-  console.log(PlayerCount)
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
   console.log(submissionGrid)
   CurrentGrid = submissionGrid
@@ -470,6 +468,8 @@ const actions = [
   'sneaking',
   'hiding',
 ]
+
+//maybe add a location as well, to get a more specific prompt?
 
 // Function to generate a random prompt
 function getRandomPrompt() {
