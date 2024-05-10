@@ -5,6 +5,7 @@ let CurrentImageIndex = 0
 let CurrentImage = null
 let CurrentGrid = null
 let PlayerCount = 0
+let drawingTool = 'pencil'
 
 let userDetails = ''
 async function fetchUser() {
@@ -127,10 +128,36 @@ const upButton = document.getElementById('upButton')
 const downButton = document.getElementById('downButton')
 const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
+const pencilButton = document.getElementById('pencil')
+const sprayPaintButton = document.getElementById('sprayPaint')
+const blurButton = document.getElementById('blur')
 const eraserButton = document.getElementById('eraser')
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')
+  drawingTool = 'pencil'
+})
+
+pencilButton.addEventListener('click', () => {
+  console.log(context.strokeStyle)
+  console.log(drawColour)
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'pencil'
+})
+
+blurButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'blur'
+})
+sprayPaintButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'sprayPaint'
 })
 
 upButton.addEventListener('click', () => {
@@ -284,19 +311,60 @@ function startDrawing(e) {
   e.preventDefault()
 }
 
+let lastPoint = null
+
 function draw(e) {
-  if (isDrawing) {
-    context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
-    context.lineCap = 'round'
-    context.lineJoin = 'round'
-    context.stroke()
+  const currentPoint = {
+    x: e.clientX - canvas.offsetLeft,
+    y: e.clientY - canvas.offsetTop,
   }
-  e.preventDefault()
+
+  if (isDrawing) {
+    if (drawingTool === 'blur') {
+      // Begin a new path for each circle
+      context.beginPath()
+
+      // Draw semi-transparent circles for a blur effect
+      context.globalAlpha = 0.1 // Adjust transparency as needed
+      context.fillStyle = context.strokeStyle
+
+      if (lastPoint) {
+        const distance = Math.sqrt(
+          Math.pow(currentPoint.x - lastPoint.x, 2) +
+            Math.pow(currentPoint.y - lastPoint.y, 2)
+        )
+        const angle = Math.atan2(
+          currentPoint.y - lastPoint.y,
+          currentPoint.x - lastPoint.x
+        )
+
+        for (let i = 0; i < distance; i += 10) {
+          const x = lastPoint.x + i * Math.cos(angle)
+          const y = lastPoint.y + i * Math.sin(angle)
+
+          context.arc(x, y, context.lineWidth / 2, 0, Math.PI * 2)
+          context.fill()
+        }
+      }
+
+      context.globalAlpha = 1.0 // Reset transparency
+
+      // Prevent the default action to avoid drawing a line
+      e.preventDefault()
+    } else {
+      context.lineTo(currentPoint.x, currentPoint.y)
+      context.lineCap = 'round'
+      context.lineJoin = 'round'
+      context.stroke()
+    }
+  }
+
+  lastPoint = currentPoint
 }
 
 function stopDrawing(e) {
   if (isDrawing) {
-    context.stroke()
+    // context.stroke()
     context.closePath()
     isDrawing = false
 
