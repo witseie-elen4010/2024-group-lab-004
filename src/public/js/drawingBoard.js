@@ -326,6 +326,67 @@ function startDrawing(e) {
 
 let lastPoint = null
 
+function drawPencil(e, currentPoint) {
+  context.lineTo(currentPoint.x, currentPoint.y)
+  context.lineCap = 'round'
+  context.lineJoin = 'round'
+  context.stroke()
+}
+
+function drawBlur(e, currentPoint) {
+  // Begin a new path for each circle
+  context.beginPath()
+
+  // Draw semi-transparent circles for a blur effect
+  context.globalAlpha = 0.1 // Adjust transparency as needed
+  context.fillStyle = context.strokeStyle
+
+  if (lastPoint) {
+    const distance = Math.sqrt(
+      Math.pow(currentPoint.x - lastPoint.x, 2) +
+        Math.pow(currentPoint.y - lastPoint.y, 2)
+    )
+    const angle = Math.atan2(
+      currentPoint.y - lastPoint.y,
+      currentPoint.x - lastPoint.x
+    )
+
+    for (let i = 0; i < distance; i += 10) {
+      const x = lastPoint.x + i * Math.cos(angle)
+      const y = lastPoint.y + i * Math.sin(angle)
+
+      context.arc(x, y, context.lineWidth / 2, 0, Math.PI * 2)
+      context.fill()
+    }
+  }
+
+  context.globalAlpha = 1.0 // Reset transparency
+
+  // Prevent the default action to avoid drawing a line
+  e.preventDefault()
+}
+
+function drawSprayPaint(e, currentPoint) {
+  // Begin a new path for each point
+  context.beginPath()
+  context.fillStyle = context.strokeStyle
+
+  // Draw multiple points around the current point
+  for (let i = 0; i < 5 * context.lineWidth; i++) {
+    const angle = Math.random() * Math.PI * 2 // Random angle in radians
+    const radius = (Math.random() * context.lineWidth) / 2 // Random radius within pen size
+
+    const offset = {
+      x: radius * Math.cos(angle), // Calculate x offset
+      y: radius * Math.sin(angle), // Calculate y offset
+    }
+
+    context.fillRect(currentPoint.x + offset.x, currentPoint.y + offset.y, 1, 1)
+  }
+
+  // Prevent the default action to avoid drawing a line
+  e.preventDefault()
+}
 function draw(e) {
   const currentPoint = {
     x: e.clientX - canvas.offsetLeft,
@@ -334,41 +395,11 @@ function draw(e) {
 
   if (isDrawing) {
     if (drawingTool === 'blur') {
-      // Begin a new path for each circle
-      context.beginPath()
-
-      // Draw semi-transparent circles for a blur effect
-      context.globalAlpha = 0.1 // Adjust transparency as needed
-      context.fillStyle = context.strokeStyle
-
-      if (lastPoint) {
-        const distance = Math.sqrt(
-          Math.pow(currentPoint.x - lastPoint.x, 2) +
-            Math.pow(currentPoint.y - lastPoint.y, 2)
-        )
-        const angle = Math.atan2(
-          currentPoint.y - lastPoint.y,
-          currentPoint.x - lastPoint.x
-        )
-
-        for (let i = 0; i < distance; i += 10) {
-          const x = lastPoint.x + i * Math.cos(angle)
-          const y = lastPoint.y + i * Math.sin(angle)
-
-          context.arc(x, y, context.lineWidth / 2, 0, Math.PI * 2)
-          context.fill()
-        }
-      }
-
-      context.globalAlpha = 1.0 // Reset transparency
-
-      // Prevent the default action to avoid drawing a line
-      e.preventDefault()
+      drawBlur(e, currentPoint)
+    } else if (drawingTool === 'sprayPaint') {
+      drawSprayPaint(e, currentPoint)
     } else {
-      context.lineTo(currentPoint.x, currentPoint.y)
-      context.lineCap = 'round'
-      context.lineJoin = 'round'
-      context.stroke()
+      drawPencil(e, currentPoint)
     }
   }
 
