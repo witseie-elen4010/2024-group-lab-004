@@ -1,7 +1,5 @@
 const { test, expect } = require('@playwright/test')
-test('random true test to pass', async ({ page }) => {
-  expect(true).toBe(true)
-})
+
 async function navigateToGame(context) {
   const page1 = await context.newPage()
   await page1.goto('http://localhost:4000/')
@@ -45,18 +43,33 @@ async function navigateToGame(context) {
   await page3.getByRole('button', { name: 'Join Public Game' }).click()
   await page3.getByRole('button', { name: /^Join$/ }).click()
 
+  await page1.getByRole('button', { name: 'Start Game' }).click()
   return { page1, page2, page3 }
 }
 
 test('canvas exists', async ({ context }) => {
-  // Create a room on page1
-
   const { page1, page2, page3 } = await navigateToGame(context)
 
-  await page1.getByRole('button', { name: 'Start Game' }).click()
   const canvas = await page1.$('canvas')
   expect(canvas).toBeTruthy()
 })
+
+test('erasor sets colour to white', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+
+  await page1.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page3.locator('#doneButton').click()
+
+  await page1.locator('#eraser').click()
+  let strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#ffffff')
+})
+
 // test('canvas exists', async ({ context }) => {
 //   // Create a room on page1
 //   const page1 = await context.newPage()
