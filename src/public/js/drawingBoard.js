@@ -97,7 +97,7 @@ socket.on('normal', () => {
 
 const canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth - 300
-canvas.height = window.innerHeight - 300
+canvas.height = window.innerHeight - 350
 
 const blackButton = document.getElementById('blackButton')
 const redButton = document.getElementById('redButton')
