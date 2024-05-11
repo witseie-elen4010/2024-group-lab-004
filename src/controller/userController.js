@@ -50,7 +50,15 @@ exports.guest = async (req, res) => {
     id: -1,
     username: req.query.nickname,
   }
-  return res.redirect('/landing')
+  req.session.save((err) => {
+    if (err) {
+      // handle error
+      console.log(err)
+      res.status(500).send('An error occurred while saving the session')
+    } else {
+      return res.redirect('/landing')
+    }
+  })
 }
 
 exports.logout = async (req, res) => {
