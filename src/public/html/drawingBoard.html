@@ -116,7 +116,7 @@
     <div class="whiteboard">
       <canvas id="canvas"></canvas>
       <div class="tools">
-        <button id="clear" class="drawButton" onclick="clearCanvas()">
+        <button id="clear" class="drawButton">
           Clear
         </button>
         <button id="undo" class="drawButton"  disabled> Undo</button>
@@ -143,7 +143,11 @@
           style="background: rgb(255, 192, 241)"
         ></button>
         <input type="color" id="colour-picker" value="#90EE90" />
-        <img id="eraser"  src="https://toppng.com/uploads/preview/icon-free-download-png-eraser-icon-11563157752g2ytqb7pwh.png" width="40px" height="40px" style="border-radius: 5px"></img >
+        <img id="pencil" class = "drawing-tool-icon" src="https://icons.iconarchive.com/icons/iconsmind/outline/256/Pencil-icon.png" ></img>
+        <img id="sprayPaint" class = "drawing-tool-icon" src="https://www.svgrepo.com/show/506855/cle-spraycan.svg"></img>
+        <img id="blur" class = "drawing-tool-icon" src="https://icons.veryicon.com/png/o/miscellaneous/fine-linear-ico/water-drop-4.png"></img>
+        <img id="eraser" class = "drawing-tool-icon" src="https://cdn-icons-png.freepik.com/512/254/254686.png"></img >
+        
         <input type="range" id="size-picker" min="1" max="50" value="2" />
         <button id="submit" class="drawButton">Submit</button>
       </div>
