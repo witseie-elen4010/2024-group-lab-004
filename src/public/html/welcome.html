@@ -24,12 +24,23 @@
         </header>
         <main>
           <section class="authentication text-center mb-4">
-            <button id="signin-btn" class="btn btn-success mx-1">
-              Sign In
-            </button>
-            <button id="guest-btn" class="btn btn-success mx-1">
-              Continue as Guest
-            </button>
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <!-- Central column to limit width -->
+                <div class="row">
+                  <div class="col-12 mb-2">
+                    <button id="signin-btn" class="btn btn-success w-100">
+                      Sign In
+                    </button>
+                  </div>
+                  <div class="col-12">
+                    <button id="guest-btn" class="btn btn-success w-100">
+                      Continue as Guest
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="guest-nickname mt-3 d-none">
               <input
                 type="text"
