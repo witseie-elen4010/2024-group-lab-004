@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const session = require('express-session')
 const pgSession = require('connect-pg-simple')(session)
 const Router = require('./routes/router')
+const welcomeController = require('./controller/welcomeController')
 
 const app = express()
 
@@ -29,6 +30,8 @@ app.use(
 )
 
 app.use('/', Router)
+
+app.use(welcomeController.waitForSession)
 
 app.all('*', (req, res, next) => {
   res.redirect('/')
