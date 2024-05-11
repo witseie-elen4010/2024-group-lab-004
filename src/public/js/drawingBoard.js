@@ -112,9 +112,9 @@ const doneButton = document.getElementById('doneButton')
 const getInput = document.getElementById('getInput')
 const inputCountdownBar = document.getElementById('inputCountdownBar')
 const drawingCountdownBar = document.getElementById('drawingCountdownBar')
-const helpButton = document.getElementById('HelpButton')
-const HelpList = document.getElementById('HelpList')
-const HelpListClose = document.getElementById('HelpClose')
+const helpButton = document.getElementById('helpButton')
+const HelpList = document.getElementById('helpList')
+const HelpListClose = document.getElementById('helpClose')
 const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
 const undoButton = document.getElementById('undo')
@@ -128,6 +128,7 @@ const downButton = document.getElementById('downButton')
 const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
 const eraserButton = document.getElementById('eraser')
+const exitButton = document.getElementById('exitButton')
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')
@@ -171,6 +172,10 @@ leaveGameButton.addEventListener('click', () => {
 
 nextRoundButton.addEventListener('click', () => {
   socket.emit('nextRound', roomId)
+})
+
+exitButton.addEventListener('click', () => {
+  window.location.href = '/landing'
 })
 
 socket.on('newRound', () => {
