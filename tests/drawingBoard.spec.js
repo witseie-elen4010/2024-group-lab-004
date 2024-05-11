@@ -13,6 +13,25 @@ async function navigateToGame(context) {
     .locator('#loginForm')
     .getByRole('button', { name: 'Login' })
     .click()
+
+  let signInButton = await page1.getByRole('button', {
+    name: 'Sign In',
+    timeout: 500,
+  })
+
+  while (signInButton && (await signInButton.isVisible())) {
+    await signInButton.click()
+    await page1.getByLabel('Username:').click()
+    await page1.getByLabel('Username:').fill('test')
+    await page1.getByLabel('Password:').click()
+    await page1.getByLabel('Password:').fill('test')
+    await page1
+      .locator('#loginForm')
+      .getByRole('button', { name: 'Login' })
+      .click()
+    signInButton = await page1.getByRole('button', { name: 'Sign In' })
+  }
+
   await page1.getByRole('button', { name: 'Create Public Game' }).click()
 
   const page2 = await context.newPage()
@@ -42,8 +61,8 @@ async function navigateToGame(context) {
     .click()
   await page3.getByRole('button', { name: 'Join Public Game' }).click()
   await page3.getByRole('button', { name: /^Join$/ }).click()
-
   await page1.getByRole('button', { name: 'Start Game' }).click()
+
   return { page1, page2, page3 }
 }
 
@@ -68,6 +87,17 @@ test('erasor sets colour to white', async ({ context }) => {
     return context.strokeStyle
   })
   expect(strokeStyleColor).toBe('#ffffff')
+})
+
+test('player can exit game', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+
+  await page1.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page3.locator('#doneButton').click()
+
+  await page1.locator('#helpButton').getByRole('img', { name: 'Logo' }).click()
+  await page1.locator('#exitButton').click()
 })
 
 // test('canvas exists', async ({ context }) => {

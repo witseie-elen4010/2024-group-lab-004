@@ -114,9 +114,9 @@ const doneButton = document.getElementById('doneButton')
 const getInput = document.getElementById('getInput')
 const inputCountdownBar = document.getElementById('inputCountdownBar')
 const drawingCountdownBar = document.getElementById('drawingCountdownBar')
-const helpButton = document.getElementById('HelpButton')
-const HelpList = document.getElementById('HelpList')
-const HelpListClose = document.getElementById('HelpClose')
+const helpButton = document.getElementById('helpButton')
+const helpList = document.getElementById('helpList')
+const helpListClose = document.getElementById('helpClose')
 const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
 const undoButton = document.getElementById('undo')
@@ -133,6 +133,7 @@ const pencilButton = document.getElementById('pencil')
 const sprayPaintButton = document.getElementById('sprayPaint')
 const blurButton = document.getElementById('blur')
 const eraserButton = document.getElementById('eraser')
+const exitButton = document.getElementById('exitButton')
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')
@@ -201,6 +202,10 @@ nextRoundButton.addEventListener('click', () => {
   socket.emit('nextRound', roomId)
 })
 
+exitButton.addEventListener('click', () => {
+  window.location.href = '/landing'
+})
+
 socket.on('newRound', () => {
   hideRoundOverOverlay()
   activateInputPrompt()
@@ -251,11 +256,11 @@ blueButton.addEventListener('click', () => changeColour('blue'))
 pinkButton.addEventListener('click', () => changeColour('pink'))
 
 helpButton.addEventListener('click', function () {
-  HelpList.style.display = 'block'
+  helpList.style.display = 'block'
 })
 
-HelpListClose.addEventListener('click', function () {
-  HelpList.style.display = 'none'
+helpListClose.addEventListener('click', function () {
+  helpList.style.display = 'none'
 })
 
 penSizeSlider.addEventListener('input', () =>
