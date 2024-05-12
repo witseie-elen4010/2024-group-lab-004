@@ -24,15 +24,17 @@ fetchUser().then((userDetails) =>
   socket.emit('joinGameRoom', roomId, userDetails)
 )
 
-socket.on('gameRoomJoined', (data) => {})
+// socket.on('gameRoomJoined', (data) => {})
 
 socket.on('updatePrompt', (prompt) => {
+  // **** timer starts here//
   hideWaitingContainer()
   inputPrompt.style.display = 'none'
   setPrompt(prompt)
 })
 
 socket.on('updateDrawing', (drawing) => {
+  // **** timer starts here//
   hideWaitingContainer()
   activateInputPrompt(drawing)
 })
@@ -214,6 +216,7 @@ blurButton.addEventListener('click', () => {
   }
   drawingTool = 'blur'
 })
+
 sprayPaintButton.addEventListener('click', () => {
   canvas.style.cursor = 'url(https://i.imgur.com/XQAlEMI.png) 16 16, auto'
   if (drawColour == 'white') {
@@ -453,6 +456,7 @@ function drawSprayPaint(e, currentPoint) {
   // Prevent the default action to avoid drawing a line
   e.preventDefault()
 }
+
 function draw(e) {
   const currentPoint = {
     x: e.clientX - canvas.offsetLeft,
@@ -489,70 +493,27 @@ function stopDrawing(e) {
   }
 }
 
-const endTimeout = function () {}
-
-// Activate input prompt and only call `submitPrompt` when all are done
-function activateInputPrompt(img = null) {
-  drawing.style.display = img ? 'block' : 'none'
-  notDrawing.style.display = img ? 'none' : 'block'
-  if (img) {
-    drawingDisplay.src = img
-  }
-
-  inputPrompt.style.display = 'block'
-  inputCountdownBar.style.width = '100%'
-  inputCountdownBar.style.transitionDuration = `${inputTimer}ms`
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      inputCountdownBar.style.width = '0%'
-    })
-  })
-
-  // const timeoutId = setTimeout(submitPrompt, inputTimer)
-
-  // function checkEnterKey(event) {
-  //   if (event.key === 'Enter') {
-  //     submitPrompt()
-  //   }
-  // }
-
-  // doneButton.addEventListener('click', submitPrompt)
-  // getInput.addEventListener('keydown', checkEnterKey)
-
-  // endTimeout = function () {
-  //   clearTimeout(timeoutId)
-  //   inputCountdownBar.style.transition = 'none'
-  //   inputCountdownBar.style.width = '100%'
-  //   void inputCountdownBar.offsetWidth
-  //   inputCountdownBar.style.transition = ''
-  // }
-}
-
-function setPrompt(prompt) {
-  const promptText = document.getElementById('prompt')
-  promptText.innerText = prompt
-  startDrawTimer()
-}
+let endTimeout = function () {}
 
 function startDrawTimer() {
-  // drawingCountdownBar.style.width = '100%'
-  // drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
-  // requestAnimationFrame(() => {
-  //   requestAnimationFrame(() => {
-  //     drawingCountdownBar.style.width = '0%'
-  //   })
-  // })
-  // const countdownBarTimeout = setTimeout(() => {
-  //   submitDrawing()
-  // }, drawingTimer)
-  // endTimeout = function () {
-  //   clearTimeout(countdownBarTimeout)
-  //   drawingCountdownBar.style.transition = 'none'
-  //   drawingCountdownBar.style.width = '100%'
-  //   void drawingCountdownBar.offsetWidth
-  //   drawingCountdownBar.style.transition = ''
-  // }
+  drawingCountdownBar.style.width = '100%'
+  drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      drawingCountdownBar.style.width = '0%'
+    })
+  })
+  const countdownBarTimeout = setTimeout(() => {
+    submitDrawing()
+  }, drawingTimer)
+  endTimeout = function () {
+    clearTimeout(countdownBarTimeout)
+    drawingCountdownBar.style.transition = 'none'
+    drawingCountdownBar.style.width = '100%'
+    void drawingCountdownBar.offsetWidth
+    drawingCountdownBar.style.transition = ''
+    console.log('cleared timeout')
+  }
 }
 
 function submitDrawing() {
@@ -560,20 +521,20 @@ function submitDrawing() {
   // Get the length of the data URL in bytes
 
   stopDrawing({ type: 'mouseout' })
+
+  const previousFillStyle = context.fillStyle
+  context.fillStyle = '#FFFFFF' // Set fillStyle to white
   context.fillRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = previousFillStyle // Reset fillStyle to previous value
+
   index = -1
   pastDrawings = []
   undoButton.disabled = true
   redoButton.disabled = true
-  //endTimeout()
+  endTimeout()
 
-  //console.log('Drawing submitted:', image)
   socket.emit('drawingSubmitted', { roomId, image })
   showWaitingContainer()
-}
-
-function showWaitingContainer() {
-  waitingContainer.style.display = 'flex'
 }
 
 const colors = [
@@ -687,7 +648,7 @@ function activateInputPrompt(img = null) {
     })
 
     // Set a timeout to hide the inputPrompt
-    //const timeoutId = setTimeout(inputDone, inputTimer)
+    const timeoutId = setTimeout(inputDone, inputTimer) // TODO: if the user submits themself, this shouldnt be called
 
     function checkEnterKey(event) {
       if (event.key === 'Enter') {
@@ -702,7 +663,7 @@ function activateInputPrompt(img = null) {
       // Reset the countdown bar and timer
       inputCountdownBar.style.width = '100%'
       void drawingCountdownBar.offsetWidth // force a reflow to apply the changes immediately
-      //clearTimeout(timeoutId)
+      clearTimeout(timeoutId)
 
       let prompt = getInput.value
       if (prompt == '') {
@@ -741,6 +702,10 @@ function setPrompt(prompt) {
 
 function hideWaitingContainer() {
   waitingContainer.style.display = 'none'
+}
+
+function showWaitingContainer() {
+  waitingContainer.style.display = 'flex'
 }
 
 activateInputPrompt()
