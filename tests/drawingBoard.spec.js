@@ -255,131 +255,171 @@ test('the user can draw for a certain amount of time', async ({ context }) => {
   expect(isVisible).toBe(true)
 })
 
-// test('testing the timer bar appears until the prompt is entered', async ({
-//   page,
-// }) => {
-//   await page.goto('http://localhost:4000/draw')
+test('the timer bar appears until the prompt is entered', async ({
+  context,
+}) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page1.waitForSelector('#doneButton')
 
-//   // check if the timer bar is displayed
-//   let timerBar = await page.locator('#inputCountdownBar').isVisible()
-//   expect(timerBar).toBe(true)
+  // check if the timer bar is displayed
+  let timerBar = await page1.locator('#inputCountdownBar').isVisible()
+  expect(timerBar).toBe(true)
 
-//   // enter a prompt and click done
-//   await page.locator('#doneButton').click()
+  // enter a prompt and click done
+  await page1.locator('#doneButton').click()
 
-//   // check if the timer bar is displayed
-//   timerBar = await page.locator('#inputCountdownBar').isVisible()
-//   expect(timerBar).toBe(false)
-// })
+  // check if the timer bar is displayed
+  timerBar = await page1.locator('#inputCountdownBar').isVisible()
+  expect(timerBar).toBe(false)
+})
 
-// test.describe('testing that the timer bar decreases in width', () => {
-//   const waitTime = 1000
-//   const inputTimer = 25
-//   const drawingTimer = 60
-//   const percentageAllowed = 10
-//   test.beforeEach(async ({ page }) => {
-//     await page.goto(
-//       `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-//     )
-//   })
-//   The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
+test.describe('testing that the timer bar decreases in width', () => {
+  const waitTime = 1000
+  const inputTimer = 25
+  const drawingTimer = 60
+  const percentageAllowed = 10
+  //   The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
 
-//   test('The input timer bar decreases for the original prompt entering', async ({
-//     page,
-//   }) => {
-//     // get the initial width of the timer bar
-//     const initialWidth = parseInt(
-//       await page.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
-//     )
+  test('The input timer bar decreases for the original prompt entering', async ({
+    context,
+  }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
 
-//     // wait for some time
-//     await page.waitForTimeout(waitTime)
+    page3.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    page2.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    await page1.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    await page1.waitForSelector('#doneButton')
+    await page1.waitForTimeout(500)
 
-//     // get the width of the timer bar after half a second
-//     const laterWidth = parseInt(
-//       await page.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
-//     )
+    // get the initial width of the timer bar
+    const initialWidth = parseInt(
+      await page1.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
+    )
 
-//     // get the expected decrease in width in seconds
-//     const expectedDecrease =
-//       ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
+    // wait for some time
+    await page1.waitForTimeout(waitTime)
 
-//     // the difference in percentage must be less than a certain percentage
-//     const difPercentage =
-//       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
+    // get the width of the timer bar after half a second
+    const laterWidth = parseInt(
+      await page1.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
+    )
 
-//     // check if the width of the timer bar has decreased
-//     expect(laterWidth).toBeLessThan(initialWidth)
-//     expect(difPercentage).toBeLessThan(percentageAllowed)
-//   })
+    // get the expected decrease in width in seconds
+    const expectedDecrease =
+      ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
 
-//   test('The input timer bar decreases for describing a drawing', async ({
-//     page,
-//   }) => {
-//     // get to the describe a drawing point
-//     await page.locator('#doneButton').click()
-//     await page.locator('#submit').click()
+    // the difference in percentage must be less than a certain percentage
+    const difPercentage =
+      (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
 
-//     // get the initial width of the timer bar
-//     const initialWidth = parseInt(
-//       await page.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
-//     )
+    // check if the width of the timer bar has decreased
+    expect(laterWidth).toBeLessThan(initialWidth)
+    expect(difPercentage).toBeLessThan(percentageAllowed)
+  })
 
-//     // wait for some time
-//     await page.waitForTimeout(waitTime)
+  test('The input timer bar decreases for describing a drawing', async ({
+    context,
+  }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    page3.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    page2.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    await page1.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
 
-//     // get the width of the timer bar after half a second
-//     const laterWidth = parseInt(
-//       await page.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
-//     )
+    // get to the describe a drawing point
+    await page1.locator('#doneButton').click()
 
-//     // get the expected decrease in width in seconds
-//     const expectedDecrease =
-//       ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
+    await page2.locator('#doneButton').click()
 
-//     // the difference in percentage must be less than a certain percentage
-//     const difPercentage =
-//       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
+    await page3.locator('#doneButton').click()
+    await page3.locator('#submit').click()
+    await page2.locator('#submit').click()
+    await page1.locator('#submit').click()
 
-//     // check if the width of the timer bar has decreased
-//     expect(laterWidth).toBeLessThan(initialWidth)
-//     expect(difPercentage).toBeLessThan(percentageAllowed)
-//   })
-//   test('The draw timer bar decreases', async ({ page }) => {
-//     // get to the describe a drawing point
-//     await page.locator('#doneButton').click()
+    // get the initial width of the timer bar
+    const initialWidth = parseInt(
+      await page1.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
+    )
 
-//     // get the initial width of the timer bar
-//     const initialWidth = parseInt(
-//       await page.$eval('#drawingCountdownBar', (e) => getComputedStyle(e).width)
-//     )
+    // wait for some time
+    await page1.waitForTimeout(waitTime)
 
-//     // wait for some time
-//     await page.waitForTimeout(waitTime)
+    // get the width of the timer bar after half a second
+    const laterWidth = parseInt(
+      await page1.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
+    )
 
-//     // get the width of the timer bar after half a second
-//     const laterWidth = parseInt(
-//       await page.$eval('#drawingCountdownBar', (e) => getComputedStyle(e).width)
-//     )
+    // get the expected decrease in width in seconds
+    const expectedDecrease =
+      ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
 
-//     // get the expected decrease in width in seconds
-//     const expectedDecrease =
-//       ((initialWidth - laterWidth) / initialWidth) * drawingTimer * 1000
+    // the difference in percentage must be less than a certain percentage
+    const difPercentage =
+      (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
 
-//     // the difference in percentage must be less than a certain percentage
-//     const difPercentage =
-//       (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
+    // check if the width of the timer bar has decreased
+    expect(laterWidth).toBeLessThan(initialWidth)
+    expect(difPercentage).toBeLessThan(percentageAllowed)
+  })
+  test('The draw timer bar decreases', async ({ context }) => {
+    // get to the describe a drawing point
+    const { page1, page2, page3 } = await navigateToGame(context)
+    page3.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    page2.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    await page1.goto(
+      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    )
+    await page3.locator('#doneButton').click()
+    await page2.locator('#doneButton').click()
+    await page1.locator('#doneButton').click()
 
-//     // check if the width of the timer bar has decreased
-//     expect(laterWidth).toBeLessThan(initialWidth)
-//     expect(difPercentage).toBeLessThan(percentageAllowed)
-//   })
-// })
+    // get the initial width of the timer bar
+    const initialWidth = parseInt(
+      await page1.$eval(
+        '#drawingCountdownBar',
+        (e) => getComputedStyle(e).width
+      )
+    )
 
-//
-//
-//
-//
+    // wait for some time
+    await page1.waitForTimeout(waitTime)
+
+    // get the width of the timer bar after half a second
+    const laterWidth = parseInt(
+      await page1.$eval(
+        '#drawingCountdownBar',
+        (e) => getComputedStyle(e).width
+      )
+    )
+
+    // get the expected decrease in width in seconds
+    const expectedDecrease =
+      ((initialWidth - laterWidth) / initialWidth) * drawingTimer * 1000
+
+    // the difference in percentage must be less than a certain percentage
+    const difPercentage =
+      (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
+
+    // check if the width of the timer bar has decreased
+    expect(laterWidth).toBeLessThan(initialWidth)
+    expect(difPercentage).toBeLessThan(percentageAllowed)
+  })
+})
 
 // // test('testing that a drawing is shown after submitting the prompt', async ({
 // //   page,
