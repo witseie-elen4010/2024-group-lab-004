@@ -16,6 +16,57 @@
 #container {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
+
+/* General button styles */
+button {
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#historyButton {
+  width: 100%; /* Ensures the div takes full width of the container */
+  margin-top: 20px; /* Adds space above the History button */
+  text-align: center; /* Centers the button */
+}
+
+/* Hover effect for buttons */
+button:hover {
+  background-color: #45a049;
+}
+
+/* Specific styles for Start Game and Join buttons */
+#startGame,
+#submitJoinRoom {
+  background-color: #008cba;
+}
+
+#startGame {
+  display: block; /* Makes the button a block element */
+  margin: 20px auto; /* Centers the button horizontally with automatic margins */
+  width: 50%; /* Optional: you can set a specific width if you want a uniform button size */
+}
+
+#startGame:hover,
+#submitJoinRoom:hover {
+  background-color: #007ba7;
+}
+
+/* Styles for input fields */
+input[type='text'] {
+  padding: 10px;
+  width: 70%;
+  margin-right: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 /* Public Rooms List styles */

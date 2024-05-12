@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
   })
 
   backButton.addEventListener('click', () => {
-    window.location.href = '/draw'
+    window.location.href = '/landing'
   })
 
   fetchGames().then((games) => {
