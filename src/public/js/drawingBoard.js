@@ -161,6 +161,8 @@ const leaderboardContainer = document.getElementById('leaderboardContainer')
 const leaderboardCloseButton = document.getElementById('leaderboardCloseButton')
 const leaderboardEntries = document.getElementById('leaderboardEntries')
 
+canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
+
 leaderboardButton.addEventListener('click', () => {
   leaderboardEntries.innerHTML = ''
 
@@ -191,10 +193,12 @@ const exitButton = document.getElementById('exitButton')
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')
+  canvas.style.cursor = 'url(https://i.imgur.com/RkwdmSu.png) 16 16, auto'
   drawingTool = 'pencil'
 })
 
 pencilButton.addEventListener('click', () => {
+  canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
   console.log(context.strokeStyle)
   console.log(drawColour)
   if (drawColour == 'white') {
@@ -204,12 +208,14 @@ pencilButton.addEventListener('click', () => {
 })
 
 blurButton.addEventListener('click', () => {
+  canvas.style.cursor = 'url(https://i.imgur.com/CNMfTWI.png) 16 16, auto'
   if (drawColour == 'white') {
     changeColour('black')
   }
   drawingTool = 'blur'
 })
 sprayPaintButton.addEventListener('click', () => {
+  canvas.style.cursor = 'url(https://i.imgur.com/XQAlEMI.png) 16 16, auto'
   if (drawColour == 'white') {
     changeColour('black')
   }

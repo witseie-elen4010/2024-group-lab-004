@@ -79,6 +79,7 @@ body {
 }
 
 .drawing-tool-icon {
+  cursor: pointer;
   border-radius: 5px;
   width: 40px;
   height: 40px;
@@ -101,7 +102,6 @@ body {
 
 #canvas {
   box-shadow: -3px 2px 9px 6px black;
-  cursor: url('../images/cursor_pen.png'), auto;
   margin-top: 20px;
 }
 
