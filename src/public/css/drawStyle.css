@@ -314,3 +314,9 @@ body {
   height: auto; /* Maintain aspect ratio */
   margin-top: 50px; /* Space between the gif and this image */
 }
+
+#votingCountdown {
+  font-size: 16px; /* Adjust font size as needed */
+  display: inline-block; /* Align inline with the button if applicable */
+  vertical-align: middle; /* Align vertically with the button */
+}
