@@ -32,10 +32,9 @@ button {
   font-size: 16px;
 }
 
-#historyButton {
-  width: 100%; /* Ensures the div takes full width of the container */
-  margin-top: 20px; /* Adds space above the History button */
-  text-align: center; /* Centers the button */
+.position-fixed {
+  top: 10px;
+  right: 10px; /* Adjusts positioning to the top right */
 }
 
 /* Hover effect for buttons */
