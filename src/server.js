@@ -148,12 +148,6 @@ io.on('connection', (socket) => {
       socket.id
     )
 
-    const username = users.get(socket.id).username
-    const room = rooms[roomId]
-    if (username && room.leaderboard) {
-      room.leaderboard[username] += 10
-    }
-
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -191,6 +185,7 @@ io.on('connection', (socket) => {
         room.members.forEach((member) => {
           if (member === imposter) {
             io.to(member).emit('imposter', true)
+            room.imposterUsername = userDetails.username
           } else {
             io.to(member).emit('normal', true)
           }
@@ -253,19 +248,13 @@ io.on('connection', (socket) => {
 
   socket.on('vote', (data) => {
     const { roomId, username } = data
-    console.log('please')
     if (currentRoom) {
       const room = rooms[currentRoom]
-      console.log('here')
       if (!room.votes[username]) {
         room.votes[username] = 0
       }
       room.votes[username] += 1
       room.voteCounts += 1
-
-      // Check if all votes are in (i.e., if every member has cast a vote)
-      console.log(room.voteCounts)
-      console.log(room.members.length)
       if (room.voteCounts === room.members.length) {
         const result = determineResults(room)
         io.to(currentRoom).emit('votingResult', result)
@@ -377,9 +366,19 @@ function determineResults(room) {
   }
 
   // Assume imposter is a known property set elsewhere
-  const isImposter = mostVotedUser === room.imposter
-  console.log('Imposter', room.imposter)
-  console.log('most voted user')
+  const isImposter = mostVotedUser === room.imposterUsername
+
+  Object.entries(room.leaderboard).forEach(([username, score]) => {
+    // If a non-imposter was voted as imposter or an imposter was not identified
+    if (
+      (mostVotedUser !== room.imposterUsername &&
+        username === room.imposterUsername) ||
+      (mostVotedUser === room.imposterUsername &&
+        username !== room.imposterUsername)
+    ) {
+      room.leaderboard[username] += 100
+    }
+  })
   return {
     mostVotedUser,
     votes: maxVotes,
