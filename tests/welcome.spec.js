@@ -57,17 +57,17 @@ test('Sign in button changes once "Continue as Guest" is clicked', async ({
   ).toBeTruthy()
 })
 
-// test('Join button takes you to landing page', async ({ page }) => {
-//   await page.goto('http://localhost:4000/')
-//   await page.getByRole('button', { name: 'Continue as Guest' }).click()
-//   await page.getByPlaceholder('Enter your nickname').click()
-//   await page.getByPlaceholder('Enter your nickname').fill('Bob')
-//   await page.getByRole('button', { name: 'Join' }).click()
+test('Join button takes you to landing page', async ({ page }) => {
+  await page.goto('http://localhost:4000/')
+  await page.getByRole('button', { name: 'Continue as Guest' }).click()
+  await page.getByPlaceholder('Enter your nickname').click()
+  await page.getByPlaceholder('Enter your nickname').fill('Bob')
+  await page.getByRole('button', { name: 'Join' }).click()
 
-//   // Get the current URL
-//   const currentUrl = page.url()
+  // Get the current URL
+  const currentUrl = page.url()
 
-//   // Check if the current URL is the expected URL
-//   expect(currentUrl).toBe('http://localhost:4000/landing')
-//   page.close()
-// })
+  // Check if the current URL is the expected URL
+  expect(currentUrl).toBe('http://localhost:4000/landing')
+  page.close()
+})
