@@ -316,7 +316,46 @@ body {
 }
 
 #votingCountdown {
-  font-size: 16px; /* Adjust font size as needed */
-  display: inline-block; /* Align inline with the button if applicable */
-  vertical-align: middle; /* Align vertically with the button */
+  font-size: 16px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#votingOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #55609b;
+  z-index: 30010;
+  align-items: center;
+  justify-content: center;
+}
+
+#votingContent {
+  background-color: #ffffff; /* White background for the content box */
+  padding: 40px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25); /* Optional: Adds depth */
+}
+
+#votingCountdown {
+  color: black;
+  margin-bottom: 20px;
+}
+
+.btn-success {
+  color: #fff;
+  background-color: #28a745; /* Bootstrap 4 success green */
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  color: #fff;
+  background-color: #218838; /* Slightly darker green on hover */
+  border-color: #1e7e34;
 }

@@ -194,9 +194,9 @@
       </div>
       <div id="RoundOverButtons" style="display: none;">
         <button id="leaveGameButton" style="background-color: #fff;">Leave Game</button>
-        <button id="nextRoundButton" style="background-color: #fff;">Next Round</button>
+        <button id="nextRoundButton" style="background-color: #fff;">Voting</button>
+        <div id="votingCountdown" style="color: white; margin-left: 20px;">Time left to vote: 90s</div>
       </div>
-      <div id="votingCountdown" style="color: white; margin-left: 20px;">Time left to vote: 90s</div>
     </div>
 
     <button id="leaderboardButton" style="position: fixed; top: 10px; right: 10px;">
@@ -222,6 +222,18 @@
         <!-- Player entries will be appended here -->
       </div>
     </div>
+
+    <div id="votingOverlay" style="display: none;">
+      <div id="votingContent">
+          <h1>Voting</h1>
+          <div id="votingPageCountdown">Time left to vote: 90s</div>
+          <div id="buttonsVotingContainer">
+            <button class="btn btn-success" id="viewGameButton">View Game</button>
+            <button class="btn btn-success" id="voteButton">Vote</button>
+          </div>
+      </div>
+    </div>
+    
 
   
 
