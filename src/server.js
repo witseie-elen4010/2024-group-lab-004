@@ -30,6 +30,7 @@ io.on('connection', (socket) => {
       prompts: {},
       grid: null,
       isPublic,
+      leaderboard: {},
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -89,7 +90,7 @@ io.on('connection', (socket) => {
     data.socketID = socket.id
     room.todo.push(data)
     if (room.members.length !== room.gameSize) {
-      //wait for everyone to join, then do this process
+      // wait for everyone to join, then do this process
       return
     }
 
@@ -144,6 +145,13 @@ io.on('connection', (socket) => {
       image,
       socket.id
     )
+
+    const username = users.get(socket.id).username
+    const room = rooms[roomId]
+    if (username && room.leaderboard) {
+      room.leaderboard[username] += 10
+    }
+
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -159,6 +167,9 @@ io.on('connection', (socket) => {
       users.set(socket.id, userDetails)
       socket.join(roomID)
       currentRoom = roomID
+      if (!(userDetails.username in rooms[roomID].leaderboard)) {
+        rooms[roomID].leaderboard[userDetails.username] = 0
+      }
       updateAndEmitOrders(roomID)
       room.grid = createRoomGrid(room.members.length)
       const allUserDetails = room.members.map((member) => users.get(member))
@@ -226,6 +237,15 @@ io.on('connection', (socket) => {
       })
 
       io.to(roomID).emit('newRound')
+    }
+  })
+
+  socket.on('requestLeaderboard', () => {
+    if (currentRoom) {
+      const leaderboardEntries = Object.entries(
+        rooms[currentRoom].leaderboard
+      ).map(([username, points]) => ({ username, points }))
+      socket.emit('receiveLeaderboard', leaderboardEntries)
     }
   })
 

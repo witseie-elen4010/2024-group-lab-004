@@ -6,42 +6,14 @@
   font-family: 'Arial', sans-serif;
 }
 
-body {
-  background-color: #55609b;
-  color: #333;
-  font-size: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  padding-top: 50px; /* Adds padding at the top of the page */
-}
-
-/* Styles for the mascot image */
+/* Mascot adjustments */
 .mascot img {
-  width: 100px;
-  height: auto;
-  margin-bottom: 10px; /* Space below the mascot image */
+  margin-bottom: 10px;
   border-radius: 5px;
-  display: block; /* Ensure the image is block level for centering */
-  margin: 20px auto; /* Centers the image horizontally and adds margin */
 }
 
-/* Styles for the name div */
-#name {
-  font-size: 36px; /* Larger text for the title */
-  color: white;
-  font-weight: bold;
-  margin-bottom: 20px; /* Space below the title */
-  text-align: center;
-}
-
-/* Styles for the main container */
+/* Container adjustments */
 #container {
-  width: 90%;
-  max-width: 600px;
-  background: white;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -118,8 +90,29 @@ input[type='text'] {
   background-color: #008cba;
   padding: 5px 10px;
   margin-left: 10px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 .public-room button:hover {
   background-color: #007ba7;
+}
+
+.btn-primary,
+.btn-primary:hover {
+  background-color: #008cba;
+  border-color: #007ba7;
+}
+
+#startGame {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-success {
+  background-color: #28a745; /* Bootstrap 4's default green */
+  border-color: #28a745; /* Ensuring the border matches the background */
 }

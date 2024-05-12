@@ -4,42 +4,88 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Art Among Us</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
     <link rel="stylesheet" href="../css/welcomeStyle.css" />
   </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>Art Among Us</h1>
-        <!-- <div class="language-selector">
-          <button>EN</button>
-          <button>ES</button>
-          <button>FR</button>
-        </div> -->
-      </header>
-      <main>
-        <section class="authentication">
-          <button id="signin-btn">Sign In</button>
-          <button id="guest-btn">Continue as Guest</button>
-          <div class="guest-nickname" style="display: none">
-            <input type="text" placeholder="Enter your nickname" required />
-            <button>Join</button>
+  <body
+    class="bg-custom d-flex justify-content-center align-items-center vh-100"
+  >
+    <div
+      class="container-fluid d-flex justify-content-center align-items-center"
+    >
+      <div class="bg-white p-4 shadow rounded w-100 max-w-600">
+        <header class="mb-4 text-center">
+          <h1 class="main-title">Art Among Us</h1>
+        </header>
+        <main>
+          <section class="authentication text-center mb-4">
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <!-- Central column to limit width -->
+                <div class="row">
+                  <div class="col-12 mb-2">
+                    <button id="signin-btn" class="btn btn-success w-100">
+                      Sign In
+                    </button>
+                  </div>
+                  <div class="col-12">
+                    <button id="guest-btn" class="btn btn-success w-100">
+                      Continue as Guest
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="guest-nickname mt-3 d-none">
+              <input
+                type="text"
+                class="form-control d-inline-block w-75 mr-2"
+                placeholder="Enter your nickname"
+                required
+              />
+              <button class="btn btn-info">Join</button>
+            </div>
+            <h3
+              id="warningmessage"
+              class="mt-3 text-danger warning-text d-none"
+            >
+              If you sign in as a guest, you will NOT be able to save your game
+              to view later.
+            </h3>
+          </section>
+        </main>
+        <footer class="text-center">
+          <div class="mascot mt-4">
+            <img
+              src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaXY4c3JvNXdzb29iZWNmc3hkbXk0bWdtYTgxcHpjOXN1bGNxdXNjdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oW7cXqaVmt5EKQ48FQ/giphy.gif"
+              alt="Animated Mascot"
+              class="rounded border"
+              style="width: 100px"
+            />
           </div>
-          <h3 id="warningmessage" style="display: none">
-            If you sign in as a guest, you will NOT be able to save your game to
-            view later.
-          </h3>
-        </section>
-        <!-- <button id="help-btn">Help</button> -->
-      </main>
-      <footer>
-        <div class="mascot">
-          <img
-            src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaXY4c3JvNXdzb29iZWNmc3hkbXk0bWdtYTgxcHpjOXN1bGNxdXNjdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oW7cXqaVmt5EKQ48FQ/giphy.gif"
-            alt="Animated Mascot"
-          />
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9y5/3pjt6a8WmChsdofm04c6hE5Jj2q/t6kH"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
     <script src="../js/welcome.js"></script>
   </body>
 </html>

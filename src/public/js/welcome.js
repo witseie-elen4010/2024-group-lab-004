@@ -5,37 +5,25 @@ document.addEventListener('DOMContentLoaded', function () {
   const guestNicknameSection = document.querySelector('.guest-nickname')
   const nicknameInput = guestNicknameSection.querySelector('input')
   const joinButton = guestNicknameSection.querySelector('button')
-  const languageButtons = document.querySelectorAll('.language-selector button')
 
-  // Redirect to login page on sign-in
   signInButton.addEventListener('click', function () {
     window.location.href = window.location.origin + '/login'
   })
 
-  // Toggle display of guest nickname input
   guestButton.addEventListener('click', function () {
-    guestNicknameSection.style.display = 'block'
-    guestButton.style.display = 'none'
+    guestNicknameSection.classList.remove('d-none')
+    guestButton.classList.add('d-none')
     signInButton.textContent = 'Sign In Instead'
-    guestWarningMessage.style.display = 'block'
-    guestWarningMessage.style.color = 'red'
+    guestWarningMessage.classList.remove('d-none')
   })
 
-  // Join as guest and redirect
   joinButton.addEventListener('click', function () {
     if (nicknameInput.value.trim() === '') {
       alert('Please enter a nickname.')
     } else {
-      window.location.href =
-        window.location.origin + `/guest?nickname=${nicknameInput.value.trim()}`
+      window.location.href = `${
+        window.location.origin
+      }/guest?nickname=${nicknameInput.value.trim()}`
     }
-  })
-
-  // Language selection buttons
-  languageButtons.forEach((button) => {
-    button.addEventListener('click', function () {
-      // Implement language change logic
-      alert('Language changed to ' + button.innerText)
-    })
   })
 })

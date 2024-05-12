@@ -1,5 +1,8 @@
 const socket = io()
 const roomId = localStorage.getItem('roomId')
+if (!roomId) {
+  window.location.href = '/landing'
+}
 let CurrentSetIndex = 0
 let CurrentImageIndex = 0
 let CurrentImage = null
@@ -45,8 +48,8 @@ socket.on('roundOver', (submissionGrid) => {
 })
 
 function showRoundOver(grid, setIndex, imageIndex) {
+  leaderboardButton.style.display = 'none'
   const gridContainer = document.getElementById('roundOverOverlay')
-  // Loop through each row and render them into separate columns
 
   submissionUpper = grid[imageIndex][setIndex]
   submissionMiddle = grid[imageIndex + 1][setIndex]
@@ -84,13 +87,33 @@ function showRoundOver(grid, setIndex, imageIndex) {
   roundOverOverlay.style.display = 'flex'
 }
 
+function fetchLeaderboard() {
+  socket.emit('requestLeaderboard')
+}
+
+socket.on('receiveLeaderboard', (data) => {
+  leaderboardEntries.innerHTML = '' // Clear previous entries
+  data.forEach((player) => {
+    const username = player.username || 'Unknown'
+    const points = player.points || 0
+    const entryDiv = document.createElement('div')
+    entryDiv.className = 'leaderboard-entry'
+    entryDiv.innerHTML = `<span>${username}</span><span>${points}</span>`
+    leaderboardEntries.appendChild(entryDiv)
+  })
+})
+
 let playerStatus = ''
 
 socket.on('imposter', () => {
+  document.getElementById('specialOverlay').style.display = 'none'
+  localStorage.removeItem('roomId')
   playerStatus = 'imposter'
   setStatus()
 })
 socket.on('normal', () => {
+  document.getElementById('specialOverlay').style.display = 'none'
+  localStorage.removeItem('roomId')
   playerStatus = 'normal'
   setStatus()
 })
@@ -133,14 +156,49 @@ const pencilButton = document.getElementById('pencil')
 const sprayPaintButton = document.getElementById('sprayPaint')
 const blurButton = document.getElementById('blur')
 const eraserButton = document.getElementById('eraser')
+const leaderboardButton = document.getElementById('leaderboardButton')
+const leaderboardContainer = document.getElementById('leaderboardContainer')
+const leaderboardCloseButton = document.getElementById('leaderboardCloseButton')
+const leaderboardEntries = document.getElementById('leaderboardEntries')
+
+canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
+
+leaderboardButton.addEventListener('click', () => {
+  leaderboardEntries.innerHTML = ''
+
+  const buttonRect = leaderboardButton.getBoundingClientRect()
+  leaderboardContainer.style.top = `${buttonRect.bottom + 5}px`
+  leaderboardContainer.style.right = `${
+    window.innerWidth - buttonRect.right - 5
+  }px`
+  fetchLeaderboard()
+  leaderboardContainer.style.display = 'block'
+})
+
+leaderboardCloseButton.addEventListener('click', () => {
+  leaderboardContainer.style.display = 'none'
+  leaderboardEntries.innerHTML = ''
+})
+
+document.addEventListener('click', (e) => {
+  if (
+    !leaderboardContainer.contains(e.target) &&
+    e.target !== leaderboardButton
+  ) {
+    leaderboardContainer.style.display = 'none'
+    leaderboardEntries.innerHTML = ''
+  }
+})
 const exitButton = document.getElementById('exitButton')
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')
+  canvas.style.cursor = 'url(https://i.imgur.com/RkwdmSu.png) 16 16, auto'
   drawingTool = 'pencil'
 })
 
 pencilButton.addEventListener('click', () => {
+  canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
   console.log(context.strokeStyle)
   console.log(drawColour)
   if (drawColour == 'white') {
@@ -150,12 +208,14 @@ pencilButton.addEventListener('click', () => {
 })
 
 blurButton.addEventListener('click', () => {
+  canvas.style.cursor = 'url(https://i.imgur.com/CNMfTWI.png) 16 16, auto'
   if (drawColour == 'white') {
     changeColour('black')
   }
   drawingTool = 'blur'
 })
 sprayPaintButton.addEventListener('click', () => {
+  canvas.style.cursor = 'url(https://i.imgur.com/XQAlEMI.png) 16 16, auto'
   if (drawColour == 'white') {
     changeColour('black')
   }
@@ -212,6 +272,7 @@ socket.on('newRound', () => {
 })
 
 function hideRoundOverOverlay() {
+  leaderboardButton.style.display = 'block'
   roundOverOverlay.style.display = 'none'
   waitingContainer.style.display = 'none'
 }
