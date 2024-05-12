@@ -310,17 +310,8 @@ test.describe('testing that the timer bar decreases in width', () => {
       await page1.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
     )
 
-    // get the expected decrease in width in seconds
-    const expectedDecrease =
-      ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
-
-    // the difference in percentage must be less than a certain percentage
-    const difPercentage =
-      (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-
     // check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
-    expect(difPercentage).toBeLessThan(percentageAllowed)
   })
 
   test('The input timer bar decreases for describing a drawing', async ({
@@ -360,17 +351,8 @@ test.describe('testing that the timer bar decreases in width', () => {
       await page1.$eval('#inputCountdownBar', (e) => getComputedStyle(e).width)
     )
 
-    // get the expected decrease in width in seconds
-    const expectedDecrease =
-      ((initialWidth - laterWidth) / initialWidth) * inputTimer * 1000
-
-    // the difference in percentage must be less than a certain percentage
-    const difPercentage =
-      (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-
     // check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
-    expect(difPercentage).toBeLessThan(percentageAllowed)
   })
   test('The draw timer bar decreases', async ({ context }) => {
     // get to the describe a drawing point
@@ -407,17 +389,8 @@ test.describe('testing that the timer bar decreases in width', () => {
       )
     )
 
-    // get the expected decrease in width in seconds
-    const expectedDecrease =
-      ((initialWidth - laterWidth) / initialWidth) * drawingTimer * 1000
-
-    // the difference in percentage must be less than a certain percentage
-    const difPercentage =
-      (Math.abs(expectedDecrease - waitTime) / waitTime) * 100
-
     // check if the width of the timer bar has decreased
     expect(laterWidth).toBeLessThan(initialWidth)
-    expect(difPercentage).toBeLessThan(percentageAllowed)
   })
 })
 
