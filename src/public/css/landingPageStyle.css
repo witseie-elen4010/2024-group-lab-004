@@ -60,6 +60,12 @@ button {
   font-size: 16px;
 }
 
+#historyButton {
+  width: 100%; /* Ensures the div takes full width of the container */
+  margin-top: 20px; /* Adds space above the History button */
+  text-align: center; /* Centers the button */
+}
+
 /* Hover effect for buttons */
 button:hover {
   background-color: #45a049;
