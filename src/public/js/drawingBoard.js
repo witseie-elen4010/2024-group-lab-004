@@ -560,7 +560,12 @@ function submitDrawing() {
   // Get the length of the data URL in bytes
 
   stopDrawing({ type: 'mouseout' })
+
+  const previousFillStyle = context.fillStyle
+  context.fillStyle = '#FFFFFF' // Set fillStyle to white
   context.fillRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = previousFillStyle // Reset fillStyle to previous value
+
   index = -1
   pastDrawings = []
   undoButton.disabled = true
