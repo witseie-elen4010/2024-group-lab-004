@@ -224,12 +224,13 @@
     </div>
 
     <div id="votingOverlay" style="display: none;">
-      <div id="votingContent">
+      <div id="votingContent" style="max-width: 600px; margin: auto;">
           <h1>Voting</h1>
           <div id="votingPageCountdown">Time left to vote: 90s</div>
+          <div id="userButtonsContainer" class="user-buttons-container"></div>
           <div id="buttonsVotingContainer">
             <button class="btn btn-success" id="viewGameButton">View Game</button>
-            <button class="btn btn-success" id="voteButton">Vote</button>
+            <button class="btn btn-success" id="voteButton" disabled>Vote</button>
           </div>
       </div>
     </div>

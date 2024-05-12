@@ -115,8 +115,10 @@ function fetchLeaderboard() {
   socket.emit('requestLeaderboard')
 }
 
+let selectedUsername = ''
 socket.on('receiveLeaderboard', (data) => {
   leaderboardEntries.innerHTML = '' // Clear previous entries
+  container.innerHTML = '' // Clear previous entries
   data.forEach((player) => {
     const username = player.username || 'Unknown'
     const points = player.points || 0
@@ -124,6 +126,17 @@ socket.on('receiveLeaderboard', (data) => {
     entryDiv.className = 'leaderboard-entry'
     entryDiv.innerHTML = `<span>${username}</span><span>${points}</span>`
     leaderboardEntries.appendChild(entryDiv)
+    const button = document.createElement('button')
+    button.className = 'user-button'
+    button.textContent = `${player.username}: ${player.points}`
+    button.addEventListener('click', function () {
+      const allButtons = container.querySelectorAll('.user-button')
+      allButtons.forEach((b) => b.classList.remove('selected'))
+      selectedUsername = player.username
+      votingButton.disabled = false
+      button.classList.add('selected')
+    })
+    container.appendChild(button)
   })
 })
 
@@ -140,6 +153,19 @@ socket.on('normal', () => {
   localStorage.removeItem('roomId')
   playerStatus = 'normal'
   setStatus()
+})
+
+socket.on('votingResult', function (result) {
+  // Construct the message to display based on the voting result
+  let message = `The most votes went to ${result.mostVotedUser}, with ${result.votes} votes.`
+  if (result.isImposter) {
+    message += ' They were the imposter!'
+  } else {
+    message += ' They were NOT the imposter.'
+  }
+
+  // Display the result in an alert dialog
+  alert(message)
 })
 
 const canvas = document.getElementById('canvas')
@@ -185,6 +211,8 @@ const leaderboardContainer = document.getElementById('leaderboardContainer')
 const leaderboardCloseButton = document.getElementById('leaderboardCloseButton')
 const leaderboardEntries = document.getElementById('leaderboardEntries')
 const overlay = document.getElementById('votingOverlay')
+const container = document.getElementById('userButtonsContainer')
+const votingButton = document.getElementById('voteButton')
 
 canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
 
@@ -288,7 +316,9 @@ leaveGameButton.addEventListener('click', () => {
 //   socket.emit('nextRound', roomId)
 // })
 nextRoundButton.addEventListener('click', () => {
+  votingButton.disabled = true
   roundOverOverlay.style.display = 'none' // Hide the round over overlay
+  fetchLeaderboard()
   overlay.style.display = 'flex' // Show the voting overlay
   startVotingCountdown(timeLeft) // Start or continue the countdown for 90 seconds
 })
@@ -313,6 +343,14 @@ document
     overlay.style.display = 'none'
     roundOverOverlay.style.display = 'flex'
   })
+
+document.getElementById('voteButton').addEventListener('click', function () {
+  if (selectedUsername !== '') {
+    // Emit the vote to the server
+    socket.emit('vote', { username: selectedUsername })
+    votingButton.style.display = 'none'
+  }
+})
 
 exitButton.addEventListener('click', () => {
   window.location.href = '/landing'
