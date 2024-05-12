@@ -48,6 +48,7 @@ socket.on('roundOver', (submissionGrid) => {
 })
 
 function showRoundOver(grid, setIndex, imageIndex) {
+  leaderboardButton.style.display = 'none'
   const gridContainer = document.getElementById('roundOverOverlay')
 
   submissionUpper = grid[imageIndex][setIndex]
@@ -105,11 +106,13 @@ socket.on('receiveLeaderboard', (data) => {
 let playerStatus = ''
 
 socket.on('imposter', () => {
+  document.getElementById('specialOverlay').style.display = 'none'
   localStorage.removeItem('roomId')
   playerStatus = 'imposter'
   setStatus()
 })
 socket.on('normal', () => {
+  document.getElementById('specialOverlay').style.display = 'none'
   localStorage.removeItem('roomId')
   playerStatus = 'normal'
   setStatus()
@@ -164,7 +167,7 @@ leaderboardButton.addEventListener('click', () => {
   const buttonRect = leaderboardButton.getBoundingClientRect()
   leaderboardContainer.style.top = `${buttonRect.bottom + 5}px`
   leaderboardContainer.style.right = `${
-    window.innerWidth - buttonRect.right - 15
+    window.innerWidth - buttonRect.right - 5
   }px`
   fetchLeaderboard()
   leaderboardContainer.style.display = 'block'
@@ -263,6 +266,7 @@ socket.on('newRound', () => {
 })
 
 function hideRoundOverOverlay() {
+  leaderboardButton.style.display = 'block'
   roundOverOverlay.style.display = 'none'
   waitingContainer.style.display = 'none'
 }

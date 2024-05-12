@@ -60,3 +60,8 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+.btn-success {
+  background-color: #28a745; /* Bootstrap 4's default green */
+  border-color: #28a745; /* Ensuring the border matches the background */
+}
