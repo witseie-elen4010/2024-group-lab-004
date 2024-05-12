@@ -15,7 +15,7 @@
     <script defer src="./js/drawingBoard.js"></script>
   </head>
   <body>
-    <div id="HelpButton" style= 'position: fixed;' class="top-left">
+    <div id="helpButton" style= 'position: fixed;' class="top-left">
       <img
         src="https://cdn.icon-icons.com/icons2/1302/PNG/512/helpbutton_85772.png"
         alt="Logo"
@@ -23,7 +23,7 @@
         width="50px"
       />
     </div>
-    <div id="HelpList"  style="position: absolute; display: none;">
+    <div id="helpList"  style="position: absolute; display: none;">
       <div
         id="helpoverlay"
         style="
@@ -40,7 +40,7 @@
         <div class="top-right">
           <img
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cross_red_circle.svg/1024px-Cross_red_circle.svg.png"
-          id="HelpClose"
+          id="helpClose"
           width="50px">
         </div>
       <h1>How to play</h1>
@@ -50,7 +50,9 @@
         The game will continue until all players have had a turn to draw and guess. <br>
         The player with the most correct guesses wins! Good luck!<br>
         <br>
-        *Add Instructions Here*
+        You can change your pen size and colour below, as well as your drawing tool!
+        <br><br>
+        <button id = "exitButton">Exit game</button>
       </div>
 
     </div>
@@ -114,7 +116,7 @@
     <div class="whiteboard">
       <canvas id="canvas"></canvas>
       <div class="tools">
-        <button id="clear" class="drawButton" onclick="clearCanvas()">
+        <button id="clear" class="drawButton">
           Clear
         </button>
         <button id="undo" class="drawButton"  disabled> Undo</button>
@@ -141,7 +143,11 @@
           style="background: rgb(255, 192, 241)"
         ></button>
         <input type="color" id="colour-picker" value="#90EE90" />
-        <img id="eraser"  src="https://toppng.com/uploads/preview/icon-free-download-png-eraser-icon-11563157752g2ytqb7pwh.png" width="40px" height="40px" style="border-radius: 5px"></img >
+        <img id="pencil" class = "drawing-tool-icon" src="https://icons.iconarchive.com/icons/iconsmind/outline/256/Pencil-icon.png" ></img>
+        <img id="sprayPaint" class = "drawing-tool-icon" src="https://www.svgrepo.com/show/506855/cle-spraycan.svg"></img>
+        <img id="blur" class = "drawing-tool-icon" src="https://icons.veryicon.com/png/o/miscellaneous/fine-linear-ico/water-drop-4.png"></img>
+        <img id="eraser" class = "drawing-tool-icon" src="https://cdn-icons-png.freepik.com/512/254/254686.png"></img >
+        
         <input type="range" id="size-picker" min="1" max="50" value="2" />
         <button id="submit" class="drawButton">Submit</button>
       </div>

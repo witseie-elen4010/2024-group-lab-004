@@ -14,9 +14,7 @@ const rooms = {}
 const publicRooms = {}
 const rounds = {}
 const drawingSubmissions = {}
-const users = new Map()
-
-const fs = require('fs')
+const users = new Map() // stores userDetails in the form {id, username}
 
 io.on('connection', (socket) => {
   let currentRoom = null
@@ -58,10 +56,10 @@ io.on('connection', (socket) => {
         currentRoom = roomID
         updateAndEmitOrders(roomID)
         room.grid = createRoomGrid(room.members.length)
-        const allUsernames = room.members.map((member) => users.get(member)) // ********** //
+        const allUserDetails = room.members.map((member) => users.get(member))
         io.to(roomID).emit('roomJoined', {
           roomId: roomID,
-          members: allUsernames,
+          members: allUserDetails,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
       }
@@ -80,16 +78,37 @@ io.on('connection', (socket) => {
   })
 
   socket.on('inputDone', (data) => {
-    const { roomId, prompt } = data
+    const { roomId } = data
+    const room = rooms[roomId]
 
-    if (rooms[roomId]) {
-      rooms[roomId].prompts[socket.id] = prompt
+    if (!room) {
+      return
+    }
+    if (!room.todo) {
+      room.todo = []
+    }
+    data.socketID = socket.id
+    room.todo.push(data)
+    if (room.members.length !== room.gameSize) {
+      // wait for everyone to join, then do this process
+      return
+    }
+
+    sendPrompts(room)
+  })
+
+  function sendPrompts(room) {
+    room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
+    for (const entry of room.todo) {
+      const { roomId, prompt, socketID } = entry
+
+      rooms[roomId].prompts[socketID] = prompt
       updateGridSubmission(
         roomId,
-        users.get(socket.id).username,
+        users.get(socketID).username,
         'prompt',
         prompt,
-        socket.id
+        socketID
       )
 
       if (
@@ -100,7 +119,8 @@ io.on('connection', (socket) => {
         rooms[roomId].prompts = {}
       }
     }
-  })
+    room.todo = []
+  }
 
   socket.on('drawingSubmitted', (data) => {
     const { roomId, image } = data
@@ -110,9 +130,17 @@ io.on('connection', (socket) => {
     }
 
     drawingSubmissions[roomId][socket.id] = image
+
+    if (!users.get(socket.id)) {
+      // logging for the TOFIX right below this
+      console.log('socket:', socket.id)
+      console.log('users:', users)
+      console.log('data:', data)
+    }
+
     updateGridSubmission(
       roomId,
-      users.get(socket.id).username,
+      users.get(socket.id).username, // TOFIX: this sometimes gives an error "cannot read properties of undefined"
       'drawing',
       image,
       socket.id
@@ -123,13 +151,7 @@ io.on('connection', (socket) => {
     if (username && room.leaderboard) {
       room.leaderboard[username] += 10
     }
-    dbController.saveDrawing(
-      rooms[roomId].gameID,
-      users.get(socket.id).id,
-      users.get(socket.id).username,
-      rounds[roomId],
-      image
-    )
+
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -138,37 +160,33 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('joinGameRoom', (roomID, username) => {
-    if (rooms[roomID]) {
-      rooms[roomID].members.push(socket.id)
-      users.set(socket.id, username)
+  socket.on('joinGameRoom', (roomID, userDetails) => {
+    const room = rooms[roomID]
+    if (room) {
+      room.members.push(socket.id)
+      users.set(socket.id, userDetails)
       socket.join(roomID)
       currentRoom = roomID
-      if (!(username in rooms[roomID].leaderboard)) {
-        rooms[roomID].leaderboard[username.username] = 0
+      if (!(userDetails.username in rooms[roomID].leaderboard)) {
+        rooms[roomID].leaderboard[userDetails.username] = 0
       }
       updateAndEmitOrders(roomID)
-      rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
-      const allUsernames = rooms[roomID].members.map((member) =>
-        users.get(member)
-      )
+      room.grid = createRoomGrid(room.members.length)
+      const allUserDetails = room.members.map((member) => users.get(member))
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
-        members: allUsernames,
+        members: allUserDetails,
       })
 
       // only get the imposters once everyone has joined the room
-      if (rooms[roomID].members.length === rooms[roomID].gameSize) {
+      if (room.members.length === room.gameSize) {
         // create the gameroom in the database
-        const allUsernames = rooms[roomID].members.map(
-          (member) => users.get(member).id
-        )
-        assignGameID(roomID, allUsernames)
-        const imposter = getImposter(rooms[roomID])
-        rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
+
+        const imposter = getImposter(room)
+        room.imposter = imposter // store the imposter so the server knows who it is
 
         // Send a "no" message to all other members
-        rooms[roomID].members.forEach((member) => {
+        room.members.forEach((member) => {
           if (member === imposter) {
             io.to(member).emit('imposter', true)
           } else {
@@ -179,12 +197,12 @@ io.on('connection', (socket) => {
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
     }
-  })
 
-  async function assignGameID(roomID, allUsernames) {
-    rooms[roomID].gameID = await dbController.newGame(allUsernames)
-    return rooms[roomID].gameID
-  }
+    if (room.todo && room.todo.length == room.gameSize) {
+      // the prompt's have arrived before the game room was joined
+      sendPrompts(room)
+    }
+  })
 
   socket.on('startGame', (roomID) => {
     if (rooms[roomID] && rooms[roomID].host === socket.id) {
@@ -222,11 +240,6 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('getUserDrawings', async (username) => {
-    const drawings = await dbController.getDrawingsUser(users.get(username).id)
-    socket.emit('userDrawings', drawings)
-  })
-
   socket.on('requestLeaderboard', () => {
     if (currentRoom) {
       const leaderboardEntries = Object.entries(
@@ -245,6 +258,10 @@ io.on('connection', (socket) => {
       if (room.gameStarted) {
         room.maxMembers -= 1
         delete publicRooms[currentRoom]
+      }
+
+      if (room.allJoined) {
+        room.gameSize -= 1
       }
 
       if (room.members.length === 0) {
@@ -381,9 +398,8 @@ function createRoomGrid(size) {
   )
 }
 
-function updateGridSubmission(roomID, memberID, type, content, socketID) {
+function updateGridSubmission(roomID, username, type, content, socketID) {
   const orders = rooms[roomID].orders
-  const members = rooms[roomID].members
   if (!rounds[roomID]) {
     rounds[roomID] = 0
   }
@@ -395,14 +411,19 @@ function updateGridSubmission(roomID, memberID, type, content, socketID) {
   rooms[roomID].grid[currentRound][targetIndex] = {
     type,
     content,
-    member: memberID,
+    member: username,
   }
 }
 
-function emitRoundOver(roomID) {
-  const grid = rooms[roomID].grid
-  dbController.saveGrid(rooms[roomID].gameID, grid)
-  io.to(roomID).emit('roundOver', grid)
+async function emitRoundOver(roomID) {
+  const allUserIDs = rooms[roomID].members.map((member) => users.get(member).id)
+  await assignGameID(roomID, allUserIDs)
+  dbController.saveGrid(rooms[roomID].gameID, rooms[roomID].grid)
+  io.to(roomID).emit('roundOver', rooms[roomID].grid)
+}
+
+async function assignGameID(roomID, allUserIDs) {
+  rooms[roomID].gameID = await dbController.newGame(allUserIDs)
 }
 
 server.listen(port, () => {

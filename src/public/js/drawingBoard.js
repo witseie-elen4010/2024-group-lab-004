@@ -8,20 +8,21 @@ let CurrentImageIndex = 0
 let CurrentImage = null
 let CurrentGrid = null
 let PlayerCount = 0
+let drawingTool = 'pencil'
 
-let username = ''
+let userDetails = ''
 async function fetchUser() {
   const response = await fetch(`/getUser`)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   } else {
-    const user = await response.json()
-    console.log(user.username)
-    username = user.username
-    return user
+    userDetails = await response.json()
+    return userDetails
   }
 }
-fetchUser().then((username) => socket.emit('joinGameRoom', roomId, username))
+fetchUser().then((userDetails) =>
+  socket.emit('joinGameRoom', roomId, userDetails)
+)
 
 socket.on('gameRoomJoined', (data) => {})
 
@@ -38,7 +39,6 @@ socket.on('updateDrawing', (drawing) => {
 
 socket.on('roundOver', (submissionGrid) => {
   PlayerCount = submissionGrid.length
-  console.log(PlayerCount)
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
   console.log(submissionGrid)
   CurrentGrid = submissionGrid
@@ -117,7 +117,7 @@ socket.on('normal', () => {
 
 const canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth - 300
-canvas.height = window.innerHeight - 300
+canvas.height = window.innerHeight - 350
 
 const blackButton = document.getElementById('blackButton')
 const redButton = document.getElementById('redButton')
@@ -125,6 +125,7 @@ const greenButton = document.getElementById('greenButton')
 const blueButton = document.getElementById('blueButton')
 const pinkButton = document.getElementById('pinkButton')
 const multiColourButton = document.getElementById('colour-picker')
+const clearButton = document.getElementById('clear')
 const submitButton = document.getElementById('submit')
 const drawingDisplay = document.getElementById('drawingDisplay')
 const penSizeSlider = document.getElementById('size-picker')
@@ -133,9 +134,9 @@ const doneButton = document.getElementById('doneButton')
 const getInput = document.getElementById('getInput')
 const inputCountdownBar = document.getElementById('inputCountdownBar')
 const drawingCountdownBar = document.getElementById('drawingCountdownBar')
-const helpButton = document.getElementById('HelpButton')
-const HelpList = document.getElementById('HelpList')
-const HelpListClose = document.getElementById('HelpClose')
+const helpButton = document.getElementById('helpButton')
+const helpList = document.getElementById('helpList')
+const helpListClose = document.getElementById('helpClose')
 const drawing = document.getElementById('drawing')
 const notDrawing = document.getElementById('notDrawing')
 const undoButton = document.getElementById('undo')
@@ -148,6 +149,9 @@ const upButton = document.getElementById('upButton')
 const downButton = document.getElementById('downButton')
 const prevSetButton = document.getElementById('prevSetButton')
 const nextSetButton = document.getElementById('nextSetButton')
+const pencilButton = document.getElementById('pencil')
+const sprayPaintButton = document.getElementById('sprayPaint')
+const blurButton = document.getElementById('blur')
 const eraserButton = document.getElementById('eraser')
 const leaderboardButton = document.getElementById('leaderboardButton')
 const leaderboardContainer = document.getElementById('leaderboardContainer')
@@ -180,9 +184,33 @@ document.addEventListener('click', (e) => {
     leaderboardEntries.innerHTML = ''
   }
 })
+const exitButton = document.getElementById('exitButton')
 
 eraserButton.addEventListener('click', () => {
   changeColour('white')
+  drawingTool = 'pencil'
+})
+
+pencilButton.addEventListener('click', () => {
+  console.log(context.strokeStyle)
+  console.log(drawColour)
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'pencil'
+})
+
+blurButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'blur'
+})
+sprayPaintButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'sprayPaint'
 })
 
 upButton.addEventListener('click', () => {
@@ -223,6 +251,10 @@ leaveGameButton.addEventListener('click', () => {
 
 nextRoundButton.addEventListener('click', () => {
   socket.emit('nextRound', roomId)
+})
+
+exitButton.addEventListener('click', () => {
+  window.location.href = '/landing'
 })
 
 socket.on('newRound', () => {
@@ -275,11 +307,11 @@ blueButton.addEventListener('click', () => changeColour('blue'))
 pinkButton.addEventListener('click', () => changeColour('pink'))
 
 helpButton.addEventListener('click', function () {
-  HelpList.style.display = 'block'
+  helpList.style.display = 'block'
 })
 
-HelpListClose.addEventListener('click', function () {
-  HelpList.style.display = 'none'
+helpListClose.addEventListener('click', function () {
+  helpList.style.display = 'none'
 })
 
 penSizeSlider.addEventListener('input', () =>
@@ -291,6 +323,18 @@ submitButton.addEventListener('click', submitDrawing)
 multiColourButton.addEventListener('input', () =>
   changeColour(multiColourButton.value)
 )
+
+clearButton.addEventListener('click', function () {
+  const previousFillStyle = context.fillStyle
+  context.fillStyle = '#FFFFFF' // Set fillStyle to white
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = previousFillStyle // Reset fillStyle to previous value
+
+  index = -1
+  pastDrawings = []
+  undoButton.disabled = true
+  redoButton.disabled = true
+})
 
 undoButton.addEventListener('click', function () {
   if (index <= 0) {
@@ -336,19 +380,91 @@ function startDrawing(e) {
   e.preventDefault()
 }
 
-function draw(e) {
-  if (isDrawing) {
-    context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
-    context.lineCap = 'round'
-    context.lineJoin = 'round'
-    context.stroke()
+let lastPoint = null
+
+function drawPencil(e, currentPoint) {
+  context.lineTo(currentPoint.x, currentPoint.y)
+  context.lineCap = 'round'
+  context.lineJoin = 'round'
+  context.stroke()
+}
+
+function drawBlur(e, currentPoint) {
+  // Begin a new path for each circle
+  context.beginPath()
+
+  // Draw semi-transparent circles for a blur effect
+  context.globalAlpha = 0.1 // Adjust transparency as needed
+  context.fillStyle = context.strokeStyle
+
+  if (lastPoint) {
+    const distance = Math.sqrt(
+      Math.pow(currentPoint.x - lastPoint.x, 2) +
+        Math.pow(currentPoint.y - lastPoint.y, 2)
+    )
+    const angle = Math.atan2(
+      currentPoint.y - lastPoint.y,
+      currentPoint.x - lastPoint.x
+    )
+
+    for (let i = 0; i < distance; i += 10) {
+      const x = lastPoint.x + i * Math.cos(angle)
+      const y = lastPoint.y + i * Math.sin(angle)
+
+      context.arc(x, y, context.lineWidth / 2, 0, Math.PI * 2)
+      context.fill()
+    }
   }
+
+  context.globalAlpha = 1.0 // Reset transparency
+
+  // Prevent the default action to avoid drawing a line
   e.preventDefault()
+}
+
+function drawSprayPaint(e, currentPoint) {
+  // Begin a new path for each point
+  context.beginPath()
+  context.fillStyle = context.strokeStyle
+
+  // Draw multiple points around the current point
+  for (let i = 0; i < 5 * context.lineWidth; i++) {
+    const angle = Math.random() * Math.PI * 2 // Random angle in radians
+    const radius = (Math.random() * context.lineWidth) / 2 // Random radius within pen size
+
+    const offset = {
+      x: radius * Math.cos(angle), // Calculate x offset
+      y: radius * Math.sin(angle), // Calculate y offset
+    }
+
+    context.fillRect(currentPoint.x + offset.x, currentPoint.y + offset.y, 1, 1)
+  }
+
+  // Prevent the default action to avoid drawing a line
+  e.preventDefault()
+}
+function draw(e) {
+  const currentPoint = {
+    x: e.clientX - canvas.offsetLeft,
+    y: e.clientY - canvas.offsetTop,
+  }
+
+  if (isDrawing) {
+    if (drawingTool === 'blur') {
+      drawBlur(e, currentPoint)
+    } else if (drawingTool === 'sprayPaint') {
+      drawSprayPaint(e, currentPoint)
+    } else {
+      drawPencil(e, currentPoint)
+    }
+  }
+
+  lastPoint = currentPoint
 }
 
 function stopDrawing(e) {
   if (isDrawing) {
-    context.stroke()
+    // context.stroke()
     context.closePath()
     isDrawing = false
 
@@ -385,14 +501,14 @@ function activateInputPrompt(img = null) {
 
   // const timeoutId = setTimeout(submitPrompt, inputTimer)
 
-  function checkEnterKey(event) {
-    if (event.key === 'Enter') {
-      submitPrompt()
-    }
-  }
+  // function checkEnterKey(event) {
+  //   if (event.key === 'Enter') {
+  //     submitPrompt()
+  //   }
+  // }
 
-  doneButton.addEventListener('click', submitPrompt)
-  getInput.addEventListener('keydown', checkEnterKey)
+  // doneButton.addEventListener('click', submitPrompt)
+  // getInput.addEventListener('keydown', checkEnterKey)
 
   // endTimeout = function () {
   //   clearTimeout(timeoutId)
@@ -520,6 +636,8 @@ const actions = [
   'sneaking',
   'hiding',
 ]
+
+//maybe add a location as well, to get a more specific prompt?
 
 // Function to generate a random prompt
 function getRandomPrompt() {

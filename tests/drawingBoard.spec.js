@@ -1,62 +1,67 @@
 const { test, expect } = require('@playwright/test')
-test('random true test to pass', async ({ page }) => {
-  expect(true).toBe(true)
-})
+
 async function navigateToGame(context) {
   const page1 = await context.newPage()
   await page1.goto('http://localhost:4000/')
-
-  await page1.getByRole('button', { name: 'Sign In' }).click()
-  await page1.getByLabel('Username:').click()
-  await page1.getByLabel('Username:').fill('test')
-  await page1.getByLabel('Password:').click()
-  await page1.getByLabel('Password:').fill('test')
-  await page1
-    .locator('#loginForm')
-    .getByRole('button', { name: 'Login' })
-    .click()
+  await page1.getByRole('button', { name: 'Continue as Guest' }).click()
+  await page1.getByPlaceholder('Enter your nickname').fill('test name 1')
+  await page1.getByRole('button', { name: 'Join' }).click()
   await page1.getByRole('button', { name: 'Create Public Game' }).click()
 
   const page2 = await context.newPage()
   await page2.goto('http://localhost:4000/')
-  await page2.getByRole('button', { name: 'Sign In' }).click()
-  await page2.getByLabel('Username:').click()
-  await page2.getByLabel('Username:').fill('test')
-  await page2.getByLabel('Password:').click()
-  await page2.getByLabel('Password:').fill('test')
-  await page2
-    .locator('#loginForm')
-    .getByRole('button', { name: 'Login' })
-    .click()
+  await page2.getByRole('button', { name: 'Continue as Guest' }).click()
+  await page2.getByPlaceholder('Enter your nickname').fill('test name 2')
+  await page2.getByRole('button', { name: 'Join' }).click()
   await page2.getByRole('button', { name: 'Join Public Game' }).click()
   await page2.getByRole('button', { name: /^Join$/ }).click()
 
   const page3 = await context.newPage()
   await page3.goto('http://localhost:4000/')
-  await page3.getByRole('button', { name: 'Sign In' }).click()
-  await page3.getByLabel('Username:').click()
-  await page3.getByLabel('Username:').fill('test')
-  await page3.getByLabel('Password:').click()
-  await page3.getByLabel('Password:').fill('test')
-  await page3
-    .locator('#loginForm')
-    .getByRole('button', { name: 'Login' })
-    .click()
+  await page3.getByRole('button', { name: 'Continue as Guest' }).click()
+  await page3.getByPlaceholder('Enter your nickname').fill('test name 3')
+  await page3.getByRole('button', { name: 'Join' }).click()
   await page3.getByRole('button', { name: 'Join Public Game' }).click()
   await page3.getByRole('button', { name: /^Join$/ }).click()
 
+  await page1.getByRole('button', { name: 'Start Game' }).click()
   return { page1, page2, page3 }
 }
 
 test('canvas exists', async ({ context }) => {
-  // Create a room on page1
-
   const { page1, page2, page3 } = await navigateToGame(context)
 
-  await page1.getByRole('button', { name: 'Start Game' }).click()
   const canvas = await page1.$('canvas')
   expect(canvas).toBeTruthy()
 })
+
+test('erasor sets colour to white', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+
+  await page1.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page3.locator('#doneButton').click()
+
+  await page1.locator('#eraser').click()
+  let strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#ffffff')
+})
+
+test('player can exit game', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+
+  await page1.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page3.locator('#doneButton').click()
+
+  await page1.locator('#helpButton').getByRole('img', { name: 'Logo' }).click()
+  await page1.locator('#exitButton').click()
+})
+
 // test('canvas exists', async ({ context }) => {
 //   // Create a room on page1
 //   const page1 = await context.newPage()

@@ -78,6 +78,12 @@ body {
   transition: width 30s linear;
 }
 
+.drawing-tool-icon {
+  border-radius: 5px;
+  width: 40px;
+  height: 40px;
+}
+
 #colour-picker {
   align-self: center;
   margin-left: 5px;
