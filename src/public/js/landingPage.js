@@ -102,12 +102,27 @@ socket.on('publicRoomsList', (rooms) => {
     .join('')
 })
 
-// Update Members Count
+socket.on('hostUpdated', (newHostId) => {
+  if (socket.id === newHostId) {
+    if (membersCountSpan.textContent >= 4) {
+      startGameButton.style.display = 'block'
+    }
+  } else {
+    startGameButton.style.display = 'none'
+  }
+})
+
 socket.on('updateMembers', (membersCount) => {
   membersCountSpan.textContent = membersCount
-  if (membersCount >= 3 && started) {
+  if (membersCount >= 3 && socket.id === hostId) {
     startGameButton.style.display = 'block'
+  } else {
+    startGameButton.style.display = 'none'
   }
+})
+
+socket.on('youAreTheNewHost', () => {
+  hostId = socket.id
 })
 
 // Room Join Error Handling
@@ -127,11 +142,11 @@ socket.on('userDisconnected', () => {
 })
 
 // Join Public Room Function
-function joinPublicRoom(roomId) {
+function joinPublicRoom (roomId) {
   socket.emit('joinRoom', { roomId })
 }
 
-function hideCreateJoinButtons() {
+function hideCreateJoinButtons () {
   createPrivateRoomButton.style.display = 'none'
   createPublicRoomButton.style.display = 'none'
   joinRoomButton.style.display = 'none'

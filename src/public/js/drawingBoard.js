@@ -5,14 +5,14 @@ if (!roomId) {
 }
 let CurrentSetIndex = 0
 let CurrentImageIndex = 0
-let CurrentImage = null
+const CurrentImage = null
 let CurrentGrid = null
 let PlayerCount = 0
 let drawingTool = 'pencil'
 
 let userDetails = ''
 async function fetchUser() {
-  const response = await fetch(`/getUser`)
+  const response = await fetch('/getUser')
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   } else {
@@ -78,7 +78,7 @@ function showRoundOver(grid, setIndex, imageIndex) {
 
   const DrawnByPrompt = document.getElementById('DrawnByPrompt')
   DrawnByPrompt.textContent = `Drawn by: ${submissionMiddle.member}`
-  //imagecontainer.style.height = `60%`
+  // imagecontainer.style.height = `60%`
 
   const prompt = document.getElementById('EndScreenLowerPromptAlter')
   prompt.textContent = `What ${submissionLower.member} thought it was: `
@@ -289,7 +289,7 @@ drawingDisplay.width = canvas.width / 4
 drawingDisplay.height = canvas.height / 4
 
 let isDrawing = false
-let drawWidth = '2'
+let drawWidth = '10'
 let drawColour = 'black'
 let pastDrawings = []
 let index = -1
@@ -318,6 +318,8 @@ redButton.addEventListener('click', () => changeColour('red'))
 greenButton.addEventListener('click', () => changeColour('green'))
 blueButton.addEventListener('click', () => changeColour('blue'))
 pinkButton.addEventListener('click', () => changeColour('pink'))
+
+changeLineWidth(penSizeSlider.value)
 
 helpButton.addEventListener('click', function () {
   helpList.style.display = 'block'
@@ -608,7 +610,7 @@ const actions = [
   'hiding',
 ]
 
-//maybe add a location as well, to get a more specific prompt?
+// maybe add a location as well, to get a more specific prompt?
 
 // Function to generate a random prompt
 function getRandomPrompt() {
