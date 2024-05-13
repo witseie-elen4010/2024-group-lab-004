@@ -49,6 +49,7 @@ submitJoinRoomButton.addEventListener('click', () => {
 // Start Game
 startGameButton.addEventListener('click', () => {
   const roomId = roomIdSpan.textContent
+  localStorage.setItem('Host', 'true')
   socket.emit('startGame', roomId)
 })
 
@@ -142,11 +143,11 @@ socket.on('userDisconnected', () => {
 })
 
 // Join Public Room Function
-function joinPublicRoom (roomId) {
+function joinPublicRoom(roomId) {
   socket.emit('joinRoom', { roomId })
 }
 
-function hideCreateJoinButtons () {
+function hideCreateJoinButtons() {
   createPrivateRoomButton.style.display = 'none'
   createPublicRoomButton.style.display = 'none'
   joinRoomButton.style.display = 'none'

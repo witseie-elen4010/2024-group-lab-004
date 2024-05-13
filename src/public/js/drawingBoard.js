@@ -3,6 +3,8 @@ const roomId = localStorage.getItem('roomId')
 if (!roomId) {
   window.location.href = '/landing'
 }
+
+const host = localStorage.getItem('Host')
 let CurrentSetIndex = 0
 let CurrentImageIndex = 0
 const CurrentImage = null
@@ -21,9 +23,16 @@ async function fetchUser() {
     return userDetails
   }
 }
-fetchUser().then((userDetails) =>
-  socket.emit('joinGameRoom', roomId, userDetails)
-)
+if (host) {
+  fetchUser().then((userDetails) =>
+    socket.emit('joinGameRoom', roomId, userDetails, true)
+  )
+  localStorage.removeItem('host')
+} else {
+  fetchUser().then((userDetails) =>
+    socket.emit('joinGameRoom', roomId, userDetails, false)
+  )
+}
 
 // socket.on('gameRoomJoined', (data) => {})
 
@@ -32,6 +41,10 @@ socket.on('updatePrompt', (prompt) => {
   hideWaitingContainer()
   inputPrompt.style.display = 'none'
   setPrompt(prompt)
+})
+
+socket.on('nextRoundStart', () => {
+  alert('here')
 })
 
 socket.on('updateDrawing', (drawing) => {
