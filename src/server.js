@@ -265,6 +265,8 @@ io.on('connection', (socket) => {
         const result = determineResults(room)
         io.to(currentRoom).emit('votingResult', result)
         io.to(room.host).emit('nextRoundStart')
+        room.votes = {}
+        room.voteCounts = 0
       }
     }
   })
