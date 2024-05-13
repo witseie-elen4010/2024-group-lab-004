@@ -34,7 +34,7 @@ test.describe('Start game tests', () => {
 
     // await page1.waitForTimeout(500) // needed?
 
-    //check that memberCount == 3
+    // check that memberCount == 3
     const memberCount = await page1.locator('#membersCount').textContent()
     expect(memberCount).toBe('3')
   })
@@ -160,5 +160,30 @@ test.describe('Gameplay tests', () => {
     expect(isCanvasVisible1).toBe(true)
     expect(isCanvasVisible2).toBe(true)
     expect(isCanvasVisible3).toBe(true)
+  })
+})
+
+test.describe('Exit game tests', () => {
+  test('page1 and page2 navigate to /landing when page3 exits', async ({
+    context,
+  }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    await page1.getByRole('button', { name: 'Start Game' }).click()
+
+    await Promise.all([
+      page1.locator('#doneButton').click(),
+      page2.locator('#doneButton').click(),
+      page3.locator('#doneButton').click(),
+    ])
+
+    // Simulate page3 exiting the game
+    await page3.close()
+
+    // Wait for 3 seconds
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+
+    // Check if page1 and page2 navigate to /landing
+    expect(page1.url()).toContain('/landing')
+    expect(page2.url()).toContain('/landing')
   })
 })
