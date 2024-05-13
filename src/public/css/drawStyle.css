@@ -352,6 +352,8 @@ body {
   color: #fff;
   background-color: #28a745; /* Bootstrap 4 success green */
   border-color: #28a745;
+  width: 150px; /* Specify a fixed width for all success buttons */
+  margin: 5px; /* Adds margin around the buttons */
 }
 
 .btn-success:hover {
@@ -391,4 +393,17 @@ body {
 .user-button.selected {
   background-color: #55609b; /* Matching the page background color */
   color: white; /* Change text color for better visibility */
+}
+
+#buttonsVotingContainer {
+  display: flex;
+  justify-content: center; /* Center buttons horizontally */
+  align-items: center; /* Align buttons vertically */
+  gap: 10px; /* Adds space between the buttons */
+}
+
+/* Additional styling to handle space between leave game and next round buttons */
+#leaveGameButton,
+#nextRoundButton {
+  margin: 5px 10px; /* Adds vertical margin and more horizontal margin */
 }
