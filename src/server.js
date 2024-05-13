@@ -34,6 +34,7 @@ io.on('connection', (socket) => {
       votes: {},
       voteCounts: 0,
       votingSend: false,
+      roundOver: false,
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -220,6 +221,7 @@ io.on('connection', (socket) => {
   socket.on('nextRound', (roomID) => {
     if (rooms[roomID]) {
       rooms[roomID].votingSend = false
+      rooms[roomID].roundOver = false
       rounds[roomID] = 0
       rooms[roomID].prompts = {}
       drawingSubmissions[roomID] = {}
@@ -266,7 +268,10 @@ io.on('connection', (socket) => {
       if (room.voteCounts === room.members.length) {
         const result = determineResults(room)
         room.votingSend = true
-        io.to(currentRoom).emit('votingResult', result)
+        io.to(currentRoom).emit('votingResult', {
+          result,
+          membersCount: room.members.length,
+        })
         io.to(room.host).emit('nextRoundStart', room.members.length)
         room.votes = {}
         room.voteCounts = 0
@@ -279,6 +284,8 @@ io.on('connection', (socket) => {
       const room = rooms[currentRoom]
       const wasHost = room.host === socket.id
       room.members = room.members.filter((id) => id !== socket.id)
+
+      // delete room.leaderboard[users.get(socket.id).username]
       users.delete(socket.id)
 
       if (wasHost) {
@@ -321,6 +328,7 @@ io.on('connection', (socket) => {
       updateAndEmitOrders(currentRoom)
       io.to(currentRoom).emit('userDisconnected', {
         votingSend: room.votingSend,
+        roundOver: room.roundOver,
         membersCount: room.members.length,
       })
     }
@@ -386,11 +394,9 @@ function determineResults(room) {
     }
   }
 
-  // Assume imposter is a known property set elsewhere
   const isImposter = mostVotedUser === room.imposterUsername
   if (mostVotedUser !== null && !twoMax) {
     Object.entries(room.leaderboard).forEach(([username, score]) => {
-      // If a non-imposter was voted as imposter or an imposter was not identified
       if (
         (mostVotedUser !== room.imposterUsername &&
           username === room.imposterUsername) ||
@@ -499,6 +505,7 @@ async function emitRoundOver(roomID) {
   const allUserIDs = rooms[roomID].members.map((member) => users.get(member).id)
   await assignGameID(roomID, allUserIDs)
   dbController.saveGrid(rooms[roomID].gameID, rooms[roomID].grid)
+  rooms[roomID].roundOver = true
   io.to(roomID).emit('roundOver', rooms[roomID].grid)
 }
 

@@ -39,6 +39,20 @@ socket.on('userDisconnected', (data) => {
   if (data.membersCount < 3) {
     votingMessage.innerText = 'Too few players are left to play another round!'
     nextRoundButton.style.display = 'none'
+    if (!data.roundOver) {
+      showMemberLeftOverlay('home')
+      setTimeout(() => {
+        window.location.href = '/landing'
+      }, 2000)
+    }
+  } else {
+    // if (!data.roundOver) {
+    //   showMemberLeftOverlay('game')
+    //   setTimeout(() => {
+    //     socket.emit('nextRound', roomId)
+    //     hideMemberLeftOverlay()
+    //   }, 2000)
+    // }
   }
 })
 
@@ -222,19 +236,48 @@ socket.on('votingResult', function (result) {
   fetchLeaderboard()
   let message = ''
   if (result.twoMax) {
-    message += `Two members received an equal number of votes - Imposter Victory!\n${result.imposter} Wins`
+    message += `Two members received an equal number of votes - Imposter Victory!\n${result.result.imposter} Wins`
   } else {
-    message = `${result.mostVotedUser} was voted imposter with ${result.votes} votes.`
+    message = `${result.result.mostVotedUser} was voted imposter with ${result.result.votes} votes.`
   }
   if (result.isImposter) {
     message += ' They were the imposter! Crewmate Victory!'
   } else {
     message += ` They were NOT the imposter! Victory for imposter ${result.imposter}!`
   }
-  message += '\nWaiting for the next round to start...'
+  if (result.membersCount < 3) {
+    message += '\nToo few players are left to play another round!'
+  } else message += '\nWaiting for the next round to start...'
   votingMessage.innerText = message
   votingCountdownElement.style.display = 'none'
 })
+
+function showMemberLeftOverlay(action) {
+  const messageOverlay = document.getElementById('specialOverlay')
+  const centerImage = messageOverlay.querySelector('.centerImage')
+  centerImage.style.display = 'none'
+  const message = document.createElement('div')
+  action === 'game'
+    ? (message.innerText = 'A member has left the game... restarting game')
+    : (message.innerText =
+        'A member has left the game... Too few players left, returning to home page!')
+  message.id = 'memberLeftMessage'
+  message.style.fontSize = '24px'
+  message.style.color = 'white'
+  messageOverlay.appendChild(message)
+  messageOverlay.style.display = 'flex'
+}
+
+function hideMemberLeftOverlay() {
+  const messageOverlay = document.getElementById('specialOverlay')
+  const message = document.getElementById('memberLeftMessage')
+  if (message) {
+    messageOverlay.removeChild(message)
+  }
+  const centerImage = messageOverlay.querySelector('.centerImage')
+  centerImage.style.display = 'block'
+  messageOverlay.style.display = 'none'
+}
 
 const canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth - 300
