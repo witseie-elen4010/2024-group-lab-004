@@ -35,14 +35,33 @@ if (host) {
   )
 }
 
+socket.on('userDisconnected', (data) => {
+  if (data.membersCount < 3) {
+    votingMessage.innerText = 'Too few players are left to play another round!'
+    nextRoundButton.style.display = 'none'
+  }
+})
+
+socket.on('youAreTheNewHost', (data) => {
+  if (data.votingSend) {
+    data.membersCount > 2
+      ? (nextRoundButton.style.display = 'block')
+      : (votingMessage.innerText =
+          'Too few players are left to play another round!')
+  }
+})
+
 socket.on('updatePrompt', (prompt) => {
   hideWaitingContainer()
   inputPrompt.style.display = 'none'
   setPrompt(prompt)
 })
 
-socket.on('nextRoundStart', () => {
-  nextRoundButton.style.display = 'block'
+socket.on('nextRoundStart', (membersCount) => {
+  membersCount > 2
+    ? (nextRoundButton.style.display = 'block')
+    : (votingMessage.innerText =
+        'Too few players are left to play another round!')
 })
 
 socket.on('updateDrawing', (drawing) => {

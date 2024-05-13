@@ -32,7 +32,8 @@ io.on('connection', (socket) => {
       isPublic,
       leaderboard: {},
       votes: {},
-      voteCounts: 0
+      voteCounts: 0,
+      votingSend: false,
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -61,7 +62,7 @@ io.on('connection', (socket) => {
         const allUserDetails = room.members.map((member) => users.get(member))
         io.to(roomID).emit('roomJoined', {
           roomId: roomID,
-          members: allUserDetails
+          members: allUserDetails,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
       }
@@ -74,7 +75,7 @@ io.on('connection', (socket) => {
     const roomsList = Object.entries(publicRooms).map(([roomId, room]) => ({
       roomId,
       host: room.host,
-      members: room.members
+      members: room.members,
     }))
     socket.emit('publicRoomsList', roomsList)
   })
@@ -99,7 +100,7 @@ io.on('connection', (socket) => {
     sendPrompts(room)
   })
 
-  function sendPrompts (room) {
+  function sendPrompts(room) {
     room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
     for (const entry of room.todo) {
       const { roomId, prompt, socketID } = entry
@@ -174,7 +175,7 @@ io.on('connection', (socket) => {
       const allUserDetails = room.members.map((member) => users.get(member))
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
-        members: allUserDetails
+        members: allUserDetails,
       })
 
       // only get the imposters once everyone has joined the room
@@ -218,6 +219,7 @@ io.on('connection', (socket) => {
 
   socket.on('nextRound', (roomID) => {
     if (rooms[roomID]) {
+      rooms[roomID].votingSend = false
       rounds[roomID] = 0
       rooms[roomID].prompts = {}
       drawingSubmissions[roomID] = {}
@@ -263,8 +265,9 @@ io.on('connection', (socket) => {
       room.voteCounts += 1
       if (room.voteCounts === room.members.length) {
         const result = determineResults(room)
+        room.votingSend = true
         io.to(currentRoom).emit('votingResult', result)
-        io.to(room.host).emit('nextRoundStart')
+        io.to(room.host).emit('nextRoundStart', room.members.length)
         room.votes = {}
         room.voteCounts = 0
       }
@@ -280,7 +283,10 @@ io.on('connection', (socket) => {
 
       if (wasHost) {
         room.host = room.members[0] // Elect a new host, simplest form
-        io.to(room.host).emit('youAreTheNewHost')
+        io.to(room.host).emit('youAreTheNewHost', {
+          votingSend: room.votingSend,
+          membersCount: room.members.length,
+        })
       }
 
       io.to(currentRoom).emit('hostUpdated', room.host)
@@ -313,12 +319,15 @@ io.on('connection', (socket) => {
         delete drawingSubmissions[currentRoom][socket.id]
       }
       updateAndEmitOrders(currentRoom)
-      io.to(currentRoom).emit('userDisconnected')
+      io.to(currentRoom).emit('userDisconnected', {
+        votingSend: room.votingSend,
+        membersCount: room.members.length,
+      })
     }
   })
 })
 
-function generateAndAssignOrders (roomID) {
+function generateAndAssignOrders(roomID) {
   const members = rooms[roomID].members
   const uniqueOrders = generateUniqueOrders(members.length)
 
@@ -328,15 +337,15 @@ function generateAndAssignOrders (roomID) {
   return rooms[roomID].orders
 }
 
-function generateRoomId () {
+function generateRoomId() {
   return Math.random().toString(36).substring(2, 10)
 }
 
-function getImposter (room) {
+function getImposter(room) {
   const randomIndex = Math.floor(Math.random() * room.members.length)
   return room.members[randomIndex]
 }
-function generateUniqueOrders (numPlayers) {
+function generateUniqueOrders(numPlayers) {
   const orders = Array.from({ length: numPlayers }, () =>
     Array(numPlayers).fill(0)
   )
@@ -349,7 +358,7 @@ function generateUniqueOrders (numPlayers) {
   return orders.sort(() => Math.random() - 0.5)
 }
 
-function updateAndEmitOrders (roomID) {
+function updateAndEmitOrders(roomID) {
   generateAndAssignOrders(roomID)
 
   const orders = rooms[roomID].orders
@@ -361,7 +370,7 @@ function updateAndEmitOrders (roomID) {
   io.to(roomID).emit('updateOrders', orders)
 }
 
-function determineResults (room) {
+function determineResults(room) {
   let maxVotes = 0
   let mostVotedUser = null
   let twoMax = false
@@ -398,11 +407,11 @@ function determineResults (room) {
     votes: maxVotes,
     isImposter,
     twoMax,
-    imposter: room.imposterUsername
+    imposter: room.imposterUsername,
   }
 }
 
-function distributePrompts (roomID) {
+function distributePrompts(roomID) {
   const members = rooms[roomID].members
   const prompts = rooms[roomID].prompts
   const orders = rooms[roomID].orders
@@ -431,7 +440,7 @@ function distributePrompts (roomID) {
   }
 }
 
-function distributeDrawings (roomID) {
+function distributeDrawings(roomID) {
   const members = rooms[roomID].members
   const drawings = drawingSubmissions[roomID]
   const orders = rooms[roomID].orders
@@ -463,13 +472,13 @@ function distributeDrawings (roomID) {
   }
 }
 
-function createRoomGrid (size) {
+function createRoomGrid(size) {
   return Array.from({ length: size }, () =>
     Array(size).fill({ type: null, content: null, member: null })
   )
 }
 
-function updateGridSubmission (roomID, username, type, content, socketID) {
+function updateGridSubmission(roomID, username, type, content, socketID) {
   const orders = rooms[roomID].orders
   if (!rounds[roomID]) {
     rounds[roomID] = 0
@@ -482,18 +491,18 @@ function updateGridSubmission (roomID, username, type, content, socketID) {
   rooms[roomID].grid[currentRound][targetIndex] = {
     type,
     content,
-    member: username
+    member: username,
   }
 }
 
-async function emitRoundOver (roomID) {
+async function emitRoundOver(roomID) {
   const allUserIDs = rooms[roomID].members.map((member) => users.get(member).id)
   await assignGameID(roomID, allUserIDs)
   dbController.saveGrid(rooms[roomID].gameID, rooms[roomID].grid)
   io.to(roomID).emit('roundOver', rooms[roomID].grid)
 }
 
-async function assignGameID (roomID, allUserIDs) {
+async function assignGameID(roomID, allUserIDs) {
   rooms[roomID].gameID = await dbController.newGame(allUserIDs)
 }
 
