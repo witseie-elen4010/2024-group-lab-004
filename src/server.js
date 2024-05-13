@@ -360,18 +360,22 @@ function updateAndEmitOrders (roomID) {
 function determineResults (room) {
   let maxVotes = 0
   let mostVotedUser = null
+  let twoMax = false
 
   // Determine who got the most votes
   for (const user in room.votes) {
     if (room.votes[user] > maxVotes) {
+      twoMax = false
       maxVotes = room.votes[user]
       mostVotedUser = user
+    } else if (room.votes[user] === maxVotes) {
+      twoMax = true
     }
   }
 
   // Assume imposter is a known property set elsewhere
   const isImposter = mostVotedUser === room.imposterUsername
-  if (mostVotedUser !== null) {
+  if (mostVotedUser !== null && !twoMax) {
     Object.entries(room.leaderboard).forEach(([username, score]) => {
       // If a non-imposter was voted as imposter or an imposter was not identified
       if (
@@ -388,7 +392,8 @@ function determineResults (room) {
   return {
     mostVotedUser,
     votes: maxVotes,
-    isImposter
+    isImposter,
+    twoMax
   }
 }
 
