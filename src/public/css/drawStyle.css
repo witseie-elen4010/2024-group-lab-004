@@ -314,3 +314,96 @@ body {
   height: auto; /* Maintain aspect ratio */
   margin-top: 50px; /* Space between the gif and this image */
 }
+
+#votingCountdown {
+  font-size: 16px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#votingOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #55609b;
+  z-index: 30010;
+  align-items: center;
+  justify-content: center;
+}
+
+#votingContent {
+  background-color: #ffffff; /* White background for the content box */
+  padding: 40px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25); /* Optional: Adds depth */
+}
+
+#votingCountdown {
+  color: black;
+  margin-bottom: 20px;
+}
+
+.btn-success {
+  color: #fff;
+  background-color: #28a745; /* Bootstrap 4 success green */
+  border-color: #28a745;
+  width: 150px; /* Specify a fixed width for all success buttons */
+  margin: 5px; /* Adds margin around the buttons */
+}
+
+.btn-success:hover {
+  color: #fff;
+  background-color: #218838; /* Slightly darker green on hover */
+  border-color: #1e7e34;
+}
+
+.user-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; /* Ensures space is distributed evenly between the buttons */
+  margin-top: 20px;
+  padding: 0 10px; /* Padding on the sides of the container to ensure content is nicely padded */
+}
+
+.user-button {
+  background-color: #f8f9fa; /* Bootstrap-like grey */
+  border: 1px solid #000; /* Black outline */
+  border-radius: 0.25rem; /* Rounded corners */
+  color: black; /* Text color */
+  padding: 10px 20px;
+  margin-bottom: 10px; /* Space between rows */
+  cursor: pointer;
+  width: calc(
+    50% - 10px
+  ); /* Each button takes up half the container width minus the margin */
+  text-align: center;
+  box-sizing: border-box; /* Includes padding and border in the element's width */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+.user-button:hover {
+  background-color: #e2e6ea; /* Slightly darker grey on hover */
+}
+
+.user-button.selected {
+  background-color: #55609b; /* Matching the page background color */
+  color: white; /* Change text color for better visibility */
+}
+
+#buttonsVotingContainer {
+  display: flex;
+  justify-content: center; /* Center buttons horizontally */
+  align-items: center; /* Align buttons vertically */
+  gap: 10px; /* Adds space between the buttons */
+}
+
+/* Additional styling to handle space between leave game and next round buttons */
+#leaveGameButton,
+#nextRoundButton {
+  margin: 5px 10px; /* Adds vertical margin and more horizontal margin */
+}

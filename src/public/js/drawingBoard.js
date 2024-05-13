@@ -3,16 +3,20 @@ const roomId = localStorage.getItem('roomId')
 if (!roomId) {
   window.location.href = '/landing'
 }
+
+const host = localStorage.getItem('Host')
 let CurrentSetIndex = 0
 let CurrentImageIndex = 0
-let CurrentImage = null
+const CurrentImage = null
 let CurrentGrid = null
 let PlayerCount = 0
 let drawingTool = 'pencil'
+let timeLeft = 90
+let votingCountdownTimer = null
 
 let userDetails = ''
 async function fetchUser() {
-  const response = await fetch(`/getUser`)
+  const response = await fetch('/getUser')
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   } else {
@@ -20,26 +24,67 @@ async function fetchUser() {
     return userDetails
   }
 }
-fetchUser().then((userDetails) =>
-  socket.emit('joinGameRoom', roomId, userDetails)
-)
+if (host) {
+  fetchUser().then((userDetails) =>
+    socket.emit('joinGameRoom', roomId, userDetails, true)
+  )
+  localStorage.removeItem('Host')
+} else {
+  fetchUser().then((userDetails) =>
+    socket.emit('joinGameRoom', roomId, userDetails, false)
+  )
+}
 
-// socket.on('gameRoomJoined', (data) => {})
+socket.on('userDisconnected', (data) => {
+  if (data.membersCount < 3) {
+    votingMessage.innerText = 'Too few players are left to play another round!'
+    nextRoundButton.style.display = 'none'
+    if (!data.roundOver) {
+      showMemberLeftOverlay('home')
+      setTimeout(() => {
+        window.location.href = '/landing'
+      }, 2000)
+    }
+  } else {
+    // if (!data.roundOver) {
+    //   showMemberLeftOverlay('game')
+    //   setTimeout(() => {
+    //     socket.emit('nextRound', roomId)
+    //     hideMemberLeftOverlay()
+    //   }, 2000)
+    // }
+  }
+})
+
+socket.on('youAreTheNewHost', (data) => {
+  if (data.votingSend) {
+    data.membersCount > 2
+      ? (nextRoundButton.style.display = 'block')
+      : (votingMessage.innerText =
+          'Too few players are left to play another round!')
+  }
+})
 
 socket.on('updatePrompt', (prompt) => {
-  // **** timer starts here//
   hideWaitingContainer()
   inputPrompt.style.display = 'none'
   setPrompt(prompt)
 })
 
+socket.on('nextRoundStart', (membersCount) => {
+  membersCount > 2
+    ? (nextRoundButton.style.display = 'block')
+    : (votingMessage.innerText =
+        'Too few players are left to play another round!')
+})
+
 socket.on('updateDrawing', (drawing) => {
-  // **** timer starts here//
   hideWaitingContainer()
   activateInputPrompt(drawing)
 })
 
 socket.on('roundOver', (submissionGrid) => {
+  voted = false
   PlayerCount = submissionGrid.length
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
   console.log(submissionGrid)
@@ -47,7 +92,53 @@ socket.on('roundOver', (submissionGrid) => {
 
   const buttons = document.getElementById('RoundOverButtons')
   buttons.style.display = 'flex'
+
+  startCountdown(90)
 })
+
+function startCountdown(time = 90) {
+  timeLeft = time
+  document.getElementById(
+    'votingCountdown'
+  ).innerText = `Time left to vote: ${timeLeft}s`
+  votingCountdownElement.innerText = `Time left to vote: ${timeLeft}s`
+
+  if (votingCountdownTimer) {
+    clearInterval(votingCountdownTimer)
+  }
+  votingCountdownTimer = setInterval(() => {
+    timeLeft -= 1
+    document.getElementById(
+      'votingCountdown'
+    ).innerText = `Time left to vote: ${timeLeft}s`
+    votingCountdownElement.innerText = `Time left to vote: ${timeLeft}s`
+
+    if (timeLeft <= 0) {
+      openVotingPage()
+      clearInterval(votingCountdownTimer)
+      document.getElementById('votingCountdown').innerText = "Time's up!"
+      votingCountdownElement.innerText = "Time's up!"
+      votingButton.style.display = 'none'
+      viewGameButton.style.display = 'none'
+      leaveGameButton.style.display = 'block'
+      votingMessage.style.display = 'block'
+      handleAutomaticVote()
+    }
+  }, 1000)
+}
+
+function handleAutomaticVote() {
+  if (!voted) {
+    disableUserButtons()
+    if (selectedUsername) {
+      socket.emit('vote', { username: selectedUsername })
+    } else {
+      socket.emit('vote', { username: '' })
+    }
+    votingButton.disabled = true
+    leaveGameButton.style.display = 'block'
+  }
+}
 
 function showRoundOver(grid, setIndex, imageIndex) {
   leaderboardButton.style.display = 'none'
@@ -78,7 +169,7 @@ function showRoundOver(grid, setIndex, imageIndex) {
 
   const DrawnByPrompt = document.getElementById('DrawnByPrompt')
   DrawnByPrompt.textContent = `Drawn by: ${submissionMiddle.member}`
-  //imagecontainer.style.height = `60%`
+  // imagecontainer.style.height = `60%`
 
   const prompt = document.getElementById('EndScreenLowerPromptAlter')
   prompt.textContent = `What ${submissionLower.member} thought it was: `
@@ -93,8 +184,10 @@ function fetchLeaderboard() {
   socket.emit('requestLeaderboard')
 }
 
+let selectedUsername = ''
 socket.on('receiveLeaderboard', (data) => {
   leaderboardEntries.innerHTML = '' // Clear previous entries
+  container.innerHTML = '' // Clear previous entries
   data.forEach((player) => {
     const username = player.username || 'Unknown'
     const points = player.points || 0
@@ -102,8 +195,26 @@ socket.on('receiveLeaderboard', (data) => {
     entryDiv.className = 'leaderboard-entry'
     entryDiv.innerHTML = `<span>${username}</span><span>${points}</span>`
     leaderboardEntries.appendChild(entryDiv)
+    const button = document.createElement('button')
+    button.className = 'user-button'
+    button.textContent = `${player.username}: ${player.points}`
+    button.addEventListener('click', function () {
+      const allButtons = container.querySelectorAll('.user-button')
+      allButtons.forEach((b) => b.classList.remove('selected'))
+      selectedUsername = player.username
+      votingButton.disabled = false
+      button.classList.add('selected')
+    })
+    container.appendChild(button)
   })
 })
+
+function disableUserButtons() {
+  const userButtons = document.querySelectorAll('.user-button')
+  userButtons.forEach((button) => {
+    button.disabled = true
+  })
+}
 
 let playerStatus = ''
 
@@ -119,6 +230,54 @@ socket.on('normal', () => {
   playerStatus = 'normal'
   setStatus()
 })
+
+socket.on('votingResult', function (result) {
+  // Construct the message to display based on the voting result
+  fetchLeaderboard()
+  let message = ''
+  if (result.twoMax) {
+    message += `Two members received an equal number of votes - Imposter Victory!\n${result.result.imposter} Wins`
+  } else {
+    message = `${result.result.mostVotedUser} was voted imposter with ${result.result.votes} votes.`
+  }
+  if (result.isImposter) {
+    message += ' They were the imposter! Crewmate Victory!'
+  } else {
+    message += ` They were NOT the imposter! Victory for imposter ${result.imposter}!`
+  }
+  if (result.membersCount < 3) {
+    message += '\nToo few players are left to play another round!'
+  } else message += '\nWaiting for the next round to start...'
+  votingMessage.innerText = message
+  votingCountdownElement.style.display = 'none'
+})
+
+function showMemberLeftOverlay(action) {
+  const messageOverlay = document.getElementById('specialOverlay')
+  const centerImage = messageOverlay.querySelector('.centerImage')
+  centerImage.style.display = 'none'
+  const message = document.createElement('div')
+  action === 'game'
+    ? (message.innerText = 'A member has left the game... restarting game')
+    : (message.innerText =
+        'A member has left the game... Too few players left, returning to home page!')
+  message.id = 'memberLeftMessage'
+  message.style.fontSize = '24px'
+  message.style.color = 'white'
+  messageOverlay.appendChild(message)
+  messageOverlay.style.display = 'flex'
+}
+
+function hideMemberLeftOverlay() {
+  const messageOverlay = document.getElementById('specialOverlay')
+  const message = document.getElementById('memberLeftMessage')
+  if (message) {
+    messageOverlay.removeChild(message)
+  }
+  const centerImage = messageOverlay.querySelector('.centerImage')
+  centerImage.style.display = 'block'
+  messageOverlay.style.display = 'none'
+}
 
 const canvas = document.getElementById('canvas')
 canvas.width = window.innerWidth - 300
@@ -149,7 +308,7 @@ const redoButton = document.getElementById('redo')
 const waitingContainer = document.getElementById('waitingContainer')
 const roundOverOverlay = document.getElementById('roundOverOverlay')
 const leaveGameButton = document.getElementById('leaveGameButton')
-const nextRoundButton = document.getElementById('nextRoundButton')
+const votingPageButton = document.getElementById('votingPageButton')
 const upButton = document.getElementById('upButton')
 const downButton = document.getElementById('downButton')
 const prevSetButton = document.getElementById('prevSetButton')
@@ -162,6 +321,14 @@ const leaderboardButton = document.getElementById('leaderboardButton')
 const leaderboardContainer = document.getElementById('leaderboardContainer')
 const leaderboardCloseButton = document.getElementById('leaderboardCloseButton')
 const leaderboardEntries = document.getElementById('leaderboardEntries')
+const overlay = document.getElementById('votingOverlay')
+const container = document.getElementById('userButtonsContainer')
+const votingButton = document.getElementById('voteButton')
+const viewGameButton = document.getElementById('viewGameButton')
+const votingCountdownElement = document.getElementById('votingPageCountdown')
+const votingMessage = document.getElementById('votingPageMessage')
+const nextRoundButton = document.getElementById('nextRoundButton')
+let voted = false
 
 canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
 
@@ -262,7 +429,44 @@ leaveGameButton.addEventListener('click', () => {
 })
 
 nextRoundButton.addEventListener('click', () => {
+  nextRoundButton.style.display = 'none'
+  overlay.style.display = 'none'
   socket.emit('nextRound', roomId)
+})
+
+function openVotingPage() {
+  votingButton.style.display = 'block'
+  viewGameButton.style.display = 'block'
+  votingCountdownElement.style.display = 'block'
+  votingMessage.style.display = 'none'
+  votingButton.disabled = true
+  roundOverOverlay.style.display = 'none' // Hide the round over overlay
+  fetchLeaderboard()
+  overlay.style.display = 'flex' // Show the voting overlay
+  leaveGameButton.style.display = 'none'
+}
+votingPageButton.addEventListener('click', () => {
+  openVotingPage()
+})
+
+document
+  .getElementById('viewGameButton')
+  .addEventListener('click', function () {
+    overlay.style.display = 'none'
+    roundOverOverlay.style.display = 'flex'
+  })
+
+document.getElementById('voteButton').addEventListener('click', function () {
+  if (selectedUsername !== '') {
+    voted = true
+    socket.emit('vote', { username: selectedUsername })
+    disableUserButtons()
+    votingMessage.innerText = 'Waiting for game submissions...'
+    votingMessage.style.display = 'block'
+    votingButton.style.display = 'none'
+    viewGameButton.style.display = 'none'
+    leaveGameButton.style.display = 'block'
+  }
 })
 
 exitButton.addEventListener('click', () => {
@@ -270,6 +474,7 @@ exitButton.addEventListener('click', () => {
 })
 
 socket.on('newRound', () => {
+  overlay.style.display = 'none'
   hideRoundOverOverlay()
   activateInputPrompt()
 })
@@ -289,7 +494,7 @@ drawingDisplay.width = canvas.width / 4
 drawingDisplay.height = canvas.height / 4
 
 let isDrawing = false
-let drawWidth = '2'
+let drawWidth = '10'
 let drawColour = 'black'
 let pastDrawings = []
 let index = -1
@@ -318,6 +523,8 @@ redButton.addEventListener('click', () => changeColour('red'))
 greenButton.addEventListener('click', () => changeColour('green'))
 blueButton.addEventListener('click', () => changeColour('blue'))
 pinkButton.addEventListener('click', () => changeColour('pink'))
+
+changeLineWidth(penSizeSlider.value)
 
 helpButton.addEventListener('click', function () {
   helpList.style.display = 'block'
@@ -608,7 +815,7 @@ const actions = [
   'hiding',
 ]
 
-//maybe add a location as well, to get a more specific prompt?
+// maybe add a location as well, to get a more specific prompt?
 
 // Function to generate a random prompt
 function getRandomPrompt() {

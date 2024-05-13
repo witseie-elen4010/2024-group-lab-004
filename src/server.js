@@ -31,6 +31,10 @@ io.on('connection', (socket) => {
       grid: null,
       isPublic,
       leaderboard: {},
+      votes: {},
+      voteCounts: 0,
+      votingSend: false,
+      roundOver: false,
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -146,12 +150,6 @@ io.on('connection', (socket) => {
       socket.id
     )
 
-    const username = users.get(socket.id).username
-    const room = rooms[roomId]
-    if (username && room.leaderboard) {
-      room.leaderboard[username] += 10
-    }
-
     if (
       Object.keys(drawingSubmissions[roomId]).length ===
       rooms[roomId].members.length
@@ -160,9 +158,12 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('joinGameRoom', (roomID, userDetails) => {
+  socket.on('joinGameRoom', (roomID, userDetails, host) => {
     const room = rooms[roomID]
     if (room) {
+      if (host) {
+        room.host = socket.id
+      }
       room.members.push(socket.id)
       users.set(socket.id, userDetails)
       socket.join(roomID)
@@ -189,6 +190,7 @@ io.on('connection', (socket) => {
         room.members.forEach((member) => {
           if (member === imposter) {
             io.to(member).emit('imposter', true)
+            room.imposterUsername = userDetails.username
           } else {
             io.to(member).emit('normal', true)
           }
@@ -218,6 +220,8 @@ io.on('connection', (socket) => {
 
   socket.on('nextRound', (roomID) => {
     if (rooms[roomID]) {
+      rooms[roomID].votingSend = false
+      rooms[roomID].roundOver = false
       rounds[roomID] = 0
       rooms[roomID].prompts = {}
       drawingSubmissions[roomID] = {}
@@ -225,9 +229,8 @@ io.on('connection', (socket) => {
 
       updateAndEmitOrders(roomID)
       const imposter = getImposter(rooms[roomID])
-      rooms[roomID].imposter = imposter // store the imposter so the server knows who it is
+      rooms[roomID].imposter = imposter
 
-      // Send a "no" message to all other members
       rooms[roomID].members.forEach((member) => {
         if (member === imposter) {
           io.to(member).emit('imposter', true)
@@ -249,11 +252,51 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('vote', (data) => {
+    const { roomId, username } = data
+
+    if (currentRoom) {
+      const room = rooms[currentRoom]
+      if (username !== '') {
+        const room = rooms[currentRoom]
+        if (!room.votes[username]) {
+          room.votes[username] = 0
+        }
+        room.votes[username] += 1
+      }
+      room.voteCounts += 1
+      if (room.voteCounts === room.members.length) {
+        const result = determineResults(room)
+        room.votingSend = true
+        io.to(currentRoom).emit('votingResult', {
+          result,
+          membersCount: room.members.length,
+        })
+        io.to(room.host).emit('nextRoundStart', room.members.length)
+        room.votes = {}
+        room.voteCounts = 0
+      }
+    }
+  })
+
   socket.on('disconnect', () => {
     if (currentRoom) {
       const room = rooms[currentRoom]
+      const wasHost = room.host === socket.id
       room.members = room.members.filter((id) => id !== socket.id)
+
+      // delete room.leaderboard[users.get(socket.id).username]
       users.delete(socket.id)
+
+      if (wasHost) {
+        room.host = room.members[0] // Elect a new host, simplest form
+        io.to(room.host).emit('youAreTheNewHost', {
+          votingSend: room.votingSend,
+          membersCount: room.members.length,
+        })
+      }
+
+      io.to(currentRoom).emit('hostUpdated', room.host)
 
       if (room.gameStarted) {
         room.maxMembers -= 1
@@ -283,7 +326,11 @@ io.on('connection', (socket) => {
         delete drawingSubmissions[currentRoom][socket.id]
       }
       updateAndEmitOrders(currentRoom)
-      io.to(currentRoom).emit('userDisconnected')
+      io.to(currentRoom).emit('userDisconnected', {
+        votingSend: room.votingSend,
+        roundOver: room.roundOver,
+        membersCount: room.members.length,
+      })
     }
   })
 })
@@ -329,6 +376,45 @@ function updateAndEmitOrders(roomID) {
   }
 
   io.to(roomID).emit('updateOrders', orders)
+}
+
+function determineResults(room) {
+  let maxVotes = 0
+  let mostVotedUser = null
+  let twoMax = false
+
+  // Determine who got the most votes
+  for (const user in room.votes) {
+    if (room.votes[user] > maxVotes) {
+      twoMax = false
+      maxVotes = room.votes[user]
+      mostVotedUser = user
+    } else if (room.votes[user] === maxVotes) {
+      twoMax = true
+    }
+  }
+
+  const isImposter = mostVotedUser === room.imposterUsername
+  if (mostVotedUser !== null && !twoMax) {
+    Object.entries(room.leaderboard).forEach(([username, score]) => {
+      if (
+        (mostVotedUser !== room.imposterUsername &&
+          username === room.imposterUsername) ||
+        (mostVotedUser === room.imposterUsername &&
+          username !== room.imposterUsername)
+      ) {
+        room.leaderboard[username] += 100
+      }
+    })
+  }
+
+  return {
+    mostVotedUser,
+    votes: maxVotes,
+    isImposter,
+    twoMax,
+    imposter: room.imposterUsername,
+  }
 }
 
 function distributePrompts(roomID) {
@@ -419,6 +505,7 @@ async function emitRoundOver(roomID) {
   const allUserIDs = rooms[roomID].members.map((member) => users.get(member).id)
   await assignGameID(roomID, allUserIDs)
   dbController.saveGrid(rooms[roomID].gameID, rooms[roomID].grid)
+  rooms[roomID].roundOver = true
   io.to(roomID).emit('roundOver', rooms[roomID].grid)
 }
 

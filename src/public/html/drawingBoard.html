@@ -154,7 +154,7 @@
         <img id="blur" class = "drawing-tool-icon" src="https://icons.veryicon.com/png/o/miscellaneous/fine-linear-ico/water-drop-4.png"></img>
         <img id="eraser" class = "drawing-tool-icon" src="https://cdn-icons-png.freepik.com/512/254/254686.png"></img >
         
-        <input type="range" id="size-picker" min="1" max="50" value="2" />
+        <input type="range" id="size-picker" min="1" max="50" value="6" />
         <button id="submit" class="drawButton">Submit</button>
       </div>
     </div>
@@ -192,9 +192,9 @@
         Guess
         </div>
       </div>
-      <div id="RoundOverButtons" style="display: none;">
-        <button id="leaveGameButton" style="background-color: #fff;">Leave Game</button>
-        <button id="nextRoundButton" style="background-color: #fff;">Next Round</button>
+      <div id="RoundOverButtons" style="display: flex; justify-content: center; margin-top: 20px;">
+        <button id="votingPageButton" class="btn btn-success" style="margin-right: 10px;">Voting</button>
+        <div id="votingCountdown" style="color: white; align-self: center; margin-top: 22px;">Time left to vote: 90s</div>
       </div>
     </div>
 
@@ -221,6 +221,24 @@
         <!-- Player entries will be appended here -->
       </div>
     </div>
+
+    <div id="votingOverlay" style="display: none;">
+      <div id="votingContent" style="max-width: 600px; margin: auto; width: 600px">
+          <h1>Voting</h1>
+          <div id="votingPageCountdown">Time left to vote: 90s</div>
+          <div id="votingPageMessage" display="none">Waiting For Remaining Votes!</div>
+          <div id="userButtonsContainer" class="user-buttons-container"></div>
+          <div id="buttonsVotingContainer">
+            <button class="btn btn-success" id="viewGameButton">View Game</button>
+            <button class="btn btn-success" id="voteButton"  disabled>Vote</button>
+          </div>
+          <div style="display: flex; justify-content: center; margin-top: 10px;">
+            <button class="btn btn-success" id="leaveGameButton">Leave Game</button>
+            <button class="btn btn-success" id="nextRoundButton" style="display: none;">Next Round</button>
+          </div>
+      </div>
+    </div>
+    
 
   
 

@@ -49,6 +49,7 @@ submitJoinRoomButton.addEventListener('click', () => {
 // Start Game
 startGameButton.addEventListener('click', () => {
   const roomId = roomIdSpan.textContent
+  localStorage.setItem('Host', 'true')
   socket.emit('startGame', roomId)
 })
 
@@ -102,12 +103,27 @@ socket.on('publicRoomsList', (rooms) => {
     .join('')
 })
 
-// Update Members Count
+socket.on('hostUpdated', (newHostId) => {
+  if (socket.id === newHostId) {
+    if (membersCountSpan.textContent >= 4) {
+      startGameButton.style.display = 'block'
+    }
+  } else {
+    startGameButton.style.display = 'none'
+  }
+})
+
 socket.on('updateMembers', (membersCount) => {
   membersCountSpan.textContent = membersCount
-  if (membersCount >= 3 && started) {
+  if (membersCount >= 3 && socket.id === hostId) {
     startGameButton.style.display = 'block'
+  } else {
+    startGameButton.style.display = 'none'
   }
+})
+
+socket.on('youAreTheNewHost', () => {
+  hostId = socket.id
 })
 
 // Room Join Error Handling

@@ -15,6 +15,6 @@
   },
   "scripts": {
     "run": "nodemon src/server.js",
-    "start": "node src/server.js > server.log"
+    "start": "node src/server.js"
   }
 }
