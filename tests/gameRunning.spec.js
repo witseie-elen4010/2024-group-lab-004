@@ -32,7 +32,7 @@ test.describe('Start game tests', () => {
   test('member count is correct', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    page1.waitForTimeout(500)
+    // await page1.waitForTimeout(500) // needed?
 
     //check that memberCount == 3
     const memberCount = await page1.locator('#membersCount').textContent()
