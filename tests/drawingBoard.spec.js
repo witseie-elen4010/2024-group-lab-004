@@ -67,6 +67,8 @@ test('player can exit game', async ({ context }) => {
 
   await page1.locator('#helpButton').getByRole('img', { name: 'Logo' }).click()
   await page1.locator('#exitButton').click()
+  //check that I am at the url localhost:4000/landing
+  expect(page1.url()).toBe('http://localhost:4000/landing')
 })
 
 test('canvas has correct dimensions', async ({ context }) => {
