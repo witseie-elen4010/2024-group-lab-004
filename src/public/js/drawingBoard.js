@@ -67,8 +67,19 @@ function startCountdown(time = 90) {
     if (timeLeft <= 0) {
       clearInterval(countdownTimer)
       document.getElementById('votingCountdown').innerText = "Time's up!"
+      handleAutomaticVote()
     }
   }, 1000)
+}
+
+function handleAutomaticVote() {
+  if (selectedUsername) {
+    socket.emit('vote', { username: selectedUsername })
+  } else {
+    socket.emit('vote', { username: '' })
+  }
+  votingButton.disabled = true
+  leaveGameButton.style.display = 'block'
 }
 
 function showRoundOver(grid, setIndex, imageIndex) {
@@ -213,6 +224,9 @@ const leaderboardEntries = document.getElementById('leaderboardEntries')
 const overlay = document.getElementById('votingOverlay')
 const container = document.getElementById('userButtonsContainer')
 const votingButton = document.getElementById('voteButton')
+const viewGameButton = document.getElementById('viewGameButton')
+const votingCountdownElement = document.getElementById('votingPageCountdown')
+const votingMessage = document.getElementById('votingPageMessage')
 
 canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
 
@@ -316,15 +330,16 @@ leaveGameButton.addEventListener('click', () => {
 //   socket.emit('nextRound', roomId)
 // })
 nextRoundButton.addEventListener('click', () => {
+  votingMessage.style.display = 'none'
   votingButton.disabled = true
   roundOverOverlay.style.display = 'none' // Hide the round over overlay
   fetchLeaderboard()
   overlay.style.display = 'flex' // Show the voting overlay
   startVotingCountdown(timeLeft) // Start or continue the countdown for 90 seconds
+  leaveGameButton.style.display = 'none'
 })
 
 function startVotingCountdown() {
-  const votingCountdownElement = document.getElementById('votingPageCountdown')
   votingCountdownElement.innerText = `Time left to vote: ${timeLeft}s`
 
   const countdownTimer = setInterval(() => {
@@ -346,9 +361,11 @@ document
 
 document.getElementById('voteButton').addEventListener('click', function () {
   if (selectedUsername !== '') {
-    // Emit the vote to the server
     socket.emit('vote', { username: selectedUsername })
+    votingMessage.style.display = 'block'
     votingButton.style.display = 'none'
+    viewGameButton.style.display = 'none'
+    leaveGameButton.style.display = 'block'
   }
 })
 
