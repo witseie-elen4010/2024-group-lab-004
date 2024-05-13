@@ -28,6 +28,13 @@ async function navigateToGame(context) {
   return { page1, page2, page3 }
 }
 
+// waits for the overlay to disappear on the page
+async function waitForOverlayToHide(page) {
+  await page.waitForFunction(
+    'document.querySelector("#waitingContainer").style.display === "none"'
+  )
+}
+
 test('canvas exists', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -60,147 +67,119 @@ test('player can exit game', async ({ context }) => {
 
   await page1.locator('#helpButton').getByRole('img', { name: 'Logo' }).click()
   await page1.locator('#exitButton').click()
+  //check that I am at the url localhost:4000/landing
+  expect(page1.url()).toBe('http://localhost:4000/landing')
 })
 
-// test('canvas exists', async ({ context }) => {
-//   // Create a room on page1
-//   const page1 = await context.newPage()
-//   await page1.goto('http://localhost:4000/')
-//   await page1.getByRole('button', { name: 'Sign In' }).click()
-//   await page1.getByLabel('Username:').click()
-//   await page1.getByLabel('Username:').fill('test')
-//   await page1.getByLabel('Password:').click()
-//   await page1.getByLabel('Password:').fill('test')
-//   await page1
-//     .locator('#loginForm')
-//     .getByRole('button', { name: 'Login' })
-//     .click()
-//   await page1.getByRole('button', { name: 'Create Room' }).click()
-//   await page1.waitForSelector('#roomId')
-//   const roomId = await page1.$eval('#roomId', (el) => el.textContent)
+test('canvas has correct dimensions', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
 
-//   // Join the room on page2
-//   const page2 = await context.newPage()
-//   await page2.goto('http://localhost:4000/')
-//   await page2.getByRole('button', { name: 'Sign In' }).click()
-//   await page2.getByLabel('Username:').click()
-//   await page2.getByLabel('Username:').fill('test')
-//   await page2.getByLabel('Password:').click()
-//   await page2.getByLabel('Password:').fill('test')
-//   await page2
-//     .locator('#loginForm')
-//     .getByRole('button', { name: 'Login' })
-//     .click()
-//   await page2.click('#joinRoom')
-//   await page2.getByRole('button', { name: 'Join Room' }).click()
-//   await page2.fill('#roomToJoin', roomId)
-//   await page2.click('#submitJoinRoom')
+  await page1.waitForSelector('#doneButton')
 
-//   // Join the room on page3
-//   const page3 = await context.newPage()
-//   await page3.goto('http://localhost:4000/')
-//   await page3.getByRole('button', { name: 'Sign In' }).click()
-//   await page3.getByLabel('Username:').click()
-//   await page3.getByLabel('Username:').fill('test')
-//   await page3.getByLabel('Password:').click()
-//   await page3.getByLabel('Password:').fill('test')
-//   await page3
-//     .locator('#loginForm')
-//     .getByRole('button', { name: 'Login' })
-//     .click()
-//   await page3.click('#joinRoom')
-//   await page3.getByRole('button', { name: 'Join Room' }).click()
-//   await page3.fill('#roomToJoin', roomId)
-//   await page3.click('#submitJoinRoom')
+  const canvas = await page1.$('canvas')
+  const width = await canvas.getAttribute('width')
+  const height = await canvas.getAttribute('height')
 
-//   const canvas = await page3.$('canvas')
-//   expect(canvas).toBeTruthy()
-// })
+  const windowSize = await page1.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+  }))
 
-// test('canvas has correct dimensions', async ({ page }) => {
-//   await page.goto('http://localhost:4000/draw')
+  expect(width).toBe(`${windowSize.innerWidth - 300}`)
+  expect(height).toBe(`${windowSize.innerHeight - 350}`)
+})
 
-//   const canvas = await page.$('canvas')
-//   const width = await canvas.getAttribute('width')
-//   const height = await canvas.getAttribute('height')
+test('canvas has white rectangle', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
 
-//   const windowSize = await page.evaluate(() => ({
-//     innerWidth: window.innerWidth,
-//     innerHeight: window.innerHeight,
-//   }))
+  await page1.waitForSelector('#doneButton')
 
-//   expect(width).toBe(`${windowSize.innerWidth - 300}`)
-//   expect(height).toBe(`${windowSize.innerHeight - 300}`)
-// })
+  const whiteRectangle = await page1.evaluate(() => {
+    const canvas = document.getElementById('canvas')
+    const context = canvas.getContext('2d')
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+    return Array.from(imageData.data).every((value) => value === 255)
+  })
 
-// test('canvas has white rectangle', async ({ page }) => {
-//   await page.goto('http://localhost:4000/draw')
+  expect(whiteRectangle).toBeTruthy()
+})
 
-//   const whiteRectangle = await page.evaluate(() => {
-//     const canvas = document.getElementById('canvas')
-//     const context = canvas.getContext('2d')
-//     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-//     return Array.from(imageData.data).every((value) => value === 255)
-//   })
+test.describe('Testing the input field when the draw page is loaded', () => {
+  test('the overlay is created', async ({ context }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    const overlay = await page1.$('#overlay')
+    expect(overlay).toBeTruthy()
+  })
 
-//   expect(whiteRectangle).toBeTruthy()
-// })
+  test('input field is created', async ({ context }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    const inputField = await page1.$('#getInput')
+    expect(inputField).toBeTruthy()
+  })
 
-// test.describe('Testing the input field when the draw page is loaded', () => {
-//   test.beforeEach(async ({ page }) => {
-//     await page.goto('http://localhost:4000/draw')
-//   })
+  test('button is created', async ({ context }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    const button = await page1.$('#doneButton')
+    expect(button).toBeTruthy()
+  })
+})
 
-//   test('the overlay is created', async ({ page }) => {
-//     const overlay = await page.$('#overlay')
-//     expect(overlay).toBeTruthy()
-//   })
+test('waitingContainer becomes visible when the done button is pressed', async ({
+  context,
+}) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
 
-//   test('input field is created', async ({ page }) => {
-//     const inputField = await page.$('#getInput')
-//     expect(inputField).toBeTruthy()
-//   })
+  // enter a prompt
+  await page1.locator('#getInput').fill('test prompt')
+  await page1.locator('#doneButton').click()
 
-//   test('button is created', async ({ page }) => {
-//     const button = await page.$('#doneButton')
-//     expect(button).toBeTruthy()
-//   })
-// })
+  // check if the waitingContainer is visible
+  const isVisible = await page1.locator('#waitingContainer').isVisible()
+  expect(isVisible).toBe(true)
+})
 
-// test('waitingContainer becomes visible when the done button is pressed', async ({
-//   page,
-// }) => {
-//   await page.goto('http://localhost:4000/draw')
+test('input field closes when the enter key is pressed', async ({
+  context,
+}) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
 
-//   // enter a prompt
-//   await page.locator('#getInput').fill('test prompt')
-//   await page.locator('#doneButton').click()
+  await page1.locator('#getInput').press('Enter')
 
-//   // check if the waitingContainer is visible
-//   const isVisible = await page.locator('#waitingContainer').isVisible()
-//   expect(isVisible).toBe(true)
-// })
+  // check if the getInput field is not visible
+  const isVisible = await page1.locator('#getInput').isVisible()
+  expect(isVisible).toBe(false)
+})
 
-// test('input field closes when the enter key is pressed', async ({ page }) => {
-//   await page.goto('http://localhost:4000/draw')
+test('prompt is displayed to one other user', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
 
-//   await page.locator('#getInput').press('Enter')
+  const testPrompt = 'test prompt'
 
-//   // check if the getInput field is not visible
-//   const isVisible = await page.locator('#getInput').isVisible()
-//   expect(isVisible).toBe(false)
-// })
+  await page1.locator('#getInput').fill(testPrompt)
+  await page1.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page3.locator('#doneButton').click()
 
-// test('testing random prompt generation', async ({ page }) => {
-//   await page.goto('http://localhost:4000/draw')
+  await Promise.all([
+    waitForOverlayToHide(page1),
+    waitForOverlayToHide(page2),
+    waitForOverlayToHide(page3),
+  ])
 
-//   await page.locator('#getInput').fill('test prompt')
-//   await page.locator('#getInput').press('Enter')
+  //check if the text 'test prompt' appears in exactly one of page2 or page3's prompt
+  const prompt1 = await page1.locator('#prompt').innerText()
+  const prompt2 = await page2.locator('#prompt').innerText()
+  const prompt3 = await page3.locator('#prompt').innerText()
 
-//   // check if the prompt is displayed
-//   const prompt = await page.locator('#prompt').innerText()
-//   expect(prompt).toBe('test prompt')
-// })
+  console.log(prompt1, prompt2, prompt3)
+
+  const promptCount = [prompt2, prompt3].filter(
+    (prompt) => prompt === testPrompt
+  ).length
+
+  expect(promptCount).toBe(1)
+  expect(prompt1).not.toBe(testPrompt)
+})
 
 test('input field closes after a certain amount of time', async ({
   context,
@@ -238,11 +217,7 @@ test('the user can draw for a certain amount of time', async ({ context }) => {
   await page2.locator('#doneButton').click()
   await page3.locator('#doneButton').click()
 
-  // make sure the waiting time is over
-  let waitVisible = await page3.locator('#waitingOverlay').isVisible()
-  while (waitVisible) {
-    waitVisible = await page3.locator('#waitingOverlay').isVisible()
-  }
+  await waitForOverlayToHide(page3)
 
   // input is not visible while drawing
   await page3.waitForTimeout(drawingTimer * 1000 - 1000)
@@ -394,189 +369,200 @@ test.describe('testing that the timer bar decreases in width', () => {
   })
 })
 
-// // test('testing that a drawing is shown after submitting the prompt', async ({
-// //   page,
-// // }) => {
-// //   await page.goto('http://localhost:4000/draw')
+test('testing that a drawing is shown after submitting the prompt', async ({
+  context,
+}) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
 
-// //   // make sure the drawingDisplay is not visible
-// //   let drawingDisplay = await page.locator('#drawing').isVisible()
-// //   expect(drawingDisplay).toBe(false)
+  await page1.waitForSelector('#doneButton')
 
-// //   // enter a prompt and click done
-// //   await page.locator('#doneButton').click()
+  // make sure the drawingDisplay is not visible
+  let drawingDisplay = await page1.locator('#drawing').isVisible()
+  expect(drawingDisplay).toBe(false)
 
-// //   // press the submit button
-// //   await page.locator('#submit').click()
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// //   // make sure the drawingDisplay is  visible
-// //   drawingDisplay = await page.locator('#drawing').isVisible()
-// //   expect(drawingDisplay).toBe(true)
-// // })
+  // press the submit button
+  await page1.locator('#submit').click()
+  await page2.locator('#submit').click()
+  await page3.locator('#submit').click()
 
-// // test('testing that the description entered becomes the new prompt', async ({
-// //   page,
-// // }) => {
-// //   await page.goto('http://localhost:4000/draw')
+  await waitForOverlayToHide(page1)
 
-// //   // enter a prompt and click done
-// //   await page.locator('#doneButton').click()
+  // make sure the drawingDisplay is  visible
+  drawingDisplay = await page1.locator('#drawing').isVisible()
+  expect(drawingDisplay).toBe(true)
+})
 
-// //   // press the submit button
-// //   await page.locator('#submit').click()
+test('testing colour change', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// //   // enter a prompt and click done
-// //   await page.locator('#getInput').fill('test prompt')
-// //   await page.locator('#doneButton').click()
+  // Check Red
+  await page1.locator('#redButton').click()
+  let strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#ff0000')
 
-// //   // check if the prompt is displayed
-// //   const prompt = await page.locator('#prompt').innerText()
-// //   expect(prompt).toBe('test prompt')
-// // })
+  // Check Blue
+  await page1.locator('#blueButton').click()
+  strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#0000ff')
 
-// // test('testing colour change', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
+  // Check Green
+  await page1.locator('#greenButton').click()
+  strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#008000')
 
-// //   // enter a prompt
-// //   await page.locator('#getInput').fill('test')
-// //   await page.locator('#doneButton').click()
+  // Check Pink
+  await page1.locator('#pinkButton').click()
+  strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
+  expect(strokeStyleColor).toBe('#ffc0cb')
+})
 
-// //   // Check Red
-// //   await page.locator('#redButton').click()
-// //   let strokeStyleColor = await page.evaluate(() => {
-// //     const canvas = document.querySelector('#canvas')
-// //     const context = canvas.getContext('2d')
-// //     return context.strokeStyle
-// //   })
-// //   expect(strokeStyleColor).toBe('#ff0000')
+test('testing custom colour picker', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// //   // Check Blue
-// //   await page.locator('#blueButton').click()
-// //   strokeStyleColor = await page.evaluate(() => {
-// //     const canvas = document.querySelector('#canvas')
-// //     const context = canvas.getContext('2d')
-// //     return context.strokeStyle
-// //   })
-// //   expect(strokeStyleColor).toBe('#0000ff')
+  await page1.locator('#colour-picker').fill('#01f901')
 
-// //   // Check Green
-// //   await page.locator('#greenButton').click()
-// //   strokeStyleColor = await page.evaluate(() => {
-// //     const canvas = document.querySelector('#canvas')
-// //     const context = canvas.getContext('2d')
-// //     return context.strokeStyle
-// //   })
-// //   expect(strokeStyleColor).toBe('#008000')
+  // Get the strokeStyle color of the canvas
+  const strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.strokeStyle
+  })
 
-// //   // Check Pink
-// //   await page.locator('#pinkButton').click()
-// //   strokeStyleColor = await page.evaluate(() => {
-// //     const canvas = document.querySelector('#canvas')
-// //     const context = canvas.getContext('2d')
-// //     return context.strokeStyle
-// //   })
-// //   expect(strokeStyleColor).toBe('#ffc0cb')
-// // })
+  // Check if the strokeStyle color is the expected color
+  expect(strokeStyleColor).toBe('#01f901')
+})
 
-// // test('testing custom colour picker', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#colour-picker').fill('#01f901')
+test('Test linewidth changes', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// //   // Get the strokeStyle color of the canvas
-// //   const strokeStyleColor = await page.evaluate(() => {
-// //     const canvas = document.querySelector('#canvas')
-// //     const context = canvas.getContext('2d')
-// //     return context.strokeStyle
-// //   })
+  await page1.locator('#getInput').press('Enter')
+  await page1.locator('#size-picker').fill('23')
 
-// //   // Check if the strokeStyle color is the expected color
-// //   expect(strokeStyleColor).toBe('#01f901')
-// // })
+  const strokeStyleColor = await page1.evaluate(() => {
+    const canvas = document.querySelector('#canvas')
+    const context = canvas.getContext('2d')
+    return context.lineWidth
+  })
 
-// // test('Test linewidth changes', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#getInput').press('Enter')
-// //   await page.locator('#size-picker').fill('23')
+  expect(strokeStyleColor).toBe(23)
+})
 
-// //   const strokeStyleColor = await page.evaluate(() => {
-// //     const canvas = document.querySelector('#canvas')
-// //     const context = canvas.getContext('2d')
-// //     return context.lineWidth
-// //   })
+test('Help menu appears when help button is clicked', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// //   expect(strokeStyleColor).toBe(23)
-// // })
+  await page1.locator('#helpButton').getByRole('img', { name: 'Logo' }).click()
+  expect(
+    await page1.getByRole('heading', { name: 'How to play' }).isVisible()
+  ).toBeTruthy()
+})
 
-// // test('Help menu appears when help button is clicked', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#HelpButton').getByRole('img', { name: 'Logo' }).click()
-// //   expect(
-// //     await page.getByRole('heading', { name: 'How to play' }).isVisible()
-// //   ).toBeTruthy()
-// // })
+test('Help menu closes when close button is clicked', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// // test('Help menu closes when close button is clicked', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#HelpButton').getByRole('img', { name: 'Logo' }).click()
-// //   await page.locator('#HelpClose').click()
-// //   expect(
-// //     await page.getByRole('heading', { name: 'How to play' }).isVisible()
-// //   ).toBeFalsy()
-// // })
+  await page1.locator('#helpButton').getByRole('img', { name: 'Logo' }).click()
+  await page1.locator('#helpClose').click()
+  expect(
+    await page1.getByRole('heading', { name: 'How to play' }).isVisible()
+  ).toBeFalsy()
+})
 
-// // test('Undo and redo buttons disabled on loading.', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#getInput').press('Enter')
+test('Undo and redo buttons disabled on loading.', async ({ context }) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// //   expect(
-// //     await page.getByRole('button', { name: 'Undo' }).isDisabled()
-// //   ).toBeTruthy()
-// //   expect(
-// //     await page.getByRole('button', { name: 'Redo' }).isDisabled()
-// //   ).toBeTruthy()
-// // })
+  expect(
+    await page1.getByRole('button', { name: 'Undo' }).isDisabled()
+  ).toBeTruthy()
+  expect(
+    await page1.getByRole('button', { name: 'Redo' }).isDisabled()
+  ).toBeTruthy()
+})
 
-// // test('Undo button becomes enabled once something is drawn', async ({
-// //   page,
-// // }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#getInput').press('Enter')
-// //   await page.locator('#canvas').click({
-// //     position: {
-// //       x: 525,
-// //       y: 195,
-// //     },
-// //   })
+// these tests are currently broken -- this feature needs to be fixed
+// test('Undo button becomes enabled once something is drawn', async ({
+//   context,
+// }) => {
+//   const { page1, page2, page3 } = await navigateToGame(context)
+//   await page3.locator('#doneButton').click()
+//   await page2.locator('#doneButton').click()
+//   await page1.locator('#doneButton').click()
 
-// //   expect(
-// //     await page.getByRole('button', { name: 'Undo' }).isDisabled()
-// //   ).toBeFalsy()
-// //   expect(
-// //     await page.getByRole('button', { name: 'Redo' }).isDisabled()
-// //   ).toBeTruthy()
-// // })
+//   await page1.locator('#canvas').click({
+//     position: {
+//       x: 525,
+//       y: 195,
+//     },
+//   })
 
-// // test('Undo button back tracks drawing', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#getInput').press('Enter')
-// //   await page.locator('#canvas').hover()
-// //   await page.mouse.down()
-// //   for (let y = 500; y <= 600; y += 10) {
-// //     await page.mouse.move(500, y)
-// //   }
+//   expect(
+//     await page1.getByRole('button', { name: 'Undo' }).isDisabled()
+//   ).toBeFalsy()
+//   expect(
+//     await page1.getByRole('button', { name: 'Redo' }).isDisabled()
+//   ).toBeTruthy()
+// })
 
-// //   await page.mouse.up()
-// //   await page.getByRole('button', { name: 'Undo' }).click()
+// test('Undo button back tracks drawing', async ({ context }) => {
+//   const { page1, page2, page3 } = await navigateToGame(context)
+//   await page3.locator('#doneButton').click()
+//   await page2.locator('#doneButton').click()
+//   await page1.locator('#doneButton').click()
 
-// //   const isEmpty = await page.evaluate(() => {
-// //     const canvas = document.getElementById('canvas')
-// //     const context = canvas.getContext('2d')
-// //     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-// //     return Array.from(imageData.data).every((value) => value === 255)
-// //   })
+//   await page1.locator('#canvas').hover()
+//   await page1.mouse.down()
+//   for (let y = 500; y <= 600; y += 10) {
+//     await page1.mouse.move(500, y)
+//   }
 
-// //   expect(isEmpty).toBeTruthy()
-// // })
+//   await page1.mouse.up()
+//   await page1.getByRole('button', { name: 'Undo' }).click()
+
+//   const isEmpty = await page1.evaluate(() => {
+//     const canvas = document.getElementById('canvas')
+//     const context = canvas.getContext('2d')
+//     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+//     return Array.from(imageData.data).every((value) => value === 255)
+//   })
+
+//   expect(isEmpty).toBeTruthy()
+// })
 
 // // test('Redo button undoes the undo button', async ({ page }) => {
 // //   await page.goto('http://localhost:4000/draw')
@@ -656,70 +642,46 @@ test.describe('testing that the timer bar decreases in width', () => {
 // //   ).toBeTruthy()
 // // })
 
-// // // this test starts from landing and goes to drawingBoard, so I didnt know which test file to put it in
-// // test('Exactly 1 imposter is chosen at the start of the game', async ({
-// //   context,
-// //   browserName,
-// // }) => {
-// //   if (browserName === 'chromium') {
-// //     test.fixme() // this test needs to be fixed
-// //     return
-// //   }
-// //   const page1 = await context.newPage()
-// //   await page1.goto('http://localhost:4000/landing')
-// //   await page1.getByRole('button', { name: 'Create Room' }).click()
-// //   const roomId = await page1.locator('#roomId').innerText()
+test('Exactly 1 imposter is chosen at the start of the game', async ({
+  context,
+  browserName,
+}) => {
+  const { page1, page2, page3 } = await navigateToGame(context)
+  await page3.locator('#doneButton').click()
+  await page2.locator('#doneButton').click()
+  await page1.locator('#doneButton').click()
 
-// //   const page2 = await context.newPage()
-// //   await page2.goto('http://localhost:4000/landing')
-// //   await page2.click('#joinRoom')
-// //   await page2.waitForSelector('#roomToJoin')
-// //   await page2.fill('#roomToJoin', roomId)
-// //   await page2.click('#submitJoinRoom')
+  // wait for the websocket to send the message of who the imposter is
+  await page1.waitForFunction(
+    () =>
+      document.querySelector('#playerStatus') &&
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+  await page2.waitForFunction(
+    () =>
+      document.querySelector('#playerStatus') &&
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
+  await page3.waitForFunction(
+    () =>
+      document.querySelector('#playerStatus') &&
+      !document
+        .querySelector('#playerStatus')
+        .innerText.includes('Are you an imposter?')
+  )
 
-// //   const page3 = await context.newPage()
-// //   await page3.goto('http://localhost:4000/landing')
-// //   await page3.click('#joinRoom')
-// //   await page3.waitForSelector('#roomToJoin')
-// //   await page3.fill('#roomToJoin', roomId)
-// //   await page3.click('#submitJoinRoom')
+  const playerStatus1 = await page1.locator('#playerStatus').innerText()
+  const playerStatus2 = await page2.locator('#playerStatus').innerText()
+  const playerStatus3 = await page3.locator('#playerStatus').innerText()
 
-// //   // Wait for the members count to update on all pages
-// //   await page1.waitForTimeout(2000)
+  // make sure only one says "You ARE the imposter!"
+  const imposterCount = [playerStatus1, playerStatus2, playerStatus3].filter(
+    (status) => status === 'You ARE the imposter!'
+  ).length
 
-// //   await page1.locator('#startGame').click()
-
-// //   // wait for the websocket to send the message of who the imposter is
-// //   await page1.waitForFunction(
-// //     () =>
-// //       document.querySelector('#playerStatus') &&
-// //       !document
-// //         .querySelector('#playerStatus')
-// //         .innerText.includes('Are you an imposter?')
-// //   )
-// //   await page2.waitForFunction(
-// //     () =>
-// //       document.querySelector('#playerStatus') &&
-// //       !document
-// //         .querySelector('#playerStatus')
-// //         .innerText.includes('Are you an imposter?')
-// //   )
-// //   await page3.waitForFunction(
-// //     () =>
-// //       document.querySelector('#playerStatus') &&
-// //       !document
-// //         .querySelector('#playerStatus')
-// //         .innerText.includes('Are you an imposter?')
-// //   )
-
-// //   const playerStatus1 = await page1.locator('#playerStatus').innerText()
-// //   const playerStatus2 = await page2.locator('#playerStatus').innerText()
-// //   const playerStatus3 = await page3.locator('#playerStatus').innerText()
-
-// //   // make sure only one says "You ARE the imposter!"
-// //   const imposterCount = [playerStatus1, playerStatus2, playerStatus3].filter(
-// //     (status) => status === 'You ARE the imposter!'
-// //   ).length
-
-// //   expect(imposterCount).toBe(1)
-// // })
+  expect(imposterCount).toBe(1)
+})
