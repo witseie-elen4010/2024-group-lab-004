@@ -3,6 +3,7 @@ const welcomeController = require('../controller/welcomeController')
 const userController = require('../controller/userController')
 const drawController = require('../controller/drawController')
 const dbController = require('../controller/dbController')
+const adminController = require('../controller/adminController')
 
 const router = express.Router()
 
@@ -18,5 +19,6 @@ router.route('/fetchGrid').get(dbController.fetchGrid)
 router.route('/guest').get(userController.guest)
 router.route('/logout').get(userController.logout)
 router.route('/getUser').get(userController.getUser)
+router.route('/admin').get(adminController.admin)
 
 module.exports = router

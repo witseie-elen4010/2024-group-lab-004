@@ -11,7 +11,6 @@ exports.createUserAccount = async (req, res) => {
     const query = 'INSERT INTO users (username, password) VALUES ($1, $2)'
     const values = [username, hashedPassword]
     const result = await db.query(query, values)
-    await console.log('User created successfully', result)
     if (result.rowCount !== 0) {
       const query = 'SELECT * FROM users WHERE username = $1'
       const values = [username]
@@ -45,7 +44,11 @@ exports.checkUserAccount = async (req, res) => {
           id: result.rows[0].user_id,
           username: result.rows[0].username,
         }
-        return res.redirect('/landing')
+        if (result.rows[0].username === 'admin') {
+          return res.redirect('/admin')
+        } else {
+          return res.redirect('/landing')
+        }
       }
     }
   } catch (error) {
