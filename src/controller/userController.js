@@ -1,13 +1,26 @@
 const db = require('../db/database')
 const path = require('path')
+const bcrypt = require('bcrypt')
+const saltRounds = 10
 
 exports.createUserAccount = async (req, res) => {
   const { username, password } = req.body
-  const query = 'INSERT INTO users (username, password) VALUES ($1, $2)'
-  const values = [username, password]
 
   try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds)
+    const query = 'INSERT INTO users (username, password) VALUES ($1, $2)'
+    const values = [username, hashedPassword]
     const result = await db.query(query, values)
+    await console.log('User created successfully', result)
+    if (result.rowCount !== 0) {
+      const query = 'SELECT * FROM users WHERE username = $1'
+      const values = [username]
+      const result = await db.query(query, values)
+      req.session.user = {
+        id: result.rows[0].user_id,
+        username: result.rows[0].username,
+      }
+    }
     return res.redirect('/landing')
   } catch (error) {
     return res.status(500).json({ message: error.message })
@@ -16,19 +29,24 @@ exports.createUserAccount = async (req, res) => {
 
 exports.checkUserAccount = async (req, res) => {
   const { username, password } = req.body
-  const query = 'SELECT * FROM users WHERE username = $1 AND password = $2'
-  const values = [username, password]
+
   try {
+    const query = 'SELECT * FROM users WHERE username = $1'
+    const values = [username]
     const result = await db.query(query, values)
 
     if (result.rowCount === 0) {
       res.redirect('/login/?loginError=true')
     } else {
-      req.session.user = {
-        id: result.rows[0].user_id,
-        username: result.rows[0].username,
+      const hashedPassword = result.rows[0].password
+      const match = await bcrypt.compare(password, hashedPassword)
+      if (match) {
+        req.session.user = {
+          id: result.rows[0].user_id,
+          username: result.rows[0].username,
+        }
+        return res.redirect('/landing')
       }
-      return res.redirect('/landing')
     }
   } catch (error) {
     return res.status(500).json({ message: error.message })
