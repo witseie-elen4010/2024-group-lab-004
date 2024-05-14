@@ -381,16 +381,16 @@ function updateAndEmitOrders(roomID) {
 function determineResults(room) {
   let maxVotes = 0
   let mostVotedUser = null
-  let twoMax = false
+  let equalImposterVotes = false
 
   // Determine who got the most votes
   for (const user in room.votes) {
     if (room.votes[user] > maxVotes) {
-      twoMax = false
+      equalImposterVotes = false
       maxVotes = room.votes[user]
       mostVotedUser = user
     } else if (room.votes[user] === maxVotes) {
-      twoMax = true
+      equalImposterVotes = true
     }
   }
 
@@ -399,8 +399,10 @@ function determineResults(room) {
     Object.entries(room.leaderboard).forEach(([username, score]) => {
       if (
         (!isImposter && username === room.imposterUsername) ||
-        (twoMax && username === room.imposterUsername) ||
-        (isImposter && username !== room.imposterUsername && !twoMax)
+        (equalImposterVotes && username === room.imposterUsername) ||
+        (isImposter &&
+          username !== room.imposterUsername &&
+          !equalImposterVotes)
       ) {
         room.leaderboard[username] += 100
       }
@@ -411,7 +413,7 @@ function determineResults(room) {
     mostVotedUser,
     votes: maxVotes,
     isImposter,
-    twoMax,
+    equalImposterVotes,
     imposter: room.imposterUsername,
   }
 }

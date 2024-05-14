@@ -1,35 +1,46 @@
 const { test, expect } = require('@playwright/test')
 
-async function navigateToGame(context) {
-  const page1 = await context.newPage()
-  await page1.goto('http://localhost:4000/')
-  await page1.getByRole('button', { name: 'Continue as Guest' }).click()
-  await page1.getByPlaceholder('Enter your nickname').fill('test name 1')
-  await page1.getByRole('button', { name: 'Join' }).click()
-  await page1.getByRole('button', { name: 'Create Public Game' }).click()
+async function navigateToGame (context) {
+  const setupPage = async (nickname) => {
+    const page = await context.newPage()
+    await page.goto('http://localhost:4000/')
+    await page.getByRole('button', { name: 'Continue as Guest' }).click()
+    await page.getByPlaceholder('Enter your nickname').fill(nickname)
+    await page.getByRole('button', { name: 'Join' }).click()
+    return page
+  }
 
-  const page2 = await context.newPage()
-  await page2.goto('http://localhost:4000/')
-  await page2.getByRole('button', { name: 'Continue as Guest' }).click()
-  await page2.getByPlaceholder('Enter your nickname').fill('test name 2')
-  await page2.getByRole('button', { name: 'Join' }).click()
-  await page2.getByRole('button', { name: 'Join Public Game' }).click()
-  await page2.getByRole('button', { name: /^Join$/ }).click()
+  const pagePromises = [
+    setupPage('test name 1'),
+    setupPage('test name 2'),
+    setupPage('test name 3')
+  ]
 
-  const page3 = await context.newPage()
-  await page3.goto('http://localhost:4000/')
-  await page3.getByRole('button', { name: 'Continue as Guest' }).click()
-  await page3.getByPlaceholder('Enter your nickname').fill('test name 3')
-  await page3.getByRole('button', { name: 'Join' }).click()
-  await page3.getByRole('button', { name: 'Join Public Game' }).click()
-  await page3.getByRole('button', { name: /^Join$/ }).click()
+  const [page1, page2, page3] = await Promise.all(pagePromises)
+  await page1.getByRole('button', { name: 'Create Private Game' }).click()
+  await page1.waitForSelector('#roomId')
+  const roomID = await page1.locator('#roomId').innerText()
+
+  await page2.getByRole('button', { name: 'Join Private Game' }).click()
+  await page3.getByRole('button', { name: 'Join Private Game' }).click()
+
+  await Promise.all([
+    page2.getByPlaceholder('Enter room ID').fill(roomID),
+    page3.getByPlaceholder('Enter room ID').fill(roomID)
+  ])
+
+  await Promise.all([
+    page2.getByRole('button', { name: 'Join', exact: true }).click(),
+    page3.getByRole('button', { name: 'Join', exact: true }).click()
+  ])
 
   await page1.getByRole('button', { name: 'Start Game' }).click()
+
   return { page1, page2, page3 }
 }
 
 // waits for the overlay to disappear on the page
-async function waitForOverlayToHide(page) {
+async function waitForOverlayToHide (page) {
   await page.waitForFunction(
     'document.querySelector("#waitingContainer").style.display === "none"'
   )
@@ -50,7 +61,7 @@ test('erasor sets colour to white', async ({ context }) => {
   await page3.locator('#doneButton').click()
 
   await page1.locator('#eraser').click()
-  let strokeStyleColor = await page1.evaluate(() => {
+  const strokeStyleColor = await page1.evaluate(() => {
     const canvas = document.querySelector('#canvas')
     const context = canvas.getContext('2d')
     return context.strokeStyle
@@ -67,7 +78,7 @@ test('player can exit game', async ({ context }) => {
 
   await page1.locator('#helpButton').getByRole('img', { name: 'Logo' }).click()
   await page1.locator('#exitButton').click()
-  //check that I am at the url localhost:4000/landing
+  // check that I am at the url localhost:4000/landing
   expect(page1.url()).toBe('http://localhost:4000/landing')
 })
 
@@ -82,7 +93,7 @@ test('canvas has correct dimensions', async ({ context }) => {
 
   const windowSize = await page1.evaluate(() => ({
     innerWidth: window.innerWidth,
-    innerHeight: window.innerHeight,
+    innerHeight: window.innerHeight
   }))
 
   expect(width).toBe(`${windowSize.innerWidth - 300}`)
@@ -125,7 +136,7 @@ test.describe('Testing the input field when the draw page is loaded', () => {
 })
 
 test('waitingContainer becomes visible when the done button is pressed', async ({
-  context,
+  context
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -139,7 +150,7 @@ test('waitingContainer becomes visible when the done button is pressed', async (
 })
 
 test('input field closes when the enter key is pressed', async ({
-  context,
+  context
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -163,10 +174,10 @@ test('prompt is displayed to one other user', async ({ context }) => {
   await Promise.all([
     waitForOverlayToHide(page1),
     waitForOverlayToHide(page2),
-    waitForOverlayToHide(page3),
+    waitForOverlayToHide(page3)
   ])
 
-  //check if the text 'test prompt' appears in exactly one of page2 or page3's prompt
+  // check if the text 'test prompt' appears in exactly one of page2 or page3's prompt
   const prompt1 = await page1.locator('#prompt').innerText()
   const prompt2 = await page2.locator('#prompt').innerText()
   const prompt3 = await page3.locator('#prompt').innerText()
@@ -182,7 +193,7 @@ test('prompt is displayed to one other user', async ({ context }) => {
 })
 
 test('input field closes after a certain amount of time', async ({
-  context,
+  context
 }) => {
   const inputTimer = 3
 
@@ -191,7 +202,7 @@ test('input field closes after a certain amount of time', async ({
   page2.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
   await page3.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
 
-  //page3 must wait until the input prompt screen is visible
+  // page3 must wait until the input prompt screen is visible
   await page3.waitForSelector('#doneButton')
 
   // input field does not close after 1.5 seconds before the timer ends
@@ -231,7 +242,7 @@ test('the user can draw for a certain amount of time', async ({ context }) => {
 })
 
 test('the timer bar appears until the prompt is entered', async ({
-  context,
+  context
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
   await page1.waitForSelector('#doneButton')
@@ -256,7 +267,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   //   The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
 
   test('The input timer bar decreases for the original prompt entering', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -290,7 +301,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   })
 
   test('The input timer bar decreases for describing a drawing', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     page3.goto(
@@ -370,7 +381,7 @@ test.describe('testing that the timer bar decreases in width', () => {
 })
 
 test('testing that a drawing is shown after submitting the prompt', async ({
-  context,
+  context
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -644,7 +655,7 @@ test('Undo and redo buttons disabled on loading.', async ({ context }) => {
 
 test('Exactly 1 imposter is chosen at the start of the game', async ({
   context,
-  browserName,
+  browserName
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
   await page3.locator('#doneButton').click()
