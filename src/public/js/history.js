@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', function () {
   })
 
   downButton.addEventListener('click', () => {
-    if (CurrentImageIndex < PlayerCount - 3) {
-      CurrentImageIndex += 2
+    if (imageIndex < PlayerCount - 3) {
+      imageIndex += 2
     }
     showRoundOver(CurrentGrid, setIndex, imageIndex)
   })
