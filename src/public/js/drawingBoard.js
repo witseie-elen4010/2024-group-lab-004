@@ -328,6 +328,10 @@ const viewGameButton = document.getElementById('viewGameButton')
 const votingCountdownElement = document.getElementById('votingPageCountdown')
 const votingMessage = document.getElementById('votingPageMessage')
 const nextRoundButton = document.getElementById('nextRoundButton')
+const squareButton = document.getElementById('squareSelector')
+const triangleButton = document.getElementById('triangleSelector')
+const circleButton = document.getElementById('circleSelector')
+const pentagramButton = document.getElementById('pentagramSelector')
 let voted = false
 
 canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
@@ -390,6 +394,34 @@ sprayPaintButton.addEventListener('click', () => {
     changeColour('black')
   }
   drawingTool = 'sprayPaint'
+})
+
+squareButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'rectangle'
+})
+
+circleButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'circle'
+})
+
+triangleButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'triangle'
+})
+
+pentagramButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'pentagram'
 })
 
 upButton.addEventListener('click', () => {

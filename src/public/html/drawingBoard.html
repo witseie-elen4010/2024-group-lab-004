@@ -72,7 +72,7 @@
           width: 100%;
           height: 100%;
           background-color: rgba(0, 0, 0, 0.5);
-          z-index: 0;
+          z-index: 1000;
         "
       ></div>
       <div
@@ -152,25 +152,25 @@
         <img id="pencil" class = "drawing-tool-icon" src="https://icons.iconarchive.com/icons/iconsmind/outline/256/Pencil-icon.png" ></img>
         <img id="sprayPaint" class = "drawing-tool-icon" src="https://www.svgrepo.com/show/506855/cle-spraycan.svg"></img>
         <img id="blur" class = "drawing-tool-icon" src="https://icons.veryicon.com/png/o/miscellaneous/fine-linear-ico/water-drop-4.png"></img>
-        <div class="dropdown"> 
+        <div class="dropdown" style="z-index: 0;"> 
           <!-- <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Select Country
           </button>  -->
-          <a href="#" id="imageDropdown" data-toggle="dropdown" class="drawing-tool-icon">
-            <img src="https://cdn-icons-png.freepik.com/128/4224/4224675.png">
+          <a href="#" id="imageDropdown" data-toggle="dropdown" style="z-index: 0;" >
+            <img src="https://cdn-icons-png.freepik.com/128/4224/4224675.png" class="drawing-tool-icon">
           </a>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"> 
-            <a class="dropdown-item" href="#">
-              <img src="https://media.geeksforgeeks.org/wp-content/uploads/20200630132503/iflag.jpg" width="20" height="15"> India
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"  style="z-index: 0;"> 
+            <a class="dropdown-item" href="#" id="squareSelector">
+              <img src="https://cdn-icons-png.flaticon.com/128/2627/2627937.png" width="20" height="20"> Square
             </a> 
-            <a class="dropdown-item" href="#">
-              <img src="https://media.geeksforgeeks.org/wp-content/uploads/20200630132504/uflag.jpg" width="20" height="15"> USA
+            <a class="dropdown-item" href="#" id="circleSelector" >
+              <img src="https://cdn-icons-png.flaticon.com/128/481/481078.png" width="20" height="20"> Circle
             </a> 
-            <a class="dropdown-item" href="#">
-              <img src="https://media.geeksforgeeks.org/wp-content/uploads/20200630132502/eflag.jpg" width="20" height="15"> England
+            <a class="dropdown-item" href="#" id="triangleSelector">
+              <img src="https://cdn-icons-png.flaticon.com/128/481/481099.png" width="20" height="20"> Triangle
             </a> 
-            <a class="dropdown-item" href="#">
-              <img src="https://media.geeksforgeeks.org/wp-content/uploads/20200630132500/bflag.jpg" width="20" height="15"> Brazil
+            <a class="dropdown-item" href="#" id="pentagramSelector" > 
+              <img src="https://cdn-icons-png.flaticon.com/128/1828/1828970.png" width="20" height="20"> Star
             </a> 
           </div> 
         </div>
