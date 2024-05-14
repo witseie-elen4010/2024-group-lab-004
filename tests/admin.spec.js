@@ -17,4 +17,3 @@ test('admin hsitory', async ({ page }) => {
     await page.getByRole('button', { name: 'Back to game list' }).isVisible()
   ).toBeTruthy()
 })
-
