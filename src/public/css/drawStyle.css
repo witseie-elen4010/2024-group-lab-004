@@ -9,8 +9,8 @@ body {
 }
 
 .colour {
-  height: 40px;
-  width: 40px;
+  height: 50px;
+  width: 50px;
   border-radius: 50%;
   min-height: 40px;
   min-width: 40px;
@@ -31,7 +31,7 @@ body {
 .drawButton {
   align-self: center;
   width: 100px;
-  height: 40px;
+  height: 50px;
   border-radius: 5px;
   font-weight: bold;
   margin-left: 5px;
@@ -81,8 +81,8 @@ body {
 .drawing-tool-icon {
   cursor: pointer;
   border-radius: 5px;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: 2px solid black;
   margin-left: 3px;
   margin-right: 3px;
@@ -93,7 +93,7 @@ body {
   align-self: center;
   margin-left: 5px;
   margin-right: 5px;
-  height: 40px;
+  height: 50px;
   border: 2px solid black;
   border-radius: 5px;
 }
@@ -124,6 +124,17 @@ body {
   font-size: 30px;
   text-align: center;
   margin-top: 10px;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 5px;
+  border: 2px solid black;
+  height: 50px;
+  margin-bottom: -30;
+  /* padding: 0px; */
 }
 
 /* Waiting container styling */
