@@ -5,7 +5,7 @@ test('admin hsitory', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign In' }).click()
   await page.getByLabel('Username:').click()
   await page.getByLabel('Username:').fill('admin')
-  await page.getByLabel('Username:').press('Tab')
+  await page.getByLabel('Password:').click()
   await page.getByLabel('Password:').fill('3l3n4010')
   await page
     .locator('#loginForm')
