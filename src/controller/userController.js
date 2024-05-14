@@ -49,6 +49,8 @@ exports.checkUserAccount = async (req, res) => {
         } else {
           return res.redirect('/landing')
         }
+      } else {
+        res.redirect('/login/?loginError=true')
       }
     }
   } catch (error) {
@@ -61,6 +63,18 @@ exports.history = async (req, res) => {
     res.sendFile(
       path.join(__dirname, '..', './', 'public', 'html', 'history.html')
     )
+  } else {
+    res.redirect('/') // Redirect to login if no session is found
+  }
+}
+
+exports.exitHistory = async (req, res) => {
+  if (req.session.user) {
+    if (req.session.user.username !== 'admin' || req.session.user.id !== -289) {
+      res.redirect('/landing')
+    } else {
+      res.redirect('/admin')
+    }
   } else {
     res.redirect('/') // Redirect to login if no session is found
   }

@@ -43,14 +43,12 @@ button:hover {
 }
 
 /* Specific styles for the admin buttons */
-#viewHistory,
-#viewCurrentRooms {
+#viewHistory {
   background-color: #45a049; /* Bootstrap's info color */
   width: 100%;
 }
 
-#viewHistory:hover,
-#viewCurrentRooms:hover {
+#viewHistory:hover {
   background-color: #007ba7; /* Darker info color on hover */
 }
 
@@ -63,8 +61,7 @@ button:hover {
 }
 
 /* Styles for the History and Current Rooms buttons */
-#viewHistory,
-#viewCurrentRooms {
+#viewHistory {
   font-size: 18px;
   padding: 15px;
   margin-top: 20px;

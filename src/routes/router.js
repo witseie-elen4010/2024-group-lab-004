@@ -20,5 +20,6 @@ router.route('/guest').get(userController.guest)
 router.route('/logout').get(userController.logout)
 router.route('/getUser').get(userController.getUser)
 router.route('/admin').get(adminController.admin)
+router.route('/exitHistory').get(userController.exitHistory)
 
 module.exports = router
