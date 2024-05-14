@@ -11,11 +11,14 @@ async function signIn(page) {
 test.describe('Landing page tests', () => {
   test.beforeEach(async ({ page }) => {
     page = await signIn(page)
+    await page.waitForLoadState('networkidle')
   })
 
   test('createPrivateRoomButton is visible', async ({ page }) => {
-    const createPrivateRoomButton = await page.$('#createPrivateRoom')
-    const isVisible = await createPrivateRoomButton.isVisible()
+    await page.waitForTimeout(0.1)
+    const isVisible = await page
+      .getByRole('button', { name: 'Create Private Game' })
+      .isVisible()
     expect(isVisible).toBe(true)
   })
 
