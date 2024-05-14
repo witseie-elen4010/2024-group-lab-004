@@ -86,18 +86,26 @@ test.describe('Landing page tests', () => {
   })
 
   test('join room with invalid id', async ({ page, browserName }) => {
-    if (browserName === 'webkit') {
-      test.fixme()
-      return
-    }
+    if (browserName === 'chromium') {
+      await page.click('#joinRoom')
+      await page.fill('#roomToJoin', 'invalidRoomId')
+      page.on('dialog', (dialog) => {
+        expect(dialog.message()).toBe('Room does not exist')
+        dialog.dismiss()
+      })
+      await page.click('#submitJoinRoom')
+    } else {
+      await page.click('#joinRoom')
+      await page.fill('#roomToJoin', 'invalidRoomId')
 
-    await page.click('#joinRoom')
-    await page.fill('#roomToJoin', 'invalidRoomId')
-    page.on('dialog', (dialog) => {
+      const dialogPromise = page.waitForEvent('dialog')
+
+      await page.locator('#submitJoinRoom').click()
+
+      const dialog = await dialogPromise
       expect(dialog.message()).toBe('Room does not exist')
-      dialog.dismiss()
-    })
-    await page.click('#submitJoinRoom')
+      await dialog.dismiss()
+    }
   })
 
   test('join room created by another page', async ({ context }) => {

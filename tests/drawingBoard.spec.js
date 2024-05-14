@@ -199,7 +199,7 @@ test('input field closes after a certain amount of time', async ({
 
   const { page1, page2, page3 } = await navigateToGame(context)
 
-  await page3.waitForNavigation()
+  await page3.waitForLoadState('networkidle')
   await page3.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
 
   // page3 must wait until the input prompt screen is visible
@@ -220,7 +220,7 @@ test('the user can draw for a certain amount of time', async ({ context }) => {
   const drawingTimer = 3
 
   const { page1, page2, page3 } = await navigateToGame(context)
-  await page3.waitForNavigation()
+  await page3.waitForLoadState('networkidle')
   await page3.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
 
   await page1.locator('#doneButton').click()
@@ -272,10 +272,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    const currentUrl = page1.url()
-    if (currentUrl !== 'http://localhost:4000/draw') {
-      await page1.waitForNavigation()
-    }
+    await page1.waitForLoadState('networkidle')
     await page1.goto(
       `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
     )
@@ -304,10 +301,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    const currentUrl = page1.url()
-    if (currentUrl !== 'http://localhost:4000/draw') {
-      await page1.waitForNavigation()
-    }
+    await page1.waitForLoadState('networkidle')
     await page1.goto(
       `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
     )
@@ -341,10 +335,7 @@ test.describe('testing that the timer bar decreases in width', () => {
     // get to the describe a drawing point
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    const currentUrl = page1.url()
-    if (currentUrl !== 'http://localhost:4000/draw') {
-      await page1.waitForNavigation()
-    }
+    await page1.waitForLoadState('networkidle')
     await page1.goto(
       `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
     )
