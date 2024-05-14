@@ -39,7 +39,7 @@ socket.on('userDisconnected', (data) => {
   if (data.membersCount < 3) {
     votingMessage.innerText = 'Too few players are left to play another round!'
     nextRoundButton.style.display = 'none'
-    if (!data.roundOver && data.promptsSent) {
+    if (!data.roundOver && data.gameReady) {
       showMemberLeftOverlay('home')
       setTimeout(() => {
         window.location.href = '/landing'
