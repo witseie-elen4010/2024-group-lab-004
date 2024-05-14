@@ -5,12 +5,28 @@ test('admin hsitory', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign In' }).click()
   await page.getByLabel('Username:').click()
   await page.getByLabel('Username:').fill('admin')
+  await page.getByLabel('Username:').press('Tab')
+  await page.getByLabel('Password:').fill('3l3n4010')
+  await page
+    .locator('#loginForm')
+    .getByRole('button', { name: 'Login' })
+    .click()
+  await page.waitForLoadState('networkidle')
+  if (await page.getByRole('button', { name: 'Logout' }).isVisible()) {
+    await page.getByRole('button', { name: 'Logout' }).click()
+  }
+
+  await page.goto('http://localhost:4000/')
+  await page.getByRole('button', { name: 'Sign In' }).click()
+  await page.getByLabel('Username:').click()
+  await page.getByLabel('Username:').fill('admin')
   await page.getByLabel('Password:').click()
   await page.getByLabel('Password:').fill(`3l3n4010`)
   await page
     .locator('#loginForm')
     .getByRole('button', { name: 'Login' })
     .click()
+  await page.waitForLoadState('networkidle')
   await page.getByRole('button', { name: 'View History' }).click()
   await page.locator('li').first().click()
   await expect(
