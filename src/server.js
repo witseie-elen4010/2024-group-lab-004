@@ -35,6 +35,7 @@ io.on('connection', (socket) => {
       voteCounts: 0,
       votingSend: false,
       roundOver: false,
+      promptsSent: false,
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -84,10 +85,10 @@ io.on('connection', (socket) => {
   socket.on('inputDone', (data) => {
     const { roomId } = data
     const room = rooms[roomId]
-
     if (!room) {
       return
     }
+    if (!room.promptsSent) room.promptsSent = true
     if (!room.todo) {
       room.todo = []
     }
@@ -128,7 +129,7 @@ io.on('connection', (socket) => {
 
   socket.on('drawingSubmitted', (data) => {
     const { roomId, image } = data
-
+    if (!rooms[roomId].promptsSent) rooms[roomId].promptsSent = true
     if (!drawingSubmissions[roomId]) {
       drawingSubmissions[roomId] = {}
     }
@@ -327,6 +328,7 @@ io.on('connection', (socket) => {
         votingSend: room.votingSend,
         roundOver: room.roundOver,
         membersCount: room.members.length,
+        promptsSent: room.promptsSent,
       })
     }
   })
@@ -350,7 +352,6 @@ function getImposter(room) {
   const leaderboardUsernames = Object.keys(room.leaderboard)
   const randomIndex = Math.floor(Math.random() * leaderboardUsernames.length)
   room.imposterUsername = leaderboardUsernames[randomIndex]
-  console.log(room.imposterUsername)
   return room.members[randomIndex]
 }
 function generateUniqueOrders(numPlayers) {
