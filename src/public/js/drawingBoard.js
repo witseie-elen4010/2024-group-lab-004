@@ -165,9 +165,8 @@ function showRoundOver(grid, setIndex, imageIndex) {
 
   imagecontainer.src = submissionMiddle.content
 
-  // set the image height to 400px, and set the width such that the image is not stretched
-  imagecontainer.style.height = `400px`
-  imagecontainer.style.width = `auto`
+  // for css styling
+  imagecontainer.className = 'viewDrawing'
 
   imagecontainer.alt = `Drawing ${imageIndex + 1}`
 

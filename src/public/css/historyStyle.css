@@ -77,6 +77,11 @@ h1 {
   margin-left: 10px;
 }
 
+.viewDrawing {
+  height: 45vh;
+  width: auto;
+}
+
 #gridOverlay {
   position: fixed;
   width: 100%;
