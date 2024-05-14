@@ -122,18 +122,32 @@ test('canvas has white rectangle', async ({ context }) => {
 test.describe('Testing the input field when the draw page is loaded', () => {
   test('the overlay is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
+
+    await page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    )
     const overlay = await page1.$('#overlay')
     expect(overlay).toBeTruthy()
   })
 
   test('input field is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
+
+    await page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    )
+
     const inputField = await page1.$('#getInput')
     expect(inputField).toBeTruthy()
   })
 
   test('button is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
+
+    await page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    )
+
     const button = await page1.$('#doneButton')
     expect(button).toBeTruthy()
   })
