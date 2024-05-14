@@ -40,10 +40,11 @@ socket.on('userDisconnected', (data) => {
     votingMessage.innerText = 'Too few players are left to play another round!'
     nextRoundButton.style.display = 'none'
     if (!data.roundOver) {
-      showMemberLeftOverlay('home')
-      setTimeout(() => {
-        window.location.href = '/landing'
-      }, 2000)
+      // showMemberLeftOverlay('home')
+      // setTimeout(() => {
+      //   window.location.href = '/landing'
+      // }, 2000)
+      alert('too few players left')
     }
   } else {
     // if (!data.roundOver) {
