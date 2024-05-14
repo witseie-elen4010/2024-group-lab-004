@@ -235,15 +235,15 @@ socket.on('votingResult', function (result) {
   // Construct the message to display based on the voting result
   fetchLeaderboard()
   let message = ''
-  if (result.twoMax) {
-    message += `Two members received an equal number of votes - Imposter Victory!\n${result.result.imposter} Wins`
+  if (result.result.equalImposterVotes) {
+    message += `Two members received an equal number of votes - Imposter Victory!\n${result.result.imposter} Wins!`
   } else {
     message = `${result.result.mostVotedUser} was voted imposter with ${result.result.votes} votes.`
-  }
-  if (result.isImposter) {
-    message += ' They were the imposter! Crewmate Victory!'
-  } else {
-    message += ` They were NOT the imposter! Victory for imposter ${result.imposter}!`
+    if (result.result.isImposter) {
+      message += ' They were the imposter! Crewmate Victory!'
+    } else {
+      message += ` They were NOT the imposter! Victory for imposter ${result.result.imposter}!`
+    }
   }
   if (result.membersCount < 3) {
     message += '\nToo few players are left to play another round!'
