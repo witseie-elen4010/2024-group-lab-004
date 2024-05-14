@@ -44,7 +44,7 @@ exports.checkUserAccount = async (req, res) => {
           id: result.rows[0].user_id,
           username: result.rows[0].username,
         }
-        if (result.rows[0].username === 'admin') {
+        if (result.rows[0].username === process.env.ADMIN_NAME) {
           return res.redirect('/admin')
         } else {
           return res.redirect('/landing')
@@ -70,7 +70,10 @@ exports.history = async (req, res) => {
 
 exports.exitHistory = async (req, res) => {
   if (req.session.user) {
-    if (req.session.user.username !== 'admin' || req.session.user.id !== -289) {
+    if (
+      req.session.user.username !== process.env.ADMIN_NAME ||
+      req.session.user.id !== parseInt(process.env.ADMIN_ID, 10)
+    ) {
       res.redirect('/landing')
     } else {
       res.redirect('/admin')
