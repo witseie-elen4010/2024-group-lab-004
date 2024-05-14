@@ -178,7 +178,6 @@ io.on('connection', (socket) => {
         roomId: roomID,
         members: allUserDetails,
       })
-
       // only get the imposters once everyone has joined the room
       if (room.members.length === room.gameSize) {
         // create the gameroom in the database
@@ -190,7 +189,6 @@ io.on('connection', (socket) => {
         room.members.forEach((member) => {
           if (member === imposter) {
             io.to(member).emit('imposter', true)
-            room.imposterUsername = userDetails.username
           } else {
             io.to(member).emit('normal', true)
           }
@@ -285,7 +283,6 @@ io.on('connection', (socket) => {
       const wasHost = room.host === socket.id
       room.members = room.members.filter((id) => id !== socket.id)
 
-      // delete room.leaderboard[users.get(socket.id).username]
       users.delete(socket.id)
 
       if (wasHost) {
@@ -350,7 +347,10 @@ function generateRoomId() {
 }
 
 function getImposter(room) {
-  const randomIndex = Math.floor(Math.random() * room.members.length)
+  const leaderboardUsernames = Object.keys(room.leaderboard)
+  const randomIndex = Math.floor(Math.random() * leaderboardUsernames.length)
+  room.imposterUsername = leaderboardUsernames[randomIndex]
+  console.log(room.imposterUsername)
   return room.members[randomIndex]
 }
 function generateUniqueOrders(numPlayers) {
@@ -381,27 +381,28 @@ function updateAndEmitOrders(roomID) {
 function determineResults(room) {
   let maxVotes = 0
   let mostVotedUser = null
-  let twoMax = false
+  let equalImposterVotes = false
 
   // Determine who got the most votes
   for (const user in room.votes) {
     if (room.votes[user] > maxVotes) {
-      twoMax = false
+      equalImposterVotes = false
       maxVotes = room.votes[user]
       mostVotedUser = user
     } else if (room.votes[user] === maxVotes) {
-      twoMax = true
+      equalImposterVotes = true
     }
   }
 
   const isImposter = mostVotedUser === room.imposterUsername
-  if (mostVotedUser !== null && !twoMax) {
+  if (mostVotedUser !== null) {
     Object.entries(room.leaderboard).forEach(([username, score]) => {
       if (
-        (mostVotedUser !== room.imposterUsername &&
-          username === room.imposterUsername) ||
-        (mostVotedUser === room.imposterUsername &&
-          username !== room.imposterUsername)
+        (!isImposter && username === room.imposterUsername) ||
+        (equalImposterVotes && username === room.imposterUsername) ||
+        (isImposter &&
+          username !== room.imposterUsername &&
+          !equalImposterVotes)
       ) {
         room.leaderboard[username] += 100
       }
@@ -412,7 +413,7 @@ function determineResults(room) {
     mostVotedUser,
     votes: maxVotes,
     isImposter,
-    twoMax,
+    equalImposterVotes,
     imposter: room.imposterUsername,
   }
 }

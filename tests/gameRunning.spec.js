@@ -1,30 +1,39 @@
 const { test, expect } = require('@playwright/test')
 
 async function navigateToGame(context) {
-  const page1 = await context.newPage()
-  await page1.goto('http://localhost:4000/')
-  await page1.getByRole('button', { name: 'Continue as Guest' }).click()
-  await page1.getByPlaceholder('Enter your nickname').fill('test name 1')
-  await page1.getByRole('button', { name: 'Join' }).click()
-  await page1.getByRole('button', { name: 'Create Public Game' }).click()
+  const setupPage = async (nickname) => {
+    const page = await context.newPage()
+    await page.goto('http://localhost:4000/')
+    await page.getByRole('button', { name: 'Continue as Guest' }).click()
+    await page.getByPlaceholder('Enter your nickname').fill(nickname)
+    await page.getByRole('button', { name: 'Join' }).click()
+    return page
+  }
 
-  const page2 = await context.newPage()
-  await page2.goto('http://localhost:4000/')
-  await page2.getByRole('button', { name: 'Continue as Guest' }).click()
-  await page2.getByPlaceholder('Enter your nickname').fill('test name 2')
-  await page2.getByRole('button', { name: 'Join' }).click()
-  await page2.getByRole('button', { name: 'Join Public Game' }).click()
-  await page2.getByRole('button', { name: /^Join$/ }).click()
+  const pagePromises = [
+    setupPage('test name 1'),
+    setupPage('test name 2'),
+    setupPage('test name 3'),
+  ]
 
-  const page3 = await context.newPage()
-  await page3.goto('http://localhost:4000/')
-  await page3.getByRole('button', { name: 'Continue as Guest' }).click()
-  await page3.getByPlaceholder('Enter your nickname').fill('test name 3')
-  await page3.getByRole('button', { name: 'Join' }).click()
-  await page3.getByRole('button', { name: 'Join Public Game' }).click()
-  await page3.getByRole('button', { name: /^Join$/ }).click()
+  const [page1, page2, page3] = await Promise.all(pagePromises)
+  await page1.getByRole('button', { name: 'Create Private Game' }).click()
+  await page1.waitForSelector('#roomId')
+  const roomID = await page1.locator('#roomId').innerText()
 
-  // await page1.getByRole('button', { name: 'Start Game' }).click()
+  await page2.getByRole('button', { name: 'Join Private Game' }).click()
+  await page3.getByRole('button', { name: 'Join Private Game' }).click()
+
+  await Promise.all([
+    page2.getByPlaceholder('Enter room ID').fill(roomID),
+    page3.getByPlaceholder('Enter room ID').fill(roomID),
+  ])
+
+  await Promise.all([
+    page2.getByRole('button', { name: 'Join', exact: true }).click(),
+    page3.getByRole('button', { name: 'Join', exact: true }).click(),
+  ])
+
   return { page1, page2, page3 }
 }
 
@@ -180,7 +189,7 @@ test.describe('Exit game tests', () => {
     await page3.close()
 
     // Wait for 3 seconds
-    await new Promise((resolve) => setTimeout(resolve, 3000))
+    await new Promise((resolve) => setTimeout(resolve, 4000))
 
     // Check if page1 and page2 navigate to /landing
     expect(page1.url()).toContain('/landing')
