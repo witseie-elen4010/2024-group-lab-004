@@ -214,4 +214,26 @@ test.describe('Landing page tests', () => {
     )
     expect(membersCount).toBe('1')
   })
+
+  test('Usernames are displayed on the landing page', async ({ context }) => {
+    // Go to landing page
+    const page = await context.newPage()
+    await page.goto('http://localhost:4000/landing')
+
+    // Fetch the username elements
+    const usernameElement = await page.$('#membersList')
+
+    // Click on the create public room button
+    await page.click('#createPublicRoom')
+
+    // Check if the username element is visible
+    //expect(await usernameElement.isVisible()).toBe(true)
+
+    // Check if the username element contains some text
+    const usernameText = await page.evaluate(
+      (usernameElement) => usernameElement.textContent,
+      usernameElement
+    )
+    expect(usernameText).toBeTruthy()
+  })
 })
