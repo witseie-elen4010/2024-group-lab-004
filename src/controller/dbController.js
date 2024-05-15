@@ -1,9 +1,20 @@
 const db = require('../db/database')
 
 exports.fetchGames = async (req, res) => {
-  const query =
-    'SELECT * FROM games WHERE user1 = $1 OR user2 = $1 OR user3 = $1 OR user4 = $1 OR user5 = $1 OR user6 = $1 OR user7 = $1 OR user8 = $1 ORDER BY game_id DESC'
-  const values = [req.session.user.id]
+  let query = ''
+  let values = []
+  if (
+    req.session.user.username !== process.env.ADMIN_NAME ||
+    req.session.user.id !== parseInt(process.env.ADMIN_ID, 10)
+  ) {
+    query =
+      'SELECT * FROM games WHERE user1 = $1 OR user2 = $1 OR user3 = $1 OR user4 = $1 OR user5 = $1 OR user6 = $1 OR user7 = $1 OR user8 = $1 ORDER BY game_id DESC'
+    values = [req.session.user.id]
+  } else {
+    query = 'SELECT * FROM games ORDER BY game_id DESC'
+    values = []
+  }
+
   try {
     const result = await db.query(query, values)
     if (result.rowCount === 0) {
