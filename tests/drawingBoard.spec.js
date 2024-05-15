@@ -123,9 +123,7 @@ test.describe('Testing the input field when the draw page is loaded', () => {
   test('the overlay is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    await page1.waitForFunction(
-      'document.querySelector("#specialOverlay").style.display === "none"'
-    )
+    await page1.waitForSelector('#overlay')
     const overlay = await page1.$('#overlay')
     expect(overlay).toBeTruthy()
   })
@@ -133,10 +131,7 @@ test.describe('Testing the input field when the draw page is loaded', () => {
   test('input field is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    await page1.waitForFunction(
-      'document.querySelector("#specialOverlay").style.display === "none"'
-    )
-
+    await page1.waitForSelector('#getInput')
     const inputField = await page1.$('#getInput')
     expect(inputField).toBeTruthy()
   })
