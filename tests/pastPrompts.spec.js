@@ -20,15 +20,9 @@ test('user sees past games', async ({ page }) => {
 
 test('next page button works', async ({ page }) => {
   await page.goto('http://localhost:4000/')
-  await page.getByRole('button', { name: 'Sign In' }).click()
-  await page.getByLabel('Username:').click()
-  await page.getByLabel('Username:').fill(env.ADMIN_NAME)
-  await page.getByLabel('Password:').click()
-  await page.getByLabel('Password:').fill(env.ADMIN_PASSWORD)
-  await page
-    .locator('#loginForm')
-    .getByRole('button', { name: 'Login' })
-    .click()
+  await page.getByRole('button', { name: 'Continue as Guest' }).click()
+  await page.getByPlaceholder('Enter your nickname').fill('test')
+  await page.getByRole('button', { name: 'Join' }).click()
   await page.getByRole('button', { name: 'History' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.locator('li').first().click()
@@ -39,17 +33,10 @@ test('next page button works', async ({ page }) => {
 
 test('previous page button works', async ({ page }) => {
   await page.goto('http://localhost:4000/')
-
-  await page.getByRole('button', { name: 'Sign In' }).click()
-  await page.getByLabel('Username:').click()
-  await page.getByLabel('Username:').fill(env.ADMIN_NAME)
-  await page.getByLabel('Password:').click()
-  await page.getByLabel('Password:').fill(env.ADMIN_PASSWORD)
-  await page
-    .locator('#loginForm')
-    .getByRole('button', { name: 'Login' })
-    .click()
-  await page.getByRole('button', { name: 'View History' }).click()
+  await page.getByRole('button', { name: 'Continue as Guest' }).click()
+  await page.getByPlaceholder('Enter your nickname').fill('test')
+  await page.getByRole('button', { name: 'Join' }).click()
+  await page.getByRole('button', { name: 'History' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Previous' }).click()
   await page.locator('li').first().click()
