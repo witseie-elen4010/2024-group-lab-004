@@ -1,11 +1,11 @@
-name: Tests
+name: Jest
 on:
   push:
     branches: [main, master]
   pull_request:
     branches: [main, master]
 jobs:
-  test:
+  jest-test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
@@ -18,7 +18,7 @@ jobs:
       ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
       ADMIN_ID: ${{ secrets.ADMIN_ID }}
       SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      github-token: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
