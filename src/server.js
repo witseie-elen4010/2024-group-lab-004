@@ -83,49 +83,76 @@ io.on('connection', (socket) => {
     socket.emit('publicRoomsList', roomsList)
   })
 
-  socket.on('inputDone', (data) => {
-    const { roomId } = data
-    const room = rooms[roomId]
-    if (!room) {
-      return
-    }
-    if (!room.todo) {
-      room.todo = []
-    }
-    data.socketID = socket.id
-    room.todo.push(data)
-    if (room.members.length !== room.gameSize) {
-      // wait for everyone to join, then do this process
-      return
-    }
+  // socket.on('inputDone', (data) => {
+  //   const { roomId } = data
+  //   const room = rooms[roomId]
+  //   if (!room) {
+  //     return
+  //   }
+  //   if (!room.todo) {
+  //     room.todo = []
+  //   }
+  //   data.socketID = socket.id
+  //   room.todo.push(data)
+  //   if (room.members.length !== room.gameSize) {
+  //     // wait for everyone to join, then do this process
+  //     return
+  //   }
 
-    sendPrompts(room)
+  //   sendPrompts(room)
+  // })
+
+  // function sendPrompts(room) {
+  //   room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
+  //   for (const entry of room.todo) {
+  //     const { roomId, prompt, socketID } = entry
+
+  //     rooms[roomId].prompts[socketID] = prompt
+  //     updateGridSubmission(
+  //       roomId,
+  //       users.get(socketID).username,
+  //       'prompt',
+  //       prompt,
+  //       socketID
+  //     )
+
+  //     if (
+  //       Object.keys(rooms[roomId].prompts).length ===
+  //       rooms[roomId].members.length
+  //     ) {
+  //       distributePrompts(roomId)
+  //       rooms[roomId].prompts = {}
+  //     }
+  //   }
+  //   room.todo = []
+  // }
+
+  socket.on('inputDone', async (data) => {
+    await new Promise((resolve) => {
+      const intervalId = setInterval(() => {
+        if (users.get(socket.id)) {
+          clearInterval(intervalId)
+          resolve()
+        }
+      }, 100) // Check every 100ms
+    })
+    const { roomId, prompt } = data
+    rooms[roomId].prompts[socket.id] = prompt
+    updateGridSubmission(
+      roomId,
+      users.get(socket.id).username,
+      'prompt',
+      prompt,
+      socket.id
+    )
+
+    if (
+      Object.keys(rooms[roomId].prompts).length === rooms[roomId].members.length
+    ) {
+      distributePrompts(roomId)
+      rooms[roomId].prompts = {}
+    }
   })
-
-  function sendPrompts(room) {
-    room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
-    for (const entry of room.todo) {
-      const { roomId, prompt, socketID } = entry
-
-      rooms[roomId].prompts[socketID] = prompt
-      updateGridSubmission(
-        roomId,
-        users.get(socketID).username,
-        'prompt',
-        prompt,
-        socketID
-      )
-
-      if (
-        Object.keys(rooms[roomId].prompts).length ===
-        rooms[roomId].members.length
-      ) {
-        distributePrompts(roomId)
-        rooms[roomId].prompts = {}
-      }
-    }
-    room.todo = []
-  }
 
   socket.on('drawingSubmitted', (data) => {
     const { roomId, image } = data
@@ -200,10 +227,10 @@ io.on('connection', (socket) => {
       socket.emit('roomJoinError', 'Room does not exist')
     }
 
-    if (room.todo && room.todo.length == room.gameSize) {
-      // the prompt's have arrived before the game room was joined
-      sendPrompts(room)
-    }
+    // if (room.todo && room.todo.length == room.gameSize) {
+    //   // the prompt's have arrived before the game room was joined
+    //   sendPrompts(room)
+    // }
   })
 
   socket.on('startGame', (roomID) => {

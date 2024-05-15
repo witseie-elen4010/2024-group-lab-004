@@ -331,6 +331,10 @@ const viewGameButton = document.getElementById('viewGameButton')
 const votingCountdownElement = document.getElementById('votingPageCountdown')
 const votingMessage = document.getElementById('votingPageMessage')
 const nextRoundButton = document.getElementById('nextRoundButton')
+const squareButton = document.getElementById('squareSelector')
+const triangleButton = document.getElementById('triangleSelector')
+const circleButton = document.getElementById('circleSelector')
+const pentagramButton = document.getElementById('pentagramSelector')
 let voted = false
 
 canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
@@ -393,6 +397,38 @@ sprayPaintButton.addEventListener('click', () => {
     changeColour('black')
   }
   drawingTool = 'sprayPaint'
+})
+
+squareButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'rectangle'
+  canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
+})
+
+circleButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'circle'
+  canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
+})
+
+triangleButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'triangle'
+  canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
+})
+
+pentagramButton.addEventListener('click', () => {
+  if (drawColour == 'white') {
+    changeColour('black')
+  }
+  drawingTool = 'pentagram'
+  canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
 })
 
 upButton.addEventListener('click', () => {
@@ -562,22 +598,27 @@ clearButton.addEventListener('click', function () {
 })
 
 undoButton.addEventListener('click', function () {
+  undo()
+})
+function undo() {
   if (index <= 0) {
     undoButton.disabled = true
   }
   redoButton.disabled = false
   index -= 1
+  drawingShapeStart -= 1
   if (index <= -1) {
     context.fillRect(0, 0, canvas.width, canvas.height)
     index = -1
   } else {
     context.putImageData(pastDrawings[index], 0, 0)
   }
-})
+}
 
 redoButton.addEventListener('click', function () {
   undoButton.disabled = false
   index += 1
+  drawingShapeStart += 1
   if (index >= pastDrawings.length) {
     index = pastDrawings.length - 1
   } else {
@@ -603,9 +644,96 @@ function startDrawing(e) {
   context.beginPath()
   context.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
   e.preventDefault()
+
+  startX = e.clientX - canvas.offsetLeft
+  startY = e.clientY - canvas.offsetTop
+  drawingShapeStart = pastDrawings.length - 1
 }
 
 let lastPoint = null
+
+let startX = 0
+let startY = 0
+let drawingShapeStart = 0
+
+function restoreCanvasPosition(index) {
+  if (index <= -1) {
+    context.fillRect(0, 0, canvas.width, canvas.height)
+  } else {
+    context.putImageData(pastDrawings[index], 0, 0)
+  }
+}
+function drawRectangle(e) {
+  restoreCanvasPosition(drawingShapeStart)
+  const mouseX = e.clientX - canvas.offsetLeft
+  const mouseY = e.clientY - canvas.offsetTop
+
+  // Clear canvas before drawing a new rectangle
+  //context.clearRect(0, 0, canvas.width, canvas.height)
+
+  // Calculate width and height of the rectangle
+  const width = mouseX - startX
+  const height = mouseY - startY
+
+  // Draw the rectangle
+  context.strokeRect(startX, startY, width, height)
+}
+
+function drawCircle(e) {
+  restoreCanvasPosition(drawingShapeStart)
+  const mouseX = e.clientX - canvas.offsetLeft
+  const mouseY = e.clientY - canvas.offsetTop
+
+  const radius = Math.sqrt(
+    Math.pow(mouseX - startX, 2) + Math.pow(mouseY - startY, 2)
+  )
+
+  context.beginPath()
+  context.arc(startX, startY, radius, 0, Math.PI * 2)
+  context.closePath()
+  context.stroke()
+}
+
+function drawTriangle(e) {
+  restoreCanvasPosition(drawingShapeStart)
+  const mouseX = e.clientX - canvas.offsetLeft
+  const mouseY = e.clientY - canvas.offsetTop
+
+  context.beginPath()
+  context.moveTo(startX, startY)
+  context.lineTo(mouseX, mouseY)
+  context.lineTo(startX + (startX - mouseX), mouseY) // Calculate third point of triangle
+  context.closePath()
+  context.stroke()
+}
+
+function drawPentagram(e) {
+  restoreCanvasPosition(drawingShapeStart)
+  const newMouseX = e.clientX - canvas.offsetLeft
+  const newMouseY = e.clientY - canvas.offsetTop
+  const deltaX = newMouseX - startX
+  const deltaY = newMouseY - startY
+  outerRadius = Math.sqrt(deltaX ** 2 + deltaY ** 2)
+  innerRadius = outerRadius / 2.5
+
+  context.beginPath()
+  for (let i = 0; i < 5; i++) {
+    const angle = (i * Math.PI * 2) / 5 - Math.PI / 2
+    const outerX = startX + Math.cos(angle) * outerRadius
+    const outerY = startY + Math.sin(angle) * outerRadius
+    const innerAngle = angle + (Math.PI * 2) / 10
+    const innerX = startX + Math.cos(innerAngle) * innerRadius
+    const innerY = startY + Math.sin(innerAngle) * innerRadius
+    if (i === 0) {
+      context.moveTo(outerX, outerY)
+    } else {
+      context.lineTo(outerX, outerY)
+    }
+    context.lineTo(innerX, innerY)
+  }
+  context.closePath()
+  context.stroke()
+}
 
 function drawPencil(e, currentPoint) {
   context.lineTo(currentPoint.x, currentPoint.y)
@@ -680,8 +808,16 @@ function draw(e) {
       drawBlur(e, currentPoint)
     } else if (drawingTool === 'sprayPaint') {
       drawSprayPaint(e, currentPoint)
-    } else {
+    } else if (drawingTool === 'pencil') {
       drawPencil(e, currentPoint)
+    } else if (drawingTool === 'rectangle') {
+      drawRectangle(e)
+    } else if (drawingTool === 'triangle') {
+      drawTriangle(e)
+    } else if (drawingTool === 'circle') {
+      drawCircle(e)
+    } else if (drawingTool === 'pentagram') {
+      drawPentagram(e)
     }
   }
 
