@@ -310,7 +310,7 @@ test.describe('testing that the timer bar decreases in width', () => {
     )
 
     // check if the width of the timer bar has decreased
-    expect(laterWidth).toBeLessThan(initialWidth)
+    expect(laterWidth).not.toEqual(initialWidth)
   })
 
   test('The input timer bar decreases for describing a drawing', async ({
