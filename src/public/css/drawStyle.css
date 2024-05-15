@@ -85,6 +85,11 @@ body {
   height: 40px;
 }
 
+.viewDrawing {
+  height: 45vh;
+  width: auto;
+}
+
 #colour-picker {
   align-self: center;
   margin-left: 5px;

@@ -48,8 +48,8 @@ async function waitForOverlayToHide(page) {
 
 test('canvas exists', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
-
-  const canvas = page1.locator('#canvas')
+  await page1.waitForSelector('#canvas')
+  const canvas = await page1.$('#canvas')
   expect(canvas).toBeTruthy()
 })
 
@@ -59,6 +59,10 @@ test('erasor sets colour to white', async ({ context }) => {
   await page1.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page3.locator('#doneButton').click()
+
+  await page1.waitForFunction(
+    'document.querySelector("#waitingContainer").style.display === "none"'
+  )
 
   await page1.locator('#eraser').click()
   const strokeStyleColor = await page1.evaluate(() => {
@@ -118,18 +122,25 @@ test('canvas has white rectangle', async ({ context }) => {
 test.describe('Testing the input field when the draw page is loaded', () => {
   test('the overlay is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
-    const overlay = await page1.locator('#waitingContainer')
+
+    await page1.waitForSelector('#overlay')
+    const overlay = await page1.$('#overlay')
     expect(overlay).toBeTruthy()
   })
 
   test('input field is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
-    const inputField = await page1.locator('#getInput')
+
+    await page1.waitForSelector('#getInput')
+    const inputField = await page1.$('#getInput')
     expect(inputField).toBeTruthy()
   })
 
   test('button is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
+
+    await page1.waitForSelector('#doneButton')
+
     const button = await page1.$('#doneButton')
     expect(button).toBeTruthy()
   })
@@ -141,6 +152,7 @@ test('waitingContainer becomes visible when the done button is pressed', async (
   const { page1, page2, page3 } = await navigateToGame(context)
 
   // enter a prompt
+  await page1.waitForSelector('#doneButton')
   await page1.locator('#getInput').fill('test prompt')
   await page1.locator('#doneButton').click()
 
@@ -154,6 +166,7 @@ test('input field closes when the enter key is pressed', async ({
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
+  await page1.waitForSelector('#doneButton')
   await page1.locator('#getInput').press('Enter')
 
   // check if the getInput field is not visible
@@ -165,7 +178,7 @@ test('prompt is displayed to one other user', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
   const testPrompt = 'test prompt'
-
+  await page1.waitForSelector('#doneButton')
   await page1.locator('#getInput').fill(testPrompt)
   await page1.locator('#doneButton').click()
   await page2.locator('#doneButton').click()

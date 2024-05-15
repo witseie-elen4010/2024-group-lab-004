@@ -15,26 +15,28 @@ test.describe('Landing page tests', () => {
   })
 
   test('createPrivateRoomButton is visible', async ({ page }) => {
-    await page.waitForTimeout(0.1)
-    const isVisible = await page
-      .getByRole('button', { name: 'Create Private Game' })
-      .isVisible()
+    await page.waitForSelector('#createPrivateRoom')
+    const createPrivateRoomButton = await page.$('#createPrivateRoom')
+    const isVisible = await createPrivateRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
   test('createPublicRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#createPublicRoom')
     const createPublicRoomButton = await page.$('#createPublicRoom')
     const isVisible = await createPublicRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
   test('joinRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#joinRoom')
     const joinRoomButton = await page.$('#joinRoom')
     const isVisible = await joinRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
   test('joinPublicRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#joinPublicRoom')
     const joinPublicRoomButton = await page.$('#joinPublicRoom')
     const isVisible = await joinPublicRoomButton.isVisible()
     expect(isVisible).toBe(true)
@@ -76,6 +78,7 @@ test.describe('Landing page tests', () => {
     await page.click('#joinRoom')
 
     // Check if the text area appears
+    await page.waitForSelector('#roomToJoin')
     const roomToJoinInput = await page.$('#roomToJoin')
     expect(roomToJoinInput).toBeTruthy()
     const submitJoinRoomButton = await page.$('#submitJoinRoom')
@@ -98,14 +101,20 @@ test.describe('Landing page tests', () => {
       await page.click('#joinRoom')
       await page.fill('#roomToJoin', 'invalidRoomId')
 
-      const dialogPromise = page.waitForEvent('dialog')
+    await page.getByRole('button', { name: 'Join Private Game' }).click()
+    await page.getByPlaceholder('Enter room ID').click()
+    await page.getByPlaceholder('Enter room ID').fill('Invalid')
 
-      await page.locator('#submitJoinRoom').click()
+    const dialogHandler = new Promise((resolve) => {
+      page.once('dialog', (dialog) => {
+        expect(dialog.message()).toBe('Room does not exist')
+        dialog.dismiss()
+        resolve()
+      })
+    })
 
-      const dialog = await dialogPromise
-      expect(dialog.message()).toBe('Room does not exist')
-      await dialog.dismiss()
-    }
+    await page.click('#submitJoinRoom')
+    await dialogHandler
   })
 
   test('join room created by another page', async ({ context }) => {

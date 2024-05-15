@@ -15,7 +15,7 @@ let timeLeft = 90
 let votingCountdownTimer = null
 
 let userDetails = ''
-async function fetchUser () {
+async function fetchUser() {
   const response = await fetch('/getUser')
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
@@ -39,7 +39,7 @@ socket.on('userDisconnected', (data) => {
   if (data.membersCount < 3) {
     votingMessage.innerText = 'Too few players are left to play another round!'
     nextRoundButton.style.display = 'none'
-    if (!data.roundOver) {
+    if (!data.roundOver && data.gameReady) {
       showMemberLeftOverlay('home')
       setTimeout(() => {
         window.location.href = '/landing'
@@ -96,7 +96,7 @@ socket.on('roundOver', (submissionGrid) => {
   startCountdown(90)
 })
 
-function startCountdown (time = 90) {
+function startCountdown(time = 90) {
   timeLeft = time
   document.getElementById(
     'votingCountdown'
@@ -127,7 +127,7 @@ function startCountdown (time = 90) {
   }, 1000)
 }
 
-function handleAutomaticVote () {
+function handleAutomaticVote() {
   if (!voted) {
     disableUserButtons()
     if (selectedUsername) {
@@ -140,7 +140,7 @@ function handleAutomaticVote () {
   }
 }
 
-function showRoundOver (grid, setIndex, imageIndex) {
+function showRoundOver(grid, setIndex, imageIndex) {
   leaderboardButton.style.display = 'none'
   const gridContainer = document.getElementById('roundOverOverlay')
 
@@ -165,6 +165,9 @@ function showRoundOver (grid, setIndex, imageIndex) {
 
   imagecontainer.src = submissionMiddle.content
 
+  // for css styling
+  imagecontainer.className = 'viewDrawing'
+
   imagecontainer.alt = `Drawing ${imageIndex + 1}`
 
   const DrawnByPrompt = document.getElementById('DrawnByPrompt')
@@ -180,7 +183,7 @@ function showRoundOver (grid, setIndex, imageIndex) {
   roundOverOverlay.style.display = 'flex'
 }
 
-function fetchLeaderboard () {
+function fetchLeaderboard() {
   socket.emit('requestLeaderboard')
 }
 
@@ -209,7 +212,7 @@ socket.on('receiveLeaderboard', (data) => {
   })
 })
 
-function disableUserButtons () {
+function disableUserButtons() {
   const userButtons = document.querySelectorAll('.user-button')
   userButtons.forEach((button) => {
     button.disabled = true
@@ -252,7 +255,7 @@ socket.on('votingResult', function (result) {
   votingCountdownElement.style.display = 'none'
 })
 
-function showMemberLeftOverlay (action) {
+function showMemberLeftOverlay(action) {
   const messageOverlay = document.getElementById('specialOverlay')
   const centerImage = messageOverlay.querySelector('.centerImage')
   centerImage.style.display = 'none'
@@ -268,7 +271,7 @@ function showMemberLeftOverlay (action) {
   messageOverlay.style.display = 'flex'
 }
 
-function hideMemberLeftOverlay () {
+function hideMemberLeftOverlay() {
   const messageOverlay = document.getElementById('specialOverlay')
   const message = document.getElementById('memberLeftMessage')
   if (message) {
@@ -412,6 +415,7 @@ prevSetButton.addEventListener('click', () => {
     const setbuttoncaption = document.getElementById('CurrentSet')
     setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
   }
+  CurrentImageIndex = 0
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
@@ -421,6 +425,7 @@ nextSetButton.addEventListener('click', () => {
     const setbuttoncaption = document.getElementById('CurrentSet')
     setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
   }
+  CurrentImageIndex = 0
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
@@ -434,7 +439,7 @@ nextRoundButton.addEventListener('click', () => {
   socket.emit('nextRound', roomId)
 })
 
-function openVotingPage () {
+function openVotingPage() {
   votingButton.style.display = 'block'
   viewGameButton.style.display = 'block'
   votingCountdownElement.style.display = 'block'
@@ -479,7 +484,7 @@ socket.on('newRound', () => {
   activateInputPrompt()
 })
 
-function hideRoundOverOverlay () {
+function hideRoundOverOverlay() {
   leaderboardButton.style.display = 'block'
   roundOverOverlay.style.display = 'none'
   waitingContainer.style.display = 'none'
@@ -499,7 +504,7 @@ let drawColour = 'black'
 let pastDrawings = []
 let index = -1
 
-function setStatus () {
+function setStatus() {
   if (playerStatus === 'imposter') {
     statusDisplay.style.color = 'red'
     statusDisplay.innerText = 'You ARE the imposter!'
@@ -583,17 +588,17 @@ redoButton.addEventListener('click', function () {
   }
 })
 
-function changeLineWidth (width) {
+function changeLineWidth(width) {
   drawWidth = width
   context.lineWidth = drawWidth
 }
 
-function changeColour (colour) {
+function changeColour(colour) {
   drawColour = colour
   context.strokeStyle = drawColour
 }
 
-function startDrawing (e) {
+function startDrawing(e) {
   isDrawing = true
   context.beginPath()
   context.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
@@ -602,14 +607,14 @@ function startDrawing (e) {
 
 let lastPoint = null
 
-function drawPencil (e, currentPoint) {
+function drawPencil(e, currentPoint) {
   context.lineTo(currentPoint.x, currentPoint.y)
   context.lineCap = 'round'
   context.lineJoin = 'round'
   context.stroke()
 }
 
-function drawBlur (e, currentPoint) {
+function drawBlur(e, currentPoint) {
   // Begin a new path for each circle
   context.beginPath()
 
@@ -642,7 +647,7 @@ function drawBlur (e, currentPoint) {
   e.preventDefault()
 }
 
-function drawSprayPaint (e, currentPoint) {
+function drawSprayPaint(e, currentPoint) {
   // Begin a new path for each point
   context.beginPath()
   context.fillStyle = context.strokeStyle
@@ -654,7 +659,7 @@ function drawSprayPaint (e, currentPoint) {
 
     const offset = {
       x: radius * Math.cos(angle), // Calculate x offset
-      y: radius * Math.sin(angle) // Calculate y offset
+      y: radius * Math.sin(angle), // Calculate y offset
     }
 
     context.fillRect(currentPoint.x + offset.x, currentPoint.y + offset.y, 1, 1)
@@ -664,10 +669,10 @@ function drawSprayPaint (e, currentPoint) {
   e.preventDefault()
 }
 
-function draw (e) {
+function draw(e) {
   const currentPoint = {
     x: e.clientX - canvas.offsetLeft,
-    y: e.clientY - canvas.offsetTop
+    y: e.clientY - canvas.offsetTop,
   }
 
   if (isDrawing) {
@@ -683,7 +688,7 @@ function draw (e) {
   lastPoint = currentPoint
 }
 
-function stopDrawing (e) {
+function stopDrawing(e) {
   if (isDrawing) {
     // context.stroke()
     context.closePath()
@@ -702,7 +707,7 @@ function stopDrawing (e) {
 
 let endTimeout = function () {}
 
-function startDrawTimer () {
+function startDrawTimer() {
   drawingCountdownBar.style.width = '100%'
   drawingCountdownBar.style.transitionDuration = `${drawingTimer}ms`
   requestAnimationFrame(() => {
@@ -723,7 +728,7 @@ function startDrawTimer () {
   }
 }
 
-function submitDrawing () {
+function submitDrawing() {
   const image = canvas.toDataURL('image/png')
   // Get the length of the data URL in bytes
 
@@ -754,7 +759,7 @@ const colors = [
   'A black',
   'A white',
   'A pink',
-  'A gray'
+  'A gray',
 ]
 const objects = [
   'cat',
@@ -788,7 +793,7 @@ const objects = [
   'mouse',
   'spider',
   'alien',
-  'clock'
+  'clock',
 ]
 const actions = [
   'jumping',
@@ -812,13 +817,13 @@ const actions = [
   'fishing',
   'sneezing',
   'sneaking',
-  'hiding'
+  'hiding',
 ]
 
 // maybe add a location as well, to get a more specific prompt?
 
 // Function to generate a random prompt
-function getRandomPrompt () {
+function getRandomPrompt() {
   const color = colors[Math.floor(Math.random() * colors.length)]
   const object = objects[Math.floor(Math.random() * objects.length)]
   const action = actions[Math.floor(Math.random() * actions.length)]
@@ -826,13 +831,13 @@ function getRandomPrompt () {
 }
 
 // Function to set a random prompt as the default input value
-function setRandomPrompt () {
+function setRandomPrompt() {
   const randomPrompt = getRandomPrompt()
   const getInput = document.getElementById('getInput')
   getInput.placeholder = randomPrompt // Set the random prompt as placeholder
 }
 
-function activateInputPrompt (img = null) {
+function activateInputPrompt(img = null) {
   setRandomPrompt()
   return new Promise((resolve) => {
     // the text displayed changes based on if an image is given (we are reviewing a drawing), or not (it is the start of the game)
@@ -857,13 +862,13 @@ function activateInputPrompt (img = null) {
     // Set a timeout to hide the inputPrompt
     const timeoutId = setTimeout(inputDone, inputTimer) // TODO: if the user submits themself, this shouldnt be called
 
-    function checkEnterKey (event) {
+    function checkEnterKey(event) {
       if (event.key === 'Enter') {
         inputDone()
       }
     }
 
-    function inputDone () {
+    function inputDone() {
       inputPrompt.style.display = 'none'
       drawingDisplay.src = ''
 
@@ -893,7 +898,7 @@ function activateInputPrompt (img = null) {
   })
 }
 
-function getPrompt (image = null) {
+function getPrompt(image = null) {
   if (image) {
     activateInputPrompt(image).then((prompt) => setPrompt(prompt))
   } else {
@@ -901,17 +906,17 @@ function getPrompt (image = null) {
   }
 }
 
-function setPrompt (prompt) {
+function setPrompt(prompt) {
   const promptText = document.getElementById('prompt')
   promptText.innerText = prompt
   startDrawTimer()
 }
 
-function hideWaitingContainer () {
+function hideWaitingContainer() {
   waitingContainer.style.display = 'none'
 }
 
-function showWaitingContainer () {
+function showWaitingContainer() {
   waitingContainer.style.display = 'flex'
 }
 
