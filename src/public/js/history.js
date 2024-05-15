@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', function () {
   })
 
   downButton.addEventListener('click', () => {
-    if (CurrentImageIndex < PlayerCount - 3) {
-      CurrentImageIndex += 2
+    if (imageIndex < PlayerCount - 3) {
+      imageIndex += 2
     }
     showRoundOver(CurrentGrid, setIndex, imageIndex)
   })
@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const setbuttoncaption = document.getElementById('CurrentSet')
       setbuttoncaption.textContent = `Set ${setIndex + 1}`
     }
+    imageIndex = 0
     showRoundOver(CurrentGrid, setIndex, imageIndex)
   })
 
@@ -61,13 +62,13 @@ document.addEventListener('DOMContentLoaded', function () {
       const setbuttoncaption = document.getElementById('CurrentSet')
       setbuttoncaption.textContent = `Set ${setIndex + 1}`
     }
+    imageIndex = 0
     showRoundOver(CurrentGrid, setIndex, imageIndex)
   })
 
   function showRoundOver(grid, setIndex, imageIndex) {
     const gridContainer = document.getElementById('gridOverlay')
     // Loop through each row and render them into separate columns
-    console.log(grid)
     submissionUpper = grid[imageIndex][setIndex]
     submissionMiddle = grid[imageIndex + 1][setIndex]
     if (imageIndex + 2 < PlayerCount) {
@@ -88,6 +89,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const imagecontainer = document.getElementById('roundGridContainer')
 
     imagecontainer.src = submissionMiddle.content
+
+    // for css styling
+    imagecontainer.className = 'viewDrawing'
 
     imagecontainer.alt = `Drawing ${imageIndex + 1}`
 
@@ -162,6 +166,11 @@ document.addEventListener('DOMContentLoaded', function () {
         game.game_date
       ).toLocaleDateString()}</em>`
       listItem.onclick = () => {
+        setIndex = 0
+        imageIndex = 0
+        const setbuttoncaption = document.getElementById('CurrentSet')
+        setbuttoncaption.textContent = `Set ${setIndex + 1}`
+
         gameScreen.style.display = 'none'
         gridOverlay.style.display = 'flex'
         fetchGrid(game.game_id).then((grid) => {

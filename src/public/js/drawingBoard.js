@@ -165,6 +165,9 @@ function showRoundOver(grid, setIndex, imageIndex) {
 
   imagecontainer.src = submissionMiddle.content
 
+  // for css styling
+  imagecontainer.className = 'viewDrawing'
+
   imagecontainer.alt = `Drawing ${imageIndex + 1}`
 
   const DrawnByPrompt = document.getElementById('DrawnByPrompt')
@@ -448,6 +451,7 @@ prevSetButton.addEventListener('click', () => {
     const setbuttoncaption = document.getElementById('CurrentSet')
     setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
   }
+  CurrentImageIndex = 0
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
@@ -457,6 +461,7 @@ nextSetButton.addEventListener('click', () => {
     const setbuttoncaption = document.getElementById('CurrentSet')
     setbuttoncaption.textContent = `Set ${CurrentSetIndex + 1}`
   }
+  CurrentImageIndex = 0
   showRoundOver(CurrentGrid, CurrentSetIndex, CurrentImageIndex)
 })
 
