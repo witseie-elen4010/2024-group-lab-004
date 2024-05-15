@@ -140,6 +140,10 @@ test.describe('Gameplay tests', () => {
       page3.locator('#doneButton').click(),
     ])
 
+    await page1.waitForFunction(
+      'document.querySelector("#waitingContainer").style.display === "none"'
+    )
+
     const isVisible1 = await page1.locator('#waitingContainer').isVisible()
     const isVisible2 = await page2.locator('#waitingContainer').isVisible()
     const isVisible3 = await page3.locator('#waitingContainer').isVisible()
@@ -161,6 +165,10 @@ test.describe('Gameplay tests', () => {
       page2.locator('#doneButton').click(),
       page3.locator('#doneButton').click(),
     ])
+
+    await page1.waitForFunction(
+      'document.querySelector("#waitingContainer").style.display === "none"'
+    )
 
     const isCanvasVisible1 = await page1.locator('#canvas').isVisible()
     const isCanvasVisible2 = await page2.locator('#canvas').isVisible()

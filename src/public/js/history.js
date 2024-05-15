@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
   })
 
   backButton.addEventListener('click', () => {
-    window.location.href = '/landing'
+    window.location.href = '/exitHistory'
   })
 
   fetchGames().then((games) => {
