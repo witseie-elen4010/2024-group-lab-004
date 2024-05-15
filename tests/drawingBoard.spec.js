@@ -195,8 +195,6 @@ test('prompt is displayed to one other user', async ({ context }) => {
   const prompt2 = await page2.locator('#prompt').innerText()
   const prompt3 = await page3.locator('#prompt').innerText()
 
-  console.log(prompt1, prompt2, prompt3)
-
   const promptCount = [prompt2, prompt3].filter(
     (prompt) => prompt === testPrompt
   ).length
@@ -212,7 +210,7 @@ test('input field closes after a certain amount of time', async ({
 
   const { page1, page2, page3 } = await navigateToGame(context)
 
-  await page3.waitForLoadState('networkidle')
+  // await page3.waitForLoadState('networkidle')
   await page3.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
 
   // page3 must wait until the input prompt screen is visible
@@ -233,7 +231,7 @@ test('the user can draw for a certain amount of time', async ({ context }) => {
   const drawingTimer = 3
 
   const { page1, page2, page3 } = await navigateToGame(context)
-  await page3.waitForLoadState('networkidle')
+  // await page3.waitForLoadState('networkidle')
   await page3.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
 
   await page1.locator('#doneButton').click()
@@ -276,8 +274,6 @@ test('the timer bar appears until the prompt is entered', async ({
 
 test.describe('testing that the timer bar decreases in width', () => {
   const waitTime = 1500
-  const inputTimer = 25
-  const drawingTimer = 60
   //   The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
 
   test('The input timer bar decreases for the original prompt entering', async ({
@@ -285,10 +281,6 @@ test.describe('testing that the timer bar decreases in width', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    await page1.waitForLoadState('networkidle')
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
     await page1.waitForSelector('#doneButton')
     await page1.waitForTimeout(1000)
 
@@ -314,15 +306,13 @@ test.describe('testing that the timer bar decreases in width', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    await page1.waitForLoadState('networkidle')
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-
     // get to the describe a drawing point
-    await page1.locator('#doneButton').click()
-    await page2.locator('#doneButton').click()
+    await page3.waitForSelector('#doneButton')
     await page3.locator('#doneButton').click()
+    await page2.waitForSelector('#doneButton')
+    await page2.locator('#doneButton').click()
+    await page1.waitForSelector('#doneButton')
+    await page1.locator('#doneButton').click()
 
     await page3.locator('#submit').click()
     await page2.locator('#submit').click()
@@ -348,12 +338,11 @@ test.describe('testing that the timer bar decreases in width', () => {
     // get to the describe a drawing point
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    await page1.waitForLoadState('networkidle')
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
+    await page3.waitForSelector('#doneButton')
     await page3.locator('#doneButton').click()
+    await page2.waitForSelector('#doneButton')
     await page2.locator('#doneButton').click()
+    await page1.waitForSelector('#doneButton')
     await page1.locator('#doneButton').click()
 
     // get the initial width of the timer bar
