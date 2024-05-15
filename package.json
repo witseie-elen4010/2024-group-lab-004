@@ -12,10 +12,36 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.43.1",
-    "@types/node": "^20.12.7"
+    "@types/node": "^20.12.7",
+    "babel-jest": "^29.7.0",
+    "coveralls": "^3.1.1",
+    "jest": "^29.7.0",
+    "jest-playwright-preset": "^4.0.0"
   },
   "scripts": {
     "run": "nodemon src/server.js",
-    "start": "node src/server.js"
-  }
+    "start": "node src/server.js",
+    "test": "jest",
+    "cov": "jest --coverage"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": [
+      "json",
+      "lcov"
+    ],
+    "testMatch": [
+      "**/tests-jest/**/*.test.js?(x)"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/witseie-elen4010/2024-group-lab-004.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/witseie-elen4010/2024-group-lab-004/issues"
+  },
+  "homepage": "https://github.com/witseie-elen4010/2024-group-lab-004#readme"
 }
