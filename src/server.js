@@ -200,10 +200,10 @@ io.on('connection', (socket) => {
       socket.emit('roomJoinError', 'Room does not exist')
     }
 
-    if (room.todo && room.todo.length == room.gameSize) {
-      // the prompt's have arrived before the game room was joined
-      sendPrompts(room)
-    }
+    // if (room.todo && room.todo.length == room.gameSize) {
+    //   // the prompt's have arrived before the game room was joined
+    //   sendPrompts(room)
+    // }
   })
 
   socket.on('startGame', (roomID) => {
