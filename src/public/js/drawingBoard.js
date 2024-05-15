@@ -39,12 +39,11 @@ socket.on('userDisconnected', (data) => {
   if (data.membersCount < 3) {
     votingMessage.innerText = 'Too few players are left to play another round!'
     nextRoundButton.style.display = 'none'
-    if (!data.roundOver) {
-      // showMemberLeftOverlay('home')
-      // setTimeout(() => {
-      //   window.location.href = '/landing'
-      // }, 2000)
-      alert('too few players left')
+    if (!data.roundOver && data.gameReady) {
+      showMemberLeftOverlay('home')
+      setTimeout(() => {
+        window.location.href = '/landing'
+      }, 2000)
     }
   } else {
     // if (!data.roundOver) {
@@ -643,89 +642,6 @@ function startDrawing(e) {
 }
 
 let lastPoint = null
-
-let startX = 0
-let startY = 0
-let drawingShapeStart = 0
-
-function restoreCanvasPosition(index) {
-  if (index <= -1) {
-    context.fillRect(0, 0, canvas.width, canvas.height)
-  } else {
-    context.putImageData(pastDrawings[index], 0, 0)
-  }
-}
-function drawRectangle(e) {
-  restoreCanvasPosition(drawingShapeStart)
-  const mouseX = e.clientX - canvas.offsetLeft
-  const mouseY = e.clientY - canvas.offsetTop
-
-  // Clear canvas before drawing a new rectangle
-  //context.clearRect(0, 0, canvas.width, canvas.height)
-
-  // Calculate width and height of the rectangle
-  const width = mouseX - startX
-  const height = mouseY - startY
-
-  // Draw the rectangle
-  context.strokeRect(startX, startY, width, height)
-}
-
-function drawCircle(e) {
-  restoreCanvasPosition(drawingShapeStart)
-  const mouseX = e.clientX - canvas.offsetLeft
-  const mouseY = e.clientY - canvas.offsetTop
-
-  const radius = Math.sqrt(
-    Math.pow(mouseX - startX, 2) + Math.pow(mouseY - startY, 2)
-  )
-
-  context.beginPath()
-  context.arc(startX, startY, radius, 0, Math.PI * 2)
-  context.closePath()
-  context.stroke()
-}
-
-function drawTriangle(e) {
-  restoreCanvasPosition(drawingShapeStart)
-  const mouseX = e.clientX - canvas.offsetLeft
-  const mouseY = e.clientY - canvas.offsetTop
-
-  context.beginPath()
-  context.moveTo(startX, startY)
-  context.lineTo(mouseX, mouseY)
-  context.lineTo(startX + (startX - mouseX), mouseY) // Calculate third point of triangle
-  context.closePath()
-  context.stroke()
-}
-
-function drawPentagram(e) {
-  restoreCanvasPosition(drawingShapeStart)
-  const newMouseX = e.clientX - canvas.offsetLeft
-  const newMouseY = e.clientY - canvas.offsetTop
-  const deltaX = newMouseX - startX
-  const deltaY = newMouseY - startY
-  outerRadius = Math.sqrt(deltaX ** 2 + deltaY ** 2)
-  innerRadius = outerRadius / 2.5
-
-  context.beginPath()
-  for (let i = 0; i < 5; i++) {
-    const angle = (i * Math.PI * 2) / 5 - Math.PI / 2
-    const outerX = startX + Math.cos(angle) * outerRadius
-    const outerY = startY + Math.sin(angle) * outerRadius
-    const innerAngle = angle + (Math.PI * 2) / 10
-    const innerX = startX + Math.cos(innerAngle) * innerRadius
-    const innerY = startY + Math.sin(innerAngle) * innerRadius
-    if (i === 0) {
-      context.moveTo(outerX, outerY)
-    } else {
-      context.lineTo(outerX, outerY)
-    }
-    context.lineTo(innerX, innerY)
-  }
-  context.closePath()
-  context.stroke()
-}
 
 function drawPencil(e, currentPoint) {
   context.lineTo(currentPoint.x, currentPoint.y)

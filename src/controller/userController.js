@@ -35,7 +35,7 @@ exports.checkUserAccount = async (req, res) => {
     const result = await db.query(query, values)
 
     if (result.rowCount === 0) {
-      res.redirect('/login/?loginError=true')
+      return res.redirect('/login/?loginError=true')
     } else {
       const hashedPassword = result.rows[0].password
       const match = await bcrypt.compare(password, hashedPassword)
@@ -44,7 +44,18 @@ exports.checkUserAccount = async (req, res) => {
           id: result.rows[0].user_id,
           username: result.rows[0].username,
         }
-        return res.redirect('/landing')
+        req.session.save((err) => {
+          if (err) {
+            return res.status(500).json({ message: 'Session save error' })
+          }
+          if (result.rows[0].username === process.env.ADMIN_NAME) {
+            return res.redirect('/admin')
+          } else {
+            return res.redirect('/landing')
+          }
+        })
+      } else {
+        return res.redirect('/login/?loginError=true')
       }
     }
   } catch (error) {
@@ -57,6 +68,21 @@ exports.history = async (req, res) => {
     res.sendFile(
       path.join(__dirname, '..', './', 'public', 'html', 'history.html')
     )
+  } else {
+    res.redirect('/') // Redirect to login if no session is found
+  }
+}
+
+exports.exitHistory = async (req, res) => {
+  if (req.session.user) {
+    if (
+      req.session.user.username !== process.env.ADMIN_NAME ||
+      req.session.user.id !== parseInt(process.env.ADMIN_ID, 10)
+    ) {
+      res.redirect('/landing')
+    } else {
+      res.redirect('/admin')
+    }
   } else {
     res.redirect('/') // Redirect to login if no session is found
   }
