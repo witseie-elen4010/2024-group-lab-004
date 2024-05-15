@@ -5,9 +5,10 @@ on:
   pull_request:
     branches: [main, master]
 jobs:
-  jest-test:
+  test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    environment: env # If using GitHub environment to manage secrets
     env:
       APP_PORT: ${{ secrets.APP_PORT }}
       DB_USER: ${{ secrets.DB_USER }}
