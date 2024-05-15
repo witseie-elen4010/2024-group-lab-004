@@ -37,3 +37,5 @@ jobs:
           retention-days: 30
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2.3.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
