@@ -36,6 +36,7 @@ io.on('connection', (socket) => {
       votingSend: false,
       roundOver: false,
       gameReady: false,
+      playersReadyCount: 0,
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -180,7 +181,9 @@ io.on('connection', (socket) => {
       // only get the imposters once everyone has joined the room
       if (room.members.length === room.gameSize) {
         // create the gameroom in the database
-        room.gameReady = true
+        if (room.playersReadyCount === room.members.length) {
+          room.gameReady = true
+        }
         const imposter = getImposter(room)
         room.imposter = imposter // store the imposter so the server knows who it is
 
@@ -281,7 +284,9 @@ io.on('connection', (socket) => {
       const room = rooms[currentRoom]
       const wasHost = room.host === socket.id
       room.members = room.members.filter((id) => id !== socket.id)
-
+      if (room.gameStarted) {
+        room.playersReadyCount++
+      }
       users.delete(socket.id)
 
       if (wasHost) {
@@ -418,6 +423,7 @@ function determineResults(room) {
 }
 
 function distributePrompts(roomID) {
+  if (!rooms[roomID].gameReady) rooms[roomID].gameReady = true
   const members = rooms[roomID].members
   const prompts = rooms[roomID].prompts
   const orders = rooms[roomID].orders
