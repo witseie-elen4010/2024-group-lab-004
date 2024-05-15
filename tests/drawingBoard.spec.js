@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test')
 
-async function navigateToGame (context) {
+async function navigateToGame(context) {
   const setupPage = async (nickname) => {
     const page = await context.newPage()
     await page.goto('http://localhost:4000/')
@@ -13,7 +13,7 @@ async function navigateToGame (context) {
   const pagePromises = [
     setupPage('test name 1'),
     setupPage('test name 2'),
-    setupPage('test name 3')
+    setupPage('test name 3'),
   ]
 
   const [page1, page2, page3] = await Promise.all(pagePromises)
@@ -26,12 +26,12 @@ async function navigateToGame (context) {
 
   await Promise.all([
     page2.getByPlaceholder('Enter room ID').fill(roomID),
-    page3.getByPlaceholder('Enter room ID').fill(roomID)
+    page3.getByPlaceholder('Enter room ID').fill(roomID),
   ])
 
   await Promise.all([
     page2.getByRole('button', { name: 'Join', exact: true }).click(),
-    page3.getByRole('button', { name: 'Join', exact: true }).click()
+    page3.getByRole('button', { name: 'Join', exact: true }).click(),
   ])
 
   await page1.getByRole('button', { name: 'Start Game' }).click()
@@ -40,7 +40,7 @@ async function navigateToGame (context) {
 }
 
 // waits for the overlay to disappear on the page
-async function waitForOverlayToHide (page) {
+async function waitForOverlayToHide(page) {
   await page.waitForFunction(
     'document.querySelector("#waitingContainer").style.display === "none"'
   )
@@ -48,8 +48,8 @@ async function waitForOverlayToHide (page) {
 
 test('canvas exists', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
-
-  const canvas = await page1.$('canvas')
+  await page1.waitForSelector('#canvas')
+  const canvas = await page1.$('#canvas')
   expect(canvas).toBeTruthy()
 })
 
@@ -59,6 +59,10 @@ test('erasor sets colour to white', async ({ context }) => {
   await page1.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page3.locator('#doneButton').click()
+
+  await page1.waitForFunction(
+    'document.querySelector("#waitingContainer").style.display === "none"'
+  )
 
   await page1.locator('#eraser').click()
   const strokeStyleColor = await page1.evaluate(() => {
@@ -93,7 +97,7 @@ test('canvas has correct dimensions', async ({ context }) => {
 
   const windowSize = await page1.evaluate(() => ({
     innerWidth: window.innerWidth,
-    innerHeight: window.innerHeight
+    innerHeight: window.innerHeight,
   }))
 
   expect(width).toBe(`${windowSize.innerWidth - 300}`)
@@ -118,29 +122,37 @@ test('canvas has white rectangle', async ({ context }) => {
 test.describe('Testing the input field when the draw page is loaded', () => {
   test('the overlay is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
+
+    await page1.waitForSelector('#overlay')
     const overlay = await page1.$('#overlay')
     expect(overlay).toBeTruthy()
   })
 
   test('input field is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
+
+    await page1.waitForSelector('#getInput')
     const inputField = await page1.$('#getInput')
     expect(inputField).toBeTruthy()
   })
 
   test('button is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
+
+    await page1.waitForSelector('#doneButton')
+
     const button = await page1.$('#doneButton')
     expect(button).toBeTruthy()
   })
 })
 
 test('waitingContainer becomes visible when the done button is pressed', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
   // enter a prompt
+  await page1.waitForSelector('#doneButton')
   await page1.locator('#getInput').fill('test prompt')
   await page1.locator('#doneButton').click()
 
@@ -150,10 +162,11 @@ test('waitingContainer becomes visible when the done button is pressed', async (
 })
 
 test('input field closes when the enter key is pressed', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
+  await page1.waitForSelector('#doneButton')
   await page1.locator('#getInput').press('Enter')
 
   // check if the getInput field is not visible
@@ -165,7 +178,7 @@ test('prompt is displayed to one other user', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
   const testPrompt = 'test prompt'
-
+  await page1.waitForSelector('#doneButton')
   await page1.locator('#getInput').fill(testPrompt)
   await page1.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
@@ -174,7 +187,7 @@ test('prompt is displayed to one other user', async ({ context }) => {
   await Promise.all([
     waitForOverlayToHide(page1),
     waitForOverlayToHide(page2),
-    waitForOverlayToHide(page3)
+    waitForOverlayToHide(page3),
   ])
 
   // check if the text 'test prompt' appears in exactly one of page2 or page3's prompt
@@ -193,7 +206,7 @@ test('prompt is displayed to one other user', async ({ context }) => {
 })
 
 test('input field closes after a certain amount of time', async ({
-  context
+  context,
 }) => {
   const inputTimer = 3
 
@@ -242,7 +255,7 @@ test('the user can draw for a certain amount of time', async ({ context }) => {
 })
 
 test('the timer bar appears until the prompt is entered', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
   await page1.waitForSelector('#doneButton')
@@ -267,7 +280,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   //   The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
 
   test('The input timer bar decreases for the original prompt entering', async ({
-    context
+    context,
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -301,7 +314,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   })
 
   test('The input timer bar decreases for describing a drawing', async ({
-    context
+    context,
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     page3.goto(
@@ -381,7 +394,7 @@ test.describe('testing that the timer bar decreases in width', () => {
 })
 
 test('testing that a drawing is shown after submitting the prompt', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -655,7 +668,7 @@ test('Undo and redo buttons disabled on loading.', async ({ context }) => {
 
 test('Exactly 1 imposter is chosen at the start of the game', async ({
   context,
-  browserName
+  browserName,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
   await page3.locator('#doneButton').click()

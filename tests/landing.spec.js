@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-async function signIn(page) {
+async function signIn (page) {
   await page.goto('http://localhost:4000/')
   await page.getByRole('button', { name: 'Continue as Guest' }).click()
   await page.getByPlaceholder('Enter your nickname').fill('test name 1')
@@ -14,24 +14,28 @@ test.describe('Landing page tests', () => {
   })
 
   test('createPrivateRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#createPrivateRoom')
     const createPrivateRoomButton = await page.$('#createPrivateRoom')
     const isVisible = await createPrivateRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
   test('createPublicRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#createPublicRoom')
     const createPublicRoomButton = await page.$('#createPublicRoom')
     const isVisible = await createPublicRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
   test('joinRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#joinRoom')
     const joinRoomButton = await page.$('#joinRoom')
     const isVisible = await joinRoomButton.isVisible()
     expect(isVisible).toBe(true)
   })
 
   test('joinPublicRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#joinPublicRoom')
     const joinPublicRoomButton = await page.$('#joinPublicRoom')
     const isVisible = await joinPublicRoomButton.isVisible()
     expect(isVisible).toBe(true)
@@ -73,6 +77,7 @@ test.describe('Landing page tests', () => {
     await page.click('#joinRoom')
 
     // Check if the text area appears
+    await page.waitForSelector('#roomToJoin')
     const roomToJoinInput = await page.$('#roomToJoin')
     expect(roomToJoinInput).toBeTruthy()
     const submitJoinRoomButton = await page.$('#submitJoinRoom')
@@ -88,13 +93,20 @@ test.describe('Landing page tests', () => {
       return
     }
 
-    await page.click('#joinRoom')
-    await page.fill('#roomToJoin', 'invalidRoomId')
-    page.on('dialog', (dialog) => {
-      expect(dialog.message()).toBe('Room does not exist')
-      dialog.dismiss()
+    await page.getByRole('button', { name: 'Join Private Game' }).click()
+    await page.getByPlaceholder('Enter room ID').click()
+    await page.getByPlaceholder('Enter room ID').fill('Invalid')
+
+    const dialogHandler = new Promise((resolve) => {
+      page.once('dialog', (dialog) => {
+        expect(dialog.message()).toBe('Room does not exist')
+        dialog.dismiss()
+        resolve()
+      })
     })
+
     await page.click('#submitJoinRoom')
+    await dialogHandler
   })
 
   test('join room created by another page', async ({ context }) => {
@@ -139,7 +151,7 @@ test.describe('Landing page tests', () => {
   })
 
   test('private room form is not visible after pressing join public room button', async ({
-    page,
+    page
   }) => {
     // Click on the join private room button
     await page.click('#joinRoom')
@@ -154,7 +166,7 @@ test.describe('Landing page tests', () => {
   })
 
   test('createPublicRoom button, when pressed, removes buttons and shows room ID with members: 1', async ({
-    context,
+    context
   }) => {
     // Go to landing page
     const page = await context.newPage()
