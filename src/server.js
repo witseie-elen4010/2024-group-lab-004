@@ -19,9 +19,14 @@ const users = new Map() // stores userDetails in the form {id, username}
 io.on('connection', (socket) => {
   let currentRoom = null
 
-  socket.on('createRoom', (options) => {
+  socket.on('createRoom', (options, userDetails) => {
     const roomId = generateRoomId()
     const isPublic = options.public || false
+    users.set(socket.id, {
+      id: userDetails.id,
+      username: userDetails.username,
+      socketId: socket.id,
+    })
 
     rooms[roomId] = {
       members: [socket.id],
@@ -49,8 +54,13 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('joinRoom', (data) => {
+  socket.on('joinRoom', (data, userDetails) => {
     const roomID = data.roomId.trim()
+    users.set(socket.id, {
+      id: userDetails.id,
+      username: userDetails.username,
+      socketId: socket.id,
+    })
 
     const room = rooms[roomID]
     if (room) {
@@ -74,10 +84,11 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('requestPublicRooms', () => {
+  socket.on('requestPublicRooms', (userDetails) => {
+    users.set(socket.id, userDetails)
     const roomsList = Object.entries(publicRooms).map(([roomId, room]) => ({
       roomId,
-      host: room.host,
+      host: users.get(room.host).username,
       members: room.members,
     }))
     socket.emit('publicRoomsList', roomsList)
@@ -192,7 +203,11 @@ io.on('connection', (socket) => {
         room.host = socket.id
       }
       room.members.push(socket.id)
-      users.set(socket.id, userDetails)
+      users.set(socket.id, {
+        id: userDetails.id,
+        username: userDetails.username,
+        socketId: socket.id,
+      })
       socket.join(roomID)
       currentRoom = roomID
       if (!(userDetails.username in rooms[roomID].leaderboard)) {
@@ -204,6 +219,7 @@ io.on('connection', (socket) => {
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
         members: allUserDetails,
+        socketId: socket.id,
       })
       // only get the imposters once everyone has joined the room
       if (room.members.length === room.gameSize) {
@@ -218,6 +234,7 @@ io.on('connection', (socket) => {
         room.members.forEach((member) => {
           if (member === imposter) {
             io.to(member).emit('imposter', true)
+            room.imposterUsername = userDetails.username
           } else {
             io.to(member).emit('normal', true)
           }
