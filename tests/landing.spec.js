@@ -181,4 +181,28 @@ test.describe('Landing page tests', () => {
     expect(await createPublicRoomButton.isVisible()).toBe(false)
     expect(await joinPublicRoomButton.isVisible()).toBe(false)
   })
+
+  test('createPublicRoom button, when pressed, shows room ID with members: 1', async ({
+    context,
+  }) => {
+    // Go to landing page
+    const page = await context.newPage()
+    await page.goto('http://localhost:4000/landing')
+
+    // Click on the create public room button
+    await page.click('#createPublicRoom')
+
+    // Check if the room ID is visible
+    await page.waitForSelector('#roomId')
+    const roomId = await page.$eval('#roomId', (el) => el.textContent)
+    expect(roomId).toBeTruthy()
+
+    // Check if the members count is 1
+    await page.waitForSelector('#membersCount')
+    const membersCount = await page.$eval(
+      '#membersCount',
+      (el) => el.textContent
+    )
+    expect(membersCount).toBe('1')
+  })
 })
