@@ -30,8 +30,7 @@ jobs:
         if: always()
         with:
           name: jest-test-results
-          path: coverage/  # Assuming you're generating test coverage reports
+          path: coverage/
           retention-days: 30
-
       - name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@v2.3.0
+        uses: coverallsapp/github-action@v2.3.0
