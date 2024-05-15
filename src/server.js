@@ -35,6 +35,8 @@ io.on('connection', (socket) => {
       voteCounts: 0,
       votingSend: false,
       roundOver: false,
+      gameReady: false,
+      playersReadyCount: 0,
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -84,7 +86,6 @@ io.on('connection', (socket) => {
   socket.on('inputDone', (data) => {
     const { roomId } = data
     const room = rooms[roomId]
-
     if (!room) {
       return
     }
@@ -128,7 +129,6 @@ io.on('connection', (socket) => {
 
   socket.on('drawingSubmitted', (data) => {
     const { roomId, image } = data
-
     if (!drawingSubmissions[roomId]) {
       drawingSubmissions[roomId] = {}
     }
@@ -181,7 +181,9 @@ io.on('connection', (socket) => {
       // only get the imposters once everyone has joined the room
       if (room.members.length === room.gameSize) {
         // create the gameroom in the database
-
+        if (room.playersReadyCount === room.gameSize) {
+          room.gameReady = true
+        }
         const imposter = getImposter(room)
         room.imposter = imposter // store the imposter so the server knows who it is
 
@@ -282,7 +284,9 @@ io.on('connection', (socket) => {
       const room = rooms[currentRoom]
       const wasHost = room.host === socket.id
       room.members = room.members.filter((id) => id !== socket.id)
-
+      if (room.gameStarted) {
+        room.playersReadyCount++
+      }
       users.delete(socket.id)
 
       if (wasHost) {
@@ -327,6 +331,7 @@ io.on('connection', (socket) => {
         votingSend: room.votingSend,
         roundOver: room.roundOver,
         membersCount: room.members.length,
+        gameReady: room.gameReady,
       })
     }
   })
@@ -350,7 +355,6 @@ function getImposter(room) {
   const leaderboardUsernames = Object.keys(room.leaderboard)
   const randomIndex = Math.floor(Math.random() * leaderboardUsernames.length)
   room.imposterUsername = leaderboardUsernames[randomIndex]
-  console.log(room.imposterUsername)
   return room.members[randomIndex]
 }
 function generateUniqueOrders(numPlayers) {
@@ -419,6 +423,7 @@ function determineResults(room) {
 }
 
 function distributePrompts(roomID) {
+  if (!rooms[roomID].gameReady) rooms[roomID].gameReady = true
   const members = rooms[roomID].members
   const prompts = rooms[roomID].prompts
   const orders = rooms[roomID].orders

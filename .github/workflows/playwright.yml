@@ -15,6 +15,8 @@ jobs:
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_HOST: ${{ secrets.DB_HOST }}
       DB_PORT: ${{ secrets.DB_PORT }}
+      ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
+      ADMIN_ID: ${{ secrets.ADMIN_ID }}
       SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
       github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
     steps:
