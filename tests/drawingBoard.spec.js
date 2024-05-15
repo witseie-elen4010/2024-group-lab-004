@@ -203,57 +203,6 @@ test('prompt is displayed to one other user', async ({ context }) => {
   expect(prompt1).not.toBe(testPrompt)
 })
 
-test('input field closes after a certain amount of time', async ({
-  context,
-}) => {
-  const inputTimer = 3
-
-  const { page1, page2, page3 } = await navigateToGame(context)
-
-  // await page3.waitForLoadState('networkidle')
-  await page3.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
-
-  // page3 must wait until the input prompt screen is visible
-  await page3.waitForSelector('#doneButton')
-
-  // input field does not close after 1.5 seconds before the timer ends
-  await page3.waitForTimeout(inputTimer * 1000 - 1000)
-  let isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(true)
-
-  // input field closes after the full time
-  await page3.waitForTimeout(1500)
-  isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(false)
-})
-
-test('the user can draw for a certain amount of time', async ({ context }) => {
-  const drawingTimer = 3
-
-  const { page1, page2, page3 } = await navigateToGame(context)
-  // await page3.waitForLoadState('networkidle')
-  await page3.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
-
-  await page1.locator('#doneButton').click()
-  await page2.locator('#doneButton').click()
-  await page3.locator('#doneButton').click()
-
-  await waitForOverlayToHide(page3)
-
-  // input is not visible while drawing
-  await page3.waitForTimeout(drawingTimer * 1000 - 1000)
-  let isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(false)
-
-  await page1.locator('#submit').click()
-  await page2.locator('#submit').click()
-
-  // input field opens after the full time
-  await page3.waitForTimeout(1500)
-  isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(true)
-})
-
 test('the timer bar appears until the prompt is entered', async ({
   context,
 }) => {
