@@ -72,7 +72,7 @@
           width: 100%;
           height: 100%;
           background-color: rgba(0, 0, 0, 0.5);
-          z-index: 0;
+          z-index: 1000;
         "
       ></div>
       <div
@@ -121,7 +121,7 @@
     </div>
     <div class="whiteboard">
       <canvas id="canvas"></canvas>
-      <div class="tools">
+      <div class="tools" style="display: flex; flex-direction: row;" >
         <button id="clear" class="drawButton">
           Clear
         </button>
@@ -152,9 +152,36 @@
         <img id="pencil" class = "drawing-tool-icon" src="https://icons.iconarchive.com/icons/iconsmind/outline/256/Pencil-icon.png" ></img>
         <img id="sprayPaint" class = "drawing-tool-icon" src="https://www.svgrepo.com/show/506855/cle-spraycan.svg"></img>
         <img id="blur" class = "drawing-tool-icon" src="https://icons.veryicon.com/png/o/miscellaneous/fine-linear-ico/water-drop-4.png"></img>
+        <div class="dropdown" style="z-index: 0;"> 
+          <!-- <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Select Country
+          </button>  -->
+          <a href="#" id="imageDropdown" data-toggle="dropdown" style="z-index: 0;" >
+            <img src="https://cdn-icons-png.freepik.com/128/4224/4224675.png" class="drawing-tool-icon">
+          </a>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"  style="z-index: 0;"> 
+            <a class="dropdown-item" href="#" id="squareSelector">
+              <img src="https://cdn-icons-png.flaticon.com/128/2627/2627937.png" width="20" height="20"> Square
+            </a> 
+            <a class="dropdown-item" href="#" id="circleSelector" >
+              <img src="https://cdn-icons-png.flaticon.com/128/481/481078.png" width="20" height="20"> Circle
+            </a> 
+            <a class="dropdown-item" href="#" id="triangleSelector">
+              <img src="https://cdn-icons-png.flaticon.com/128/481/481099.png" width="20" height="20"> Triangle
+            </a> 
+            <a class="dropdown-item" href="#" id="pentagramSelector" > 
+              <img src="https://cdn-icons-png.flaticon.com/128/1828/1828970.png" width="20" height="20"> Star
+            </a> 
+          </div> 
+        </div>
+        
         <img id="eraser" class = "drawing-tool-icon" src="https://cdn-icons-png.freepik.com/512/254/254686.png"></img >
         
-        <input type="range" id="size-picker" min="1" max="50" value="6" />
+        <div class="input-container">        
+          <title style="display: block; width: 100%; margin-bottom: -30;text-indent: 3px;" >Pen Size:</title> 
+          <input type="range" id="size-picker" min="1" max="50" value="6" />
+        </div>
+        
         <button id="submit" class="drawButton">Submit</button>
       </div>
     </div>
@@ -266,18 +293,16 @@
 
   
 
-    <button onclick="window.location.href='/logout';" style="position: fixed; bottom: 10px; right: 10px;">Logout</button>
-    <script src=”https://code.jquery.com/jquery-3.2.1.slim.min.js”
-    integrity=”sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN”
-    crossorigin=”anonymous”>
-    </script>
-    <script src=”https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js”
-    integrity=”sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q”
-    crossorigin=”anonymous”>
-    </script>
-    <script src=”https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js”
-    integrity=”sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl”
-    crossorigin=”anonymous”>
-    </script>
+    <button onclick="window.location.href='/logout';" style="position: fixed; bottom: 10px; right: 10px; z-index: 100000;">Logout</button>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" 
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" 
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" 
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" 
+    crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" 
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" 
+    crossorigin="anonymous"></script>
+    
   </body>
 </html>
