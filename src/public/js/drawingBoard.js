@@ -216,6 +216,58 @@ function disableUserButtons() {
   })
 }
 
+const chatButton = document.getElementById('chatButton')
+const chatContainer = document.getElementById('chatContainer')
+const chatCloseButton = document.getElementById('chatCloseButton')
+const chatMessages = document.getElementById('chatMessages')
+const chatInput = document.getElementById('chatInput')
+const chatSendButton = document.getElementById('chatSendButton')
+
+chatButton.addEventListener('click', () => {
+  chatContainer.style.display = 'block'
+})
+
+chatCloseButton.addEventListener('click', () => {
+  chatContainer.style.display = 'none'
+})
+
+document.addEventListener('click', (e) => {
+  if (!chatContainer.contains(e.target) && e.target !== chatButton) {
+    chatContainer.style.display = 'none'
+  }
+})
+
+chatSendButton.addEventListener('click', sendMessage)
+chatInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    sendMessage()
+  }
+})
+
+function sendMessage() {
+  const message = chatInput.value
+  if (message.trim() === '') return
+
+  socket.emit('sendMessage', { roomId, message })
+  chatInput.value = ''
+}
+
+socket.on('receiveMessage', (data) => {
+  const messageElement = document.createElement('div')
+  messageElement.classList.add('chat-message')
+  if (data.socketID === socket.id) {
+    messageElement.classList.add('sent')
+  } else {
+    messageElement.classList.add('received')
+  }
+  messageElement.innerHTML = `
+    <div class="username">${data.username}</div>
+    <div class="message">${data.message}</div>
+  `
+  chatMessages.appendChild(messageElement)
+  chatMessages.scrollTop = chatMessages.scrollHeight
+})
+
 let playerStatus = ''
 
 socket.on('imposter', () => {

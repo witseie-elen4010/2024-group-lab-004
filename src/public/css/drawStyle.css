@@ -407,3 +407,61 @@ body {
 #nextRoundButton {
   margin: 5px 10px; /* Adds vertical margin and more horizontal margin */
 }
+
+/* #chatButton {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 10001;
+}
+
+#chatButton:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+} */
+
+#chatContainer {
+  z-index: 10002;
+  margin-top: 15px;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.chat-message .username {
+  font-weight: bold;
+}
+
+.chat-message .message {
+  margin-top: 5px;
+}
+
+.chat-message.sent {
+  background-color: #e9ebf7;
+  text-align: right;
+}
+
+.chat-message.received {
+  background-color: #f1f1f1;
+  text-align: left;
+}
+
+#chatInput {
+  border-radius: 20px;
+  border: 2px solid #ccc;
+  padding: 5px 10px;
+}
+
+#sendMessage {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: auto; /* Center the container horizontally */
+}

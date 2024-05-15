@@ -279,6 +279,24 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('sendMessage', (data) => {
+    const { roomId, message } = data
+    const room = rooms[roomId]
+    if (!room) {
+      return
+    }
+    if (!room.chatMessages) {
+      room.chatMessages = []
+    }
+    const userDetails = users.get(socket.id)
+    const chatMessage = {
+      username: userDetails.username,
+      message,
+    }
+    room.chatMessages.push(chatMessage)
+    io.to(roomId).emit('receiveMessage', chatMessage)
+  })
+
   socket.on('disconnect', () => {
     if (currentRoom) {
       const room = rooms[currentRoom]
