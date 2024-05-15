@@ -95,11 +95,17 @@ test.describe('Landing page tests', () => {
     await page.getByRole('button', { name: 'Join Private Game' }).click()
     await page.getByPlaceholder('Enter room ID').click()
     await page.getByPlaceholder('Enter room ID').fill('Invalid')
-    page.on('dialog', (dialog) => {
-      expect(dialog.message()).toBe('Room does not exist')
-      dialog.dismiss()
+
+    const dialogHandler = new Promise((resolve) => {
+      page.once('dialog', (dialog) => {
+        expect(dialog.message()).toBe('Room does not exist')
+        dialog.dismiss()
+        resolve()
+      })
     })
+
     await page.click('#submitJoinRoom')
+    await dialogHandler
   })
 
   test('join room created by another page', async ({ context }) => {

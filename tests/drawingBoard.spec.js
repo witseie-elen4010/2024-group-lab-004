@@ -48,8 +48,8 @@ async function waitForOverlayToHide(page) {
 
 test('canvas exists', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
-
-  const canvas = await page1.$('canvas')
+  await page1.waitForSelector('#canvas')
+  const canvas = await page1.$('#canvas')
   expect(canvas).toBeTruthy()
 })
 
@@ -139,9 +139,7 @@ test.describe('Testing the input field when the draw page is loaded', () => {
   test('button is created', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    await page1.waitForFunction(
-      'document.querySelector("#specialOverlay").style.display === "none"'
-    )
+    await page1.waitForSelector('#doneButton')
 
     const button = await page1.$('#doneButton')
     expect(button).toBeTruthy()
