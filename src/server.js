@@ -127,7 +127,15 @@ io.on('connection', (socket) => {
   //   room.todo = []
   // }
 
-  socket.on('inputDone', (data) => {
+  socket.on('inputDone', async (data) => {
+    await new Promise((resolve) => {
+      const intervalId = setInterval(() => {
+        if (users.get(socket.id)) {
+          clearInterval(intervalId)
+          resolve()
+        }
+      }, 100) // Check every 100ms
+    })
     const { roomId, prompt } = data
     rooms[roomId].prompts[socket.id] = prompt
     updateGridSubmission(
