@@ -201,4 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
     currentGames = games
     renderGames()
   })
+
+  window.parseObjectArray = parseObjectArray
 })
+module.exports = { parseObjectArray: window.parseObjectArray }
