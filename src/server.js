@@ -292,6 +292,7 @@ io.on('connection', (socket) => {
     const chatMessage = {
       username: userDetails.username,
       message,
+      socketID: socket.id,
     }
     room.chatMessages.push(chatMessage)
     io.to(roomId).emit('receiveMessage', chatMessage)
