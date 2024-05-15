@@ -22,7 +22,7 @@
     "run": "nodemon src/server.js",
     "start": "node src/server.js",
     "test": "jest",
-    "cov": "jest --coverage"
+    "coverage": "jest --coverage"
   },
   "jest": {
     "collectCoverage": true,
