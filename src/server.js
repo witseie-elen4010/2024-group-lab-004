@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
       votingSend: false,
       roundOver: false,
       gameReady: false,
-      playersReadyCount: 0
+      playersReadyCount: 0,
     }
     currentRoom = roomId
     socket.join(roomId)
@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
         const allUserDetails = room.members.map((member) => users.get(member))
         io.to(roomID).emit('roomJoined', {
           roomId: roomID,
-          members: allUserDetails
+          members: allUserDetails,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
       }
@@ -78,7 +78,7 @@ io.on('connection', (socket) => {
     const roomsList = Object.entries(publicRooms).map(([roomId, room]) => ({
       roomId,
       host: room.host,
-      members: room.members
+      members: room.members,
     }))
     socket.emit('publicRoomsList', roomsList)
   })
@@ -203,7 +203,7 @@ io.on('connection', (socket) => {
       const allUserDetails = room.members.map((member) => users.get(member))
       io.to(roomID).emit('gameRoomJoined', {
         roomId: roomID,
-        members: allUserDetails
+        members: allUserDetails,
       })
       // only get the imposters once everyone has joined the room
       if (room.members.length === room.gameSize) {
@@ -216,9 +216,9 @@ io.on('connection', (socket) => {
 
         // Send a "no" message to all other members
         room.members.forEach((member) => {
-          if (member === imposter) {
+          if (member === imposter && room.gameReady) {
             io.to(member).emit('imposter', true)
-          } else {
+          } else if (room.gameReady) {
             io.to(member).emit('normal', true)
           }
         })
@@ -291,7 +291,7 @@ io.on('connection', (socket) => {
         room.votingSend = true
         io.to(currentRoom).emit('votingResult', {
           result,
-          membersCount: room.members.length
+          membersCount: room.members.length,
         })
         io.to(room.host).emit('nextRoundStart', room.members.length)
         room.votes = {}
@@ -313,7 +313,7 @@ io.on('connection', (socket) => {
     const chatMessage = {
       username: userDetails.username,
       message,
-      socketID: socket.id
+      socketID: socket.id,
     }
     room.chatMessages.push(chatMessage)
     io.to(roomId).emit('receiveMessage', chatMessage)
@@ -333,7 +333,7 @@ io.on('connection', (socket) => {
         room.host = room.members[0] // Elect a new host, simplest form
         io.to(room.host).emit('youAreTheNewHost', {
           votingSend: room.votingSend,
-          membersCount: room.members.length
+          membersCount: room.members.length,
         })
       }
       if (!room.roundOver) room.grid = null
@@ -374,13 +374,13 @@ io.on('connection', (socket) => {
         membersCount: room.members.length,
         gameReady: room.gameReady,
         host: room.host,
-        currentRoom
+        currentRoom,
       })
     }
   })
 })
 
-function generateAndAssignOrders (roomID) {
+function generateAndAssignOrders(roomID) {
   const members = rooms[roomID].members
   const uniqueOrders = generateUniqueOrders(members.length)
 
@@ -390,17 +390,17 @@ function generateAndAssignOrders (roomID) {
   return rooms[roomID].orders
 }
 
-function generateRoomId () {
+function generateRoomId() {
   return Math.random().toString(36).substring(2, 10)
 }
 
-function getImposter (room) {
+function getImposter(room) {
   const leaderboardUsernames = Object.keys(room.leaderboard)
   const randomIndex = Math.floor(Math.random() * leaderboardUsernames.length)
   room.imposterUsername = leaderboardUsernames[randomIndex]
   return room.members[randomIndex]
 }
-function generateUniqueOrders (numPlayers) {
+function generateUniqueOrders(numPlayers) {
   const orders = Array.from({ length: numPlayers }, () =>
     Array(numPlayers).fill(0)
   )
@@ -413,7 +413,7 @@ function generateUniqueOrders (numPlayers) {
   return orders.sort(() => Math.random() - 0.5)
 }
 
-function updateAndEmitOrders (roomID) {
+function updateAndEmitOrders(roomID) {
   generateAndAssignOrders(roomID)
 
   const orders = rooms[roomID].orders
@@ -425,7 +425,7 @@ function updateAndEmitOrders (roomID) {
   io.to(roomID).emit('updateOrders', orders)
 }
 
-function determineResults (room) {
+function determineResults(room) {
   let maxVotes = 0
   let mostVotedUser = null
   let equalImposterVotes = false
@@ -461,11 +461,11 @@ function determineResults (room) {
     votes: maxVotes,
     isImposter,
     equalImposterVotes,
-    imposter: room.imposterUsername
+    imposter: room.imposterUsername,
   }
 }
 
-function distributePrompts (roomID) {
+function distributePrompts(roomID) {
   if (!rooms[roomID].gameReady) rooms[roomID].gameReady = true
   const members = rooms[roomID].members
   const prompts = rooms[roomID].prompts
@@ -495,7 +495,7 @@ function distributePrompts (roomID) {
   }
 }
 
-function distributeDrawings (roomID) {
+function distributeDrawings(roomID) {
   const members = rooms[roomID].members
   const drawings = drawingSubmissions[roomID]
   const orders = rooms[roomID].orders
@@ -527,13 +527,13 @@ function distributeDrawings (roomID) {
   }
 }
 
-function createRoomGrid (size) {
+function createRoomGrid(size) {
   return Array.from({ length: size }, () =>
     Array(size).fill({ type: null, content: null, member: null })
   )
 }
 
-function updateGridSubmission (roomID, username, type, content, socketID) {
+function updateGridSubmission(roomID, username, type, content, socketID) {
   const orders = rooms[roomID].orders
   if (!rounds[roomID]) {
     rounds[roomID] = 0
@@ -544,10 +544,10 @@ function updateGridSubmission (roomID, username, type, content, socketID) {
   rooms[roomID].grid[currentRound][targetIndex] = {
     type,
     content,
-    member: username
+    member: username,
   }
 }
-async function emitRoundOver (roomID) {
+async function emitRoundOver(roomID) {
   const allUserIDs = rooms[roomID].members.map((member) => users.get(member).id)
   await assignGameID(roomID, allUserIDs)
   dbController.saveGrid(rooms[roomID].gameID, rooms[roomID].grid)
@@ -555,7 +555,7 @@ async function emitRoundOver (roomID) {
   io.to(roomID).emit('roundOver', rooms[roomID].grid)
 }
 
-async function assignGameID (roomID, allUserIDs) {
+async function assignGameID(roomID, allUserIDs) {
   rooms[roomID].gameID = await dbController.newGame(allUserIDs)
 }
 

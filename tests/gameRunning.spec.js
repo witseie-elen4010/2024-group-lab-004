@@ -76,6 +76,18 @@ test.describe('Start game tests', () => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
 
+    await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
+
     await page1.waitForSelector('#doneButton')
     await page2.waitForSelector('#doneButton')
     await page3.waitForSelector('#doneButton')
@@ -91,6 +103,19 @@ test.describe('Start game tests', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.click('#startGame')
+
+    await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
+
     await page1.waitForSelector('#doneButton')
     await page2.waitForSelector('#doneButton')
     await page3.waitForSelector('#doneButton')
@@ -111,6 +136,19 @@ test.describe('Gameplay tests', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
+
+    await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
+
     await page1.waitForSelector('#doneButton')
 
     let isVisible = await page1.locator('#waitingContainer').isVisible()
@@ -127,6 +165,18 @@ test.describe('Gameplay tests', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
+
+    await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
 
     await Promise.all([
       page1.locator('#getInput').fill('test prompt'),
@@ -161,6 +211,18 @@ test.describe('Gameplay tests', () => {
     await page1.getByRole('button', { name: 'Start Game' }).click()
 
     await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
+
+    await Promise.all([
       page1.locator('#doneButton').click(),
       page2.locator('#doneButton').click(),
       page3.locator('#doneButton').click(),
@@ -188,9 +250,15 @@ test.describe('Exit game tests', () => {
     await page1.getByRole('button', { name: 'Start Game' }).click()
 
     await Promise.all([
-      page1.locator('#doneButton').click(),
-      page2.locator('#doneButton').click(),
-      page3.locator('#doneButton').click(),
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
     ])
 
     // Simulate page3 exiting the game

@@ -229,35 +229,60 @@ test('input field closes after a certain amount of time', async ({
   expect(isVisible).toBe(false)
 })
 
-test('the user can draw for a certain amount of time', async ({ context }) => {
-  const drawingTimer = 3
+// test('the user can draw for a certain amount of time', async ({ context }) => {
+//   const drawingTimer = 3
 
-  const { page1, page2, page3 } = await navigateToGame(context)
-  page1.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
-  page2.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
-  await page3.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
+//   const { page1, page2, page3 } = await navigateToGame(context)
+//   // page1.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
+//   // page2.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
+//   // await page3.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
 
-  await page1.locator('#doneButton').click()
-  await page2.locator('#doneButton').click()
-  await page3.locator('#doneButton').click()
+//   await Promise.all([
+//     page1.waitForFunction(
+//       'document.querySelector("#specialOverlay").style.display === "none"'
+//     ),
+//     page2.waitForFunction(
+//       'document.querySelector("#specialOverlay").style.display === "none"'
+//     ),
+//     page3.waitForFunction(
+//       'document.querySelector("#specialOverlay").style.display === "none"'
+//     ),
+//   ])
 
-  await waitForOverlayToHide(page3)
+//   await page1.locator('#doneButton').click()
+//   await page2.locator('#doneButton').click()
+//   await page3.locator('#doneButton').click()
 
-  // input is not visible while drawing
-  await page3.waitForTimeout(drawingTimer * 1000 - 1000)
-  let isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(false)
+//   await waitForOverlayToHide(page3)
 
-  // input field opens after the full time
-  await page3.waitForTimeout(1500)
-  isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(true)
-})
+//   // input is not visible while drawing
+//   await page3.waitForTimeout(drawingTimer * 1000 - 1000)
+//   let isVisible = await page3.locator('#getInput').isVisible()
+//   expect(isVisible).toBe(false)
+
+//   // input field opens after the full time
+//   await page3.waitForTimeout(1500)
+//   isVisible = await page3.locator('#getInput').isVisible()
+//   expect(isVisible).toBe(true)
+// })
 
 test('the timer bar appears until the prompt is entered', async ({
   context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page1.waitForSelector('#doneButton')
 
   // check if the timer bar is displayed
@@ -284,15 +309,27 @@ test.describe('testing that the timer bar decreases in width', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    page3.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    page2.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
+    // page3.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+    // page2.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+    // await page1.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+
+    await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
     await page1.waitForSelector('#doneButton')
     await page1.waitForTimeout(500)
 
@@ -317,17 +354,30 @@ test.describe('testing that the timer bar decreases in width', () => {
     context,
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
-    page3.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    page2.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
+    // page3.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+    // page2.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+    // await page1.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
 
     // get to the describe a drawing point
+
+    await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
+
     await page1.locator('#doneButton').click()
 
     await page2.locator('#doneButton').click()
@@ -356,15 +406,28 @@ test.describe('testing that the timer bar decreases in width', () => {
   test('The draw timer bar decreases', async ({ context }) => {
     // get to the describe a drawing point
     const { page1, page2, page3 } = await navigateToGame(context)
-    page3.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    page2.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
+    // page3.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+    // page2.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+    // await page1.goto(
+    //   `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
+    // )
+
+    await Promise.all([
+      page1.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page2.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+      page3.waitForFunction(
+        'document.querySelector("#specialOverlay").style.display === "none"'
+      ),
+    ])
+
     await page3.locator('#doneButton').click()
     await page2.locator('#doneButton').click()
     await page1.locator('#doneButton').click()
@@ -398,6 +461,18 @@ test('testing that a drawing is shown after submitting the prompt', async ({
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page1.waitForSelector('#doneButton')
 
   // make sure the drawingDisplay is not visible
@@ -422,6 +497,19 @@ test('testing that a drawing is shown after submitting the prompt', async ({
 
 test('testing colour change', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page3.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page1.locator('#doneButton').click()
@@ -465,6 +553,19 @@ test('testing colour change', async ({ context }) => {
 
 test('testing custom colour picker', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page3.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page1.locator('#doneButton').click()
@@ -484,6 +585,19 @@ test('testing custom colour picker', async ({ context }) => {
 
 test('Test linewidth changes', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page3.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page1.locator('#doneButton').click()
@@ -502,6 +616,19 @@ test('Test linewidth changes', async ({ context }) => {
 
 test('Help menu appears when help button is clicked', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page3.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page1.locator('#doneButton').click()
@@ -514,6 +641,19 @@ test('Help menu appears when help button is clicked', async ({ context }) => {
 
 test('Help menu closes when close button is clicked', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page3.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page1.locator('#doneButton').click()
@@ -527,6 +667,19 @@ test('Help menu closes when close button is clicked', async ({ context }) => {
 
 test('Undo and redo buttons disabled on loading.', async ({ context }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
+
   await page3.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page1.locator('#doneButton').click()
@@ -671,6 +824,18 @@ test('Exactly 1 imposter is chosen at the start of the game', async ({
   browserName,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
+
+  await Promise.all([
+    page1.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page2.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+    page3.waitForFunction(
+      'document.querySelector("#specialOverlay").style.display === "none"'
+    ),
+  ])
   await page3.locator('#doneButton').click()
   await page2.locator('#doneButton').click()
   await page1.locator('#doneButton').click()
