@@ -11,6 +11,7 @@ async function signIn(page) {
 test.describe('Landing page tests', () => {
   test.beforeEach(async ({ page }) => {
     page = await signIn(page)
+    await page.waitForLoadState('networkidle')
   })
 
   test('createPrivateRoomButton is visible', async ({ page }) => {
@@ -88,25 +89,33 @@ test.describe('Landing page tests', () => {
   })
 
   test('join room with invalid id', async ({ page, browserName }) => {
-    if (browserName === 'webkit') {
-      test.fixme()
-      return
-    }
-
-    await page.getByRole('button', { name: 'Join Private Game' }).click()
-    await page.getByPlaceholder('Enter room ID').click()
-    await page.getByPlaceholder('Enter room ID').fill('Invalid')
-
-    const dialogHandler = new Promise((resolve) => {
-      page.once('dialog', (dialog) => {
+    if (browserName === 'chromium') {
+      await page.click('#joinRoom')
+      await page.fill('#roomToJoin', 'invalidRoomId')
+      page.on('dialog', (dialog) => {
         expect(dialog.message()).toBe('Room does not exist')
         dialog.dismiss()
-        resolve()
       })
-    })
+      await page.click('#submitJoinRoom')
+    } else {
+      await page.click('#joinRoom')
+      await page.fill('#roomToJoin', 'invalidRoomId')
 
-    await page.click('#submitJoinRoom')
-    await dialogHandler
+      await page.getByRole('button', { name: 'Join Private Game' }).click()
+      await page.getByPlaceholder('Enter room ID').click()
+      await page.getByPlaceholder('Enter room ID').fill('Invalid')
+
+      const dialogHandler = new Promise((resolve) => {
+        page.once('dialog', (dialog) => {
+          expect(dialog.message()).toBe('Room does not exist')
+          dialog.dismiss()
+          resolve()
+        })
+      })
+
+      await page.click('#submitJoinRoom')
+      await dialogHandler
+    }
   })
 
   test('join room created by another page', async ({ context }) => {

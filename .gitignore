@@ -184,3 +184,6 @@ dist
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+
+.vscode

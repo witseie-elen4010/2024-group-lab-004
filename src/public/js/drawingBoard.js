@@ -615,8 +615,8 @@ function setStatus() {
 }
 
 const urlParams = new URLSearchParams(window.location.search)
-const inputTimer = (urlParams.get('inputTimer') || 25) * 1000
-const drawingTimer = (urlParams.get('drawingTimer') || 60) * 1000
+const inputTimer = 25 * 1000
+const drawingTimer = 60 * 1000
 
 canvas.addEventListener('mousedown', startDrawing, false)
 canvas.addEventListener('mousemove', draw, false)
@@ -925,7 +925,6 @@ function startDrawTimer() {
     drawingCountdownBar.style.width = '100%'
     void drawingCountdownBar.offsetWidth
     drawingCountdownBar.style.transition = ''
-    console.log('cleared timeout')
   }
 }
 
