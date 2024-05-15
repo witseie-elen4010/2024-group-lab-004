@@ -1,41 +1,45 @@
 // import { test, expect } from '@playwright/test'
 
-// async function signIn(page) {
-//   await page.goto('http://localhost:4000/')
-//   await page.getByRole('button', { name: 'Continue as Guest' }).click()
-//   await page.getByPlaceholder('Enter your nickname').fill('test name 1')
-//   await page.getByRole('button', { name: 'Join' }).click()
-//   return page
-// }
+async function signIn (page) {
+  await page.goto('http://localhost:4000/')
+  await page.getByRole('button', { name: 'Continue as Guest' }).click()
+  await page.getByPlaceholder('Enter your nickname').fill('test name 1')
+  await page.getByRole('button', { name: 'Join' }).click()
+  return page
+}
 
 // test.describe('Landing page tests', () => {
 //   test.beforeEach(async ({ page }) => {
 //     page = await signIn(page)
 //   })
 
-//   test('createPrivateRoomButton is visible', async ({ page }) => {
-//     const createPrivateRoomButton = await page.$('#createPrivateRoom')
-//     const isVisible = await createPrivateRoomButton.isVisible()
-//     expect(isVisible).toBe(true)
-//   })
+  test('createPrivateRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#createPrivateRoom')
+    const createPrivateRoomButton = await page.$('#createPrivateRoom')
+    const isVisible = await createPrivateRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
 
-//   test('createPublicRoomButton is visible', async ({ page }) => {
-//     const createPublicRoomButton = await page.$('#createPublicRoom')
-//     const isVisible = await createPublicRoomButton.isVisible()
-//     expect(isVisible).toBe(true)
-//   })
+  test('createPublicRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#createPublicRoom')
+    const createPublicRoomButton = await page.$('#createPublicRoom')
+    const isVisible = await createPublicRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
 
-//   test('joinRoomButton is visible', async ({ page }) => {
-//     const joinRoomButton = await page.$('#joinRoom')
-//     const isVisible = await joinRoomButton.isVisible()
-//     expect(isVisible).toBe(true)
-//   })
+  test('joinRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#joinRoom')
+    const joinRoomButton = await page.$('#joinRoom')
+    const isVisible = await joinRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
 
-//   test('joinPublicRoomButton is visible', async ({ page }) => {
-//     const joinPublicRoomButton = await page.$('#joinPublicRoom')
-//     const isVisible = await joinPublicRoomButton.isVisible()
-//     expect(isVisible).toBe(true)
-//   })
+  test('joinPublicRoomButton is visible', async ({ page }) => {
+    await page.waitForSelector('#joinPublicRoom')
+    const joinPublicRoomButton = await page.$('#joinPublicRoom')
+    const isVisible = await joinPublicRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
 
 //   test('startGameButton is not visible', async ({ page }) => {
 //     const startGameButton = await page.$('#startGame')
@@ -72,15 +76,16 @@
 //   test('join room', async ({ page }) => {
 //     await page.click('#joinRoom')
 
-//     // Check if the text area appears
-//     const roomToJoinInput = await page.$('#roomToJoin')
-//     expect(roomToJoinInput).toBeTruthy()
-//     const submitJoinRoomButton = await page.$('#submitJoinRoom')
-//     await page.fill('#roomToJoin', 'testRoom')
-//     await page.click('#submitJoinRoom')
-//     const isVisible = await submitJoinRoomButton.isVisible()
-//     expect(isVisible).toBe(true)
-//   })
+    // Check if the text area appears
+    await page.waitForSelector('#roomToJoin')
+    const roomToJoinInput = await page.$('#roomToJoin')
+    expect(roomToJoinInput).toBeTruthy()
+    const submitJoinRoomButton = await page.$('#submitJoinRoom')
+    await page.fill('#roomToJoin', 'testRoom')
+    await page.click('#submitJoinRoom')
+    const isVisible = await submitJoinRoomButton.isVisible()
+    expect(isVisible).toBe(true)
+  })
 
 //   test('join room with invalid id', async ({ page, browserName }) => {
 //     if (browserName === 'webkit') {
@@ -88,14 +93,21 @@
 //       return
 //     }
 
-//     await page.click('#joinRoom')
-//     await page.fill('#roomToJoin', 'invalidRoomId')
-//     page.on('dialog', (dialog) => {
-//       expect(dialog.message()).toBe('Room does not exist')
-//       dialog.dismiss()
-//     })
-//     await page.click('#submitJoinRoom')
-//   })
+    await page.getByRole('button', { name: 'Join Private Game' }).click()
+    await page.getByPlaceholder('Enter room ID').click()
+    await page.getByPlaceholder('Enter room ID').fill('Invalid')
+
+    const dialogHandler = new Promise((resolve) => {
+      page.once('dialog', (dialog) => {
+        expect(dialog.message()).toBe('Room does not exist')
+        dialog.dismiss()
+        resolve()
+      })
+    })
+
+    await page.click('#submitJoinRoom')
+    await dialogHandler
+  })
 
 //   test('join room created by another page', async ({ context }) => {
 //     // Create a room on page1
@@ -138,11 +150,11 @@
 //     expect(membersCount2).toBe('2')
 //   })
 
-//   test('private room form is not visible after pressing join public room button', async ({
-//     page,
-//   }) => {
-//     // Click on the join private room button
-//     await page.click('#joinRoom')
+  test('private room form is not visible after pressing join public room button', async ({
+    page
+  }) => {
+    // Click on the join private room button
+    await page.click('#joinRoom')
 
 //     // Click on the join public room button
 //     await page.click('#joinPublicRoom')
@@ -153,12 +165,12 @@
 //     expect(isVisible).toBe(false)
 //   })
 
-//   test('createPublicRoom button, when pressed, removes buttons and shows room ID with members: 1', async ({
-//     context,
-//   }) => {
-//     // Go to landing page
-//     const page = await context.newPage()
-//     await page.goto('http://localhost:4000/landing')
+  test('createPublicRoom button, when pressed, removes buttons and shows room ID with members: 1', async ({
+    context
+  }) => {
+    // Go to landing page
+    const page = await context.newPage()
+    await page.goto('http://localhost:4000/landing')
 
 //     // Click on the create public room button
 //     await page.click('#createPublicRoom')
