@@ -860,7 +860,6 @@ function startDrawTimer() {
     drawingCountdownBar.style.width = '100%'
     void drawingCountdownBar.offsetWidth
     drawingCountdownBar.style.transition = ''
-    console.log('cleared timeout')
   }
 }
 
