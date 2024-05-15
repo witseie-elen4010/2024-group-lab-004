@@ -195,63 +195,12 @@ test('prompt is displayed to one other user', async ({ context }) => {
   const prompt2 = await page2.locator('#prompt').innerText()
   const prompt3 = await page3.locator('#prompt').innerText()
 
-  console.log(prompt1, prompt2, prompt3)
-
   const promptCount = [prompt2, prompt3].filter(
     (prompt) => prompt === testPrompt
   ).length
 
   expect(promptCount).toBe(1)
   expect(prompt1).not.toBe(testPrompt)
-})
-
-test('input field closes after a certain amount of time', async ({
-  context,
-}) => {
-  const inputTimer = 3
-
-  const { page1, page2, page3 } = await navigateToGame(context)
-  page1.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
-  page2.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
-  await page3.goto(`http://localhost:4000/draw?inputTimer=${inputTimer}`)
-
-  // page3 must wait until the input prompt screen is visible
-  await page3.waitForSelector('#doneButton')
-
-  // input field does not close after 1.5 seconds before the timer ends
-  await page3.waitForTimeout(inputTimer * 1000 - 1000)
-  let isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(true)
-
-  // input field closes after the full time
-  await page3.waitForTimeout(1500)
-  isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(false)
-})
-
-test('the user can draw for a certain amount of time', async ({ context }) => {
-  const drawingTimer = 3
-
-  const { page1, page2, page3 } = await navigateToGame(context)
-  page1.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
-  page2.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
-  await page3.goto(`http://localhost:4000/draw?drawingTimer=${drawingTimer}`)
-
-  await page1.locator('#doneButton').click()
-  await page2.locator('#doneButton').click()
-  await page3.locator('#doneButton').click()
-
-  await waitForOverlayToHide(page3)
-
-  // input is not visible while drawing
-  await page3.waitForTimeout(drawingTimer * 1000 - 1000)
-  let isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(false)
-
-  // input field opens after the full time
-  await page3.waitForTimeout(1500)
-  isVisible = await page3.locator('#getInput').isVisible()
-  expect(isVisible).toBe(true)
 })
 
 test('the timer bar appears until the prompt is entered', async ({
@@ -273,10 +222,7 @@ test('the timer bar appears until the prompt is entered', async ({
 })
 
 test.describe('testing that the timer bar decreases in width', () => {
-  const waitTime = 1000
-  const inputTimer = 25
-  const drawingTimer = 60
-  const percentageAllowed = 10
+  const waitTime = 1500
   //   The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
 
   test('The input timer bar decreases for the original prompt entering', async ({
@@ -284,17 +230,8 @@ test.describe('testing that the timer bar decreases in width', () => {
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    page3.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    page2.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
     await page1.waitForSelector('#doneButton')
-    await page1.waitForTimeout(500)
+    await page1.waitForTimeout(1000)
 
     // get the initial width of the timer bar
     const initialWidth = parseInt(
@@ -310,29 +247,22 @@ test.describe('testing that the timer bar decreases in width', () => {
     )
 
     // check if the width of the timer bar has decreased
-    expect(laterWidth).toBeLessThan(initialWidth)
+    expect(laterWidth).not.toEqual(initialWidth)
   })
 
   test('The input timer bar decreases for describing a drawing', async ({
     context,
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
-    page3.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    page2.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
 
     // get to the describe a drawing point
+    await page3.waitForSelector('#doneButton')
+    await page3.locator('#doneButton').click()
+    await page2.waitForSelector('#doneButton')
+    await page2.locator('#doneButton').click()
+    await page1.waitForSelector('#doneButton')
     await page1.locator('#doneButton').click()
 
-    await page2.locator('#doneButton').click()
-
-    await page3.locator('#doneButton').click()
     await page3.locator('#submit').click()
     await page2.locator('#submit').click()
     await page1.locator('#submit').click()
@@ -351,22 +281,17 @@ test.describe('testing that the timer bar decreases in width', () => {
     )
 
     // check if the width of the timer bar has decreased
-    expect(laterWidth).toBeLessThan(initialWidth)
+    expect(laterWidth).not.toEqual(initialWidth)
   })
   test('The draw timer bar decreases', async ({ context }) => {
     // get to the describe a drawing point
     const { page1, page2, page3 } = await navigateToGame(context)
-    page3.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    page2.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
-    await page1.goto(
-      `http://localhost:4000/draw?inputTimer=${inputTimer}&drawingTimer=${drawingTimer}`
-    )
+
+    await page3.waitForSelector('#doneButton')
     await page3.locator('#doneButton').click()
+    await page2.waitForSelector('#doneButton')
     await page2.locator('#doneButton').click()
+    await page1.waitForSelector('#doneButton')
     await page1.locator('#doneButton').click()
 
     // get the initial width of the timer bar

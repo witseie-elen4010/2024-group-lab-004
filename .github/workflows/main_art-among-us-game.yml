@@ -19,6 +19,8 @@ jobs:
       DB_NAME: $(DB_NAME)
       DB_HOST: $(DB_HOST)
       DB_PORT: $(DB_PORT)
+      ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
       SESSION_SECRET: $(SESSION_SECRET)
     steps:
       - uses: actions/checkout@v4
