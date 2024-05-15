@@ -46,13 +46,15 @@ socket.on('userDisconnected', (data) => {
       }, 2000)
     }
   } else {
-    // if (!data.roundOver) {
-    //   showMemberLeftOverlay('game')
-    //   setTimeout(() => {
-    //     socket.emit('nextRound', roomId)
-    //     hideMemberLeftOverlay()
-    //   }, 2000)
-    // }
+    if (!data.roundOver && data.gameReady) {
+      showMemberLeftOverlay('game')
+      if (socket.id === data.host) {
+        setTimeout(() => {
+          socket.emit('nextRound', roomId)
+          hideMemberLeftOverlay()
+        }, 2000)
+      }
+    }
   }
 })
 
@@ -84,6 +86,7 @@ socket.on('updateDrawing', (drawing) => {
 })
 
 socket.on('roundOver', (submissionGrid) => {
+  prevSubmissionPrompt = false
   voted = false
   PlayerCount = submissionGrid.length
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
@@ -381,6 +384,8 @@ const votingCountdownElement = document.getElementById('votingPageCountdown')
 const votingMessage = document.getElementById('votingPageMessage')
 const nextRoundButton = document.getElementById('nextRoundButton')
 let voted = false
+let prevSubmissionPrompt = false
+let timeoutIds = []
 
 canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
 
@@ -525,7 +530,14 @@ exitButton.addEventListener('click', () => {
   window.location.href = '/landing'
 })
 
+function endTimeout() {
+  timeoutIds.forEach(clearTimeout)
+  timeoutIds = []
+}
+
 socket.on('newRound', () => {
+  endTimeout()
+  prevSubmissionPrompt = false
   overlay.style.display = 'none'
   hideRoundOverOverlay()
   activateInputPrompt()
@@ -752,7 +764,7 @@ function stopDrawing(e) {
   }
 }
 
-let endTimeout = function () {}
+// let endTimeout = function () {}
 
 function startDrawTimer() {
   drawingCountdownBar.style.width = '100%'
@@ -765,6 +777,7 @@ function startDrawTimer() {
   const countdownBarTimeout = setTimeout(() => {
     submitDrawing()
   }, drawingTimer)
+  timeoutIds.push(countdownBarTimeout)
   endTimeout = function () {
     clearTimeout(countdownBarTimeout)
     drawingCountdownBar.style.transition = 'none'
@@ -791,7 +804,7 @@ function submitDrawing() {
   undoButton.disabled = true
   redoButton.disabled = true
   endTimeout()
-
+  prevSubmissionPrompt = false
   socket.emit('drawingSubmitted', { roomId, image })
   showWaitingContainer()
 }
@@ -806,7 +819,7 @@ const colors = [
   'A black',
   'A white',
   'A pink',
-  'A gray',
+  'A grey',
 ]
 const objects = [
   'cat',
@@ -826,7 +839,7 @@ const objects = [
   'unicorn',
   'dragon',
   'castle',
-  'raindbow',
+  'rainbow',
   'sword',
   'hamburger',
   'volcano',
@@ -908,7 +921,7 @@ function activateInputPrompt(img = null) {
 
     // Set a timeout to hide the inputPrompt
     const timeoutId = setTimeout(inputDone, inputTimer) // TODO: if the user submits themself, this shouldnt be called
-
+    timeoutIds.push(timeoutId)
     function checkEnterKey(event) {
       if (event.key === 'Enter') {
         inputDone()
@@ -936,7 +949,10 @@ function activateInputPrompt(img = null) {
       doneButton.removeEventListener('click', inputDone)
       getInput.removeEventListener('keydown', checkEnterKey)
       showWaitingContainer()
-      socket.emit('inputDone', { roomId, prompt }) // Emit the input value to the sockets in the room
+      if (!prevSubmissionPrompt) {
+        socket.emit('inputDone', { roomId, prompt }) // Emit the input value to the sockets in the room
+      }
+      prevSubmissionPrompt = true
       resolve(prompt) // Resolve the Promise with the prompt
     }
 
