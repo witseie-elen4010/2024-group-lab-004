@@ -539,3 +539,19 @@ async function assignGameID(roomID, allUserIDs) {
 server.listen(port, () => {
   console.log(`Server running on local port ${port}...`)
 })
+
+module.exports = {
+  rooms,
+  generateAndAssignOrders,
+  generateRoomId,
+  getImposter,
+  generateUniqueOrders,
+  updateAndEmitOrders,
+  determineResults,
+  distributePrompts,
+  distributeDrawings,
+  createRoomGrid,
+  updateGridSubmission,
+  emitRoundOver,
+  assignGameID,
+}
