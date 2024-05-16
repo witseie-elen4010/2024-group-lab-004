@@ -83,50 +83,6 @@ io.on('connection', (socket) => {
     socket.emit('publicRoomsList', roomsList)
   })
 
-  // socket.on('inputDone', (data) => {
-  //   const { roomId } = data
-  //   const room = rooms[roomId]
-  //   if (!room) {
-  //     return
-  //   }
-  //   if (!room.todo) {
-  //     room.todo = []
-  //   }
-  //   data.socketID = socket.id
-  //   room.todo.push(data)
-  //   if (room.members.length !== room.gameSize) {
-  //     // wait for everyone to join, then do this process
-  //     return
-  //   }
-
-  //   sendPrompts(room)
-  // })
-
-  // function sendPrompts(room) {
-  //   room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
-  //   for (const entry of room.todo) {
-  //     const { roomId, prompt, socketID } = entry
-
-  //     rooms[roomId].prompts[socketID] = prompt
-  //     updateGridSubmission(
-  //       roomId,
-  //       users.get(socketID).username,
-  //       'prompt',
-  //       prompt,
-  //       socketID
-  //     )
-
-  //     if (
-  //       Object.keys(rooms[roomId].prompts).length ===
-  //       rooms[roomId].members.length
-  //     ) {
-  //       distributePrompts(roomId)
-  //       rooms[roomId].prompts = {}
-  //     }
-  //   }
-  //   room.todo = []
-  // }
-
   socket.on('inputDone', async (data) => {
     await new Promise((resolve) => {
       const intervalId = setInterval(() => {
@@ -248,6 +204,7 @@ io.on('connection', (socket) => {
       rooms[roomID].prompts = {}
       drawingSubmissions[roomID] = {}
       rooms[roomID].grid = createRoomGrid(rooms[roomID].members.length)
+
       updateAndEmitOrders(roomID)
       const imposter = getImposter(rooms[roomID])
       rooms[roomID].imposter = imposter
@@ -336,7 +293,6 @@ io.on('connection', (socket) => {
           membersCount: room.members.length,
         })
       }
-      if (!room.roundOver) room.grid = null
 
       io.to(currentRoom).emit('hostUpdated', room.host)
 
@@ -539,14 +495,17 @@ function updateGridSubmission(roomID, username, type, content, socketID) {
     rounds[roomID] = 0
   }
   const currentRound = rounds[roomID]
+
   const order = orders[socketID]
   const targetIndex = order[currentRound] - 1
+
   rooms[roomID].grid[currentRound][targetIndex] = {
     type,
     content,
     member: username,
   }
 }
+
 async function emitRoundOver(roomID) {
   const allUserIDs = rooms[roomID].members.map((member) => users.get(member).id)
   await assignGameID(roomID, allUserIDs)
