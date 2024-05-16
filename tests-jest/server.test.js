@@ -7,6 +7,7 @@ const {
   server,
   rounds,
   users,
+  drawingSubmissions,
   inputDone,
   generateAndAssignOrders,
   generateRoomId,
@@ -14,6 +15,7 @@ const {
   generateUniqueOrders,
   updateAndEmitOrders,
   determineResults,
+  drawingSubmitted,
   createRoomGrid,
   updateGridSubmission,
   assignGameID,
@@ -381,5 +383,41 @@ describe('inputDone', () => {
   it('should update the prompt field of rooms[roomID] with the correct value', async () => {
     await inputDone({ roomId: 'room1', prompt: 'new prompt' }, 'id1')
     expect(rooms['room1'].prompts['id1']).toBe('new prompt')
+  })
+})
+
+describe('drawingSubmitted', () => {
+  let socketID
+  let data
+
+  beforeEach(() => {
+    socketID = 'socket1'
+    data = { roomId: 'room1', image: 'image1' }
+    rooms['room1'] = {
+      members: ['Alice', 'Bob', 'Charlie'],
+      orders: {
+        id1: [1, 2, 3],
+        Bob: [2, 3, 1],
+        Charlie: [3, 1, 2],
+      },
+      grid: createRoomGrid(3),
+    }
+    users.set('socket1', { username: 'Alice' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    users.clear()
+    drawingSubmissions['room1'] = {}
+  })
+
+  it('should update drawingSubmissions correctly', () => {
+    drawingSubmitted(data, socketID)
+    expect(drawingSubmissions['room1']['socket1']).toBe('image1')
+  })
+
+  it('should call updateGridSubmission with correct parameters', () => {
+    drawingSubmitted(data, socketID)
+    expect(rooms['room1'].grid).toBeTruthy()
   })
 })
