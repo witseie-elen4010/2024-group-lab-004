@@ -542,6 +542,7 @@ server.listen(port, () => {
 
 module.exports = {
   rooms,
+  server,
   generateAndAssignOrders,
   generateRoomId,
   getImposter,
