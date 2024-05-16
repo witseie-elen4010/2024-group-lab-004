@@ -210,7 +210,7 @@
         </div>
       </div>
       <div id="roundOverContainer" >
-        <img id="roundGridContainer" style="width: 50%;"></img> 
+        <img id="roundGridContainer" style="width: 50%; max-height: 230px;"></img> 
         <strong id="DrawnByPrompt">Drawn by: x</strong>
       </div>
       <div id="EndScreenLowerPrompt">
@@ -219,9 +219,9 @@
         Guess
         </div>
       </div>
-      <div id="RoundOverButtons" style="display: flex; justify-content: center; margin-top: 20px;">
+      <div id="RoundOverButtons" style="display: flex; justify-content: center; margin-top: 3px;">
         <button id="votingPageButton" class="btn btn-success" style="margin-right: 10px;">Voting</button>
-        <div id="votingCountdown" style="color: white; align-self: center; margin-top: 22px;">Time left to vote: 90s</div>
+        <div id="votingCountdown" style="color: white; align-self: center; margin-top: 10px;">Time left to vote: 90s</div>
       </div>
     </div>
 
@@ -263,6 +263,30 @@
             <button class="btn btn-success" id="leaveGameButton">Leave Game</button>
             <button class="btn btn-success" id="nextRoundButton" style="display: none;">Next Round</button>
           </div>
+          
+      </div>
+      <button id="chatButton" class="btn btn-info" style="position: absolute; top: 10px; right: 10px;">Chat</button>
+      <div id="chatContainer" style="
+        position: absolute;
+        top: 50px;
+        right: 10px;
+        width: 300px;
+        background-color: white;
+        border: 1px solid black;
+        border-radius: 10px;
+        display: none;
+        z-index: 5000;
+      ">
+        <div style="text-align: right; padding: 5px;">
+          <button id="chatCloseButton">Close</button>
+        </div>
+        <div id="chatMessages" style="padding: 10px; max-height: 400px; overflow-y: scroll;">
+          <!-- Messages will be appended here -->
+        </div>
+        <div id="sendMessage" style="padding: 10px;">
+          <input type="text" id="chatInput" placeholder="Type your message" style="width: 80%;" />
+          <button id="chatSendButton" style="margin-left: 2px;" class="btn btn-info">Send</button>
+        </div>
       </div>
     </div>
     
