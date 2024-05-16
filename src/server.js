@@ -302,6 +302,10 @@ io.on('connection', (socket) => {
       if (room.gameStarted) {
         room.playersReadyCount++
       }
+      const username = users.get(socket.id).username
+      if (room.leaderboard && username in room.leaderboard) {
+        delete room.leaderboard[username]
+      }
       users.delete(socket.id)
 
       if (wasHost) {
