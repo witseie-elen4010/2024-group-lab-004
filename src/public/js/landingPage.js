@@ -16,16 +16,38 @@ const submitJoinRoomButton = document.getElementById('submitJoinRoom')
 let hostId = ''
 let started = false
 
+let userDetails = fetchUser()
+
+async function fetchUser() {
+  const response = await fetch('/getUser')
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  } else {
+    return await response.json()
+  }
+}
+
 // Private Room Creation
 createPrivateRoomButton.addEventListener('click', () => {
-  socket.emit('createRoom', { public: false })
-  hideCreateJoinButtons()
+  userDetails.then((details) => {
+    socket.emit('createRoom', { public: false }, details)
+    hideCreateJoinButtons()
+  })
 })
 
 // Public Room Creation
 createPublicRoomButton.addEventListener('click', () => {
-  socket.emit('createRoom', { public: true })
-  hideCreateJoinButtons()
+  userDetails.then((details) => {
+    socket.emit('createRoom', { public: true }, details)
+    hideCreateJoinButtons()
+
+    const membersList = document.getElementById('membersList')
+    membersList.innerHTML = ''
+    const listItem = document.createElement('li')
+    listItem.textContent = details.username
+    listItem.innerHTML += ' (Host)'
+    membersList.appendChild(listItem)
+  })
 })
 
 // Join Room Form Display
@@ -36,14 +58,18 @@ joinRoomButton.addEventListener('click', () => {
 
 // Join Public Room List Display
 joinPublicRoomButton.addEventListener('click', () => {
-  joinRoomForm.style.display = 'none'
-  socket.emit('requestPublicRooms')
+  userDetails.then((details) => {
+    joinRoomForm.style.display = 'none'
+    socket.emit('requestPublicRooms', details)
+  })
 })
 
 // Submit Join Room
 submitJoinRoomButton.addEventListener('click', () => {
-  const roomToJoin = roomToJoinInput.value
-  socket.emit('joinRoom', { roomId: roomToJoin })
+  userDetails.then((details) => {
+    const roomToJoin = roomToJoinInput.value
+    socket.emit('joinRoom', { roomId: roomToJoin }, details)
+  })
 })
 
 // Start Game
@@ -79,6 +105,17 @@ socket.on('roomJoined', (data) => {
   roomInfo.style.display = 'block'
   roomIdSpan.textContent = data.roomId
   localStorage.setItem('roomId', data.roomId)
+
+  const membersList = document.getElementById('membersList')
+  membersList.innerHTML = ''
+  data.members.forEach((member) => {
+    const listItem = document.createElement('li')
+    listItem.textContent = member.username
+    if (localStorage.getItem('hostId') === member.socketId) {
+      listItem.innerHTML += ' (Host)'
+    }
+    membersList.appendChild(listItem)
+  })
 
   if ((localStorage.getItem('hostId') || hostId) !== socket.id) {
     startGameButton.style.display = 'none'
@@ -144,7 +181,9 @@ socket.on('userDisconnected', () => {
 
 // Join Public Room Function
 function joinPublicRoom(roomId) {
-  socket.emit('joinRoom', { roomId })
+  userDetails.then((details) => {
+    socket.emit('joinRoom', { roomId }, details)
+  })
 }
 
 function hideCreateJoinButtons() {
