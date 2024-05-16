@@ -90,7 +90,6 @@ socket.on('roundOver', (submissionGrid) => {
   voted = false
   PlayerCount = submissionGrid.length
   showRoundOver(submissionGrid, CurrentSetIndex, CurrentImageIndex)
-  console.log(submissionGrid)
   CurrentGrid = submissionGrid
 
   const buttons = document.getElementById('RoundOverButtons')
@@ -432,8 +431,6 @@ eraserButton.addEventListener('click', () => {
 
 pencilButton.addEventListener('click', () => {
   canvas.style.cursor = 'url(https://i.imgur.com/LaV4aaZ.png), auto'
-  console.log(context.strokeStyle)
-  console.log(drawColour)
   if (drawColour == 'white') {
     changeColour('black')
   }
@@ -891,7 +888,7 @@ function stopDrawing(e) {
     }
     pastDrawings.push(context.getImageData(0, 0, canvas.width, canvas.height))
     index += 1
-    undoButton.disabled = index <= 0
+    undoButton.disabled = index <= -1
     redoButton.disabled = index === pastDrawings.length - 1
   }
 }
@@ -930,7 +927,7 @@ function submitDrawing() {
   context.fillRect(0, 0, canvas.width, canvas.height)
   context.fillStyle = previousFillStyle // Reset fillStyle to previous value
 
-  index = -1
+  index = 0
   pastDrawings = []
   undoButton.disabled = true
   redoButton.disabled = true
@@ -1010,8 +1007,6 @@ const actions = [
   'sneaking',
   'hiding',
 ]
-
-// maybe add a location as well, to get a more specific prompt?
 
 // Function to generate a random prompt
 function getRandomPrompt() {

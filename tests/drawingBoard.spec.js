@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test')
 
-async function navigateToGame (context) {
+async function navigateToGame(context) {
   const setupPage = async (nickname) => {
     const page = await context.newPage()
     await page.goto('http://localhost:4000/')
@@ -13,7 +13,7 @@ async function navigateToGame (context) {
   const pagePromises = [
     setupPage('test name 1'),
     setupPage('test name 2'),
-    setupPage('test name 3')
+    setupPage('test name 3'),
   ]
 
   const [page1, page2, page3] = await Promise.all(pagePromises)
@@ -26,12 +26,12 @@ async function navigateToGame (context) {
 
   await Promise.all([
     page2.getByPlaceholder('Enter room ID').fill(roomID),
-    page3.getByPlaceholder('Enter room ID').fill(roomID)
+    page3.getByPlaceholder('Enter room ID').fill(roomID),
   ])
 
   await Promise.all([
     page2.getByRole('button', { name: 'Join', exact: true }).click(),
-    page3.getByRole('button', { name: 'Join', exact: true }).click()
+    page3.getByRole('button', { name: 'Join', exact: true }).click(),
   ])
 
   await page1.getByRole('button', { name: 'Start Game' }).click()
@@ -40,7 +40,7 @@ async function navigateToGame (context) {
 }
 
 // waits for the overlay to disappear on the page
-async function waitForOverlayToHide (page) {
+async function waitForOverlayToHide(page) {
   await page.waitForFunction(
     'document.querySelector("#waitingContainer").style.display === "none"'
   )
@@ -97,7 +97,7 @@ test('canvas has correct dimensions', async ({ context }) => {
 
   const windowSize = await page1.evaluate(() => ({
     innerWidth: window.innerWidth,
-    innerHeight: window.innerHeight
+    innerHeight: window.innerHeight,
   }))
 
   expect(width).toBe(`${windowSize.innerWidth - 300}`)
@@ -147,7 +147,7 @@ test.describe('Testing the input field when the draw page is loaded', () => {
 })
 
 test('waitingContainer becomes visible when the done button is pressed', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -162,7 +162,7 @@ test('waitingContainer becomes visible when the done button is pressed', async (
 })
 
 test('input field closes when the enter key is pressed', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -187,7 +187,7 @@ test('prompt is displayed to one other user', async ({ context }) => {
   await Promise.all([
     waitForOverlayToHide(page1),
     waitForOverlayToHide(page2),
-    waitForOverlayToHide(page3)
+    waitForOverlayToHide(page3),
   ])
 
   // check if the text 'test prompt' appears in exactly one of page2 or page3's prompt
@@ -204,7 +204,7 @@ test('prompt is displayed to one other user', async ({ context }) => {
 })
 
 test('the timer bar appears until the prompt is entered', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
   await page1.waitForSelector('#doneButton')
@@ -226,7 +226,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   //   The difPercentage part of the test is very inconsistent, and it can go from about 1-2.5% for all of them, up to around 10%
 
   test('The input timer bar decreases for the original prompt entering', async ({
-    context
+    context,
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -251,7 +251,7 @@ test.describe('testing that the timer bar decreases in width', () => {
   })
 
   test('The input timer bar decreases for describing a drawing', async ({
-    context
+    context,
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -319,7 +319,7 @@ test.describe('testing that the timer bar decreases in width', () => {
 })
 
 test('testing that a drawing is shown after submitting the prompt', async ({
-  context
+  context,
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -464,136 +464,145 @@ test('Undo and redo buttons disabled on loading.', async ({ context }) => {
   ).toBeTruthy()
 })
 
-// these tests are currently broken -- this feature needs to be fixed
-// test('Undo button becomes enabled once something is drawn', async ({
-//   context,
-// }) => {
-//   const { page1, page2, page3 } = await navigateToGame(context)
-//   await page3.locator('#doneButton').click()
-//   await page2.locator('#doneButton').click()
-//   await page1.locator('#doneButton').click()
+test.describe('Testing the undo and redo buttons', () => {
+  test('Undo button becomes enabled once something is drawn', async ({
+    context,
+  }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    await page3.locator('#doneButton').click()
+    await page2.locator('#doneButton').click()
+    await page1.locator('#doneButton').click()
 
-//   await page1.locator('#canvas').click({
-//     position: {
-//       x: 525,
-//       y: 195,
-//     },
-//   })
+    await page1.locator('#canvas').click({
+      position: {
+        x: 525,
+        y: 195,
+      },
+    })
 
-//   expect(
-//     await page1.getByRole('button', { name: 'Undo' }).isDisabled()
-//   ).toBeFalsy()
-//   expect(
-//     await page1.getByRole('button', { name: 'Redo' }).isDisabled()
-//   ).toBeTruthy()
-// })
+    expect(
+      await page1.getByRole('button', { name: 'Undo' }).isDisabled()
+    ).toBeFalsy()
+    expect(
+      await page1.getByRole('button', { name: 'Redo' }).isDisabled()
+    ).toBeTruthy()
+  })
 
-// test('Undo button back tracks drawing', async ({ context }) => {
-//   const { page1, page2, page3 } = await navigateToGame(context)
-//   await page3.locator('#doneButton').click()
-//   await page2.locator('#doneButton').click()
-//   await page1.locator('#doneButton').click()
+  test('Undo button back tracks drawing', async ({ context }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    await page3.locator('#doneButton').click()
+    await page2.locator('#doneButton').click()
+    await page1.locator('#doneButton').click()
 
-//   await page1.locator('#canvas').hover()
-//   await page1.mouse.down()
-//   for (let y = 500; y <= 600; y += 10) {
-//     await page1.mouse.move(500, y)
-//   }
+    await page1.locator('#canvas').hover()
+    await page1.mouse.down()
+    for (let y = 500; y <= 600; y += 10) {
+      await page1.mouse.move(500, y)
+    }
 
-//   await page1.mouse.up()
-//   await page1.getByRole('button', { name: 'Undo' }).click()
+    await page1.mouse.up()
+    await page1.getByRole('button', { name: 'Undo' }).click()
 
-//   const isEmpty = await page1.evaluate(() => {
-//     const canvas = document.getElementById('canvas')
-//     const context = canvas.getContext('2d')
-//     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-//     return Array.from(imageData.data).every((value) => value === 255)
-//   })
+    const isEmpty = await page1.evaluate(() => {
+      const canvas = document.getElementById('canvas')
+      const context = canvas.getContext('2d')
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      return Array.from(imageData.data).every((value) => value === 255)
+    })
 
-//   expect(isEmpty).toBeTruthy()
-// })
+    expect(isEmpty).toBeTruthy()
+  })
 
-// // test('Redo button undoes the undo button', async ({ page }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#getInput').press('Enter')
-// //   await page.locator('#canvas').hover()
-// //   await page.mouse.down()
-// //   for (let y = 500; y <= 600; y += 10) {
-// //     await page.mouse.move(500, y)
-// //   }
+  test('Redo button undoes the undo button', async ({ context }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    await page3.locator('#doneButton').click()
+    await page2.locator('#doneButton').click()
+    await page1.locator('#doneButton').click()
 
-// //   await page.mouse.up()
-// //   await page.getByRole('button', { name: 'Undo' }).click()
-// //   await page.getByRole('button', { name: 'Redo' }).click()
+    await page1.locator('#canvas').hover()
+    await page1.mouse.down()
+    for (let y = 500; y <= 600; y += 10) {
+      await page1.mouse.move(500, y)
+    }
 
-// //   const isEmpty = await page.evaluate(() => {
-// //     const canvas = document.getElementById('canvas')
-// //     const context = canvas.getContext('2d')
-// //     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-// //     return Array.from(imageData.data).every((value) => value === 255)
-// //   })
+    await page1.mouse.up()
+    await page1.getByRole('button', { name: 'Undo' }).click()
+    await page1.getByRole('button', { name: 'Redo' }).click()
 
-// //   expect(isEmpty).toBeFalsy()
-// // })
+    const isEmpty = await page1.evaluate(() => {
+      const canvas = document.getElementById('canvas')
+      const context = canvas.getContext('2d')
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      return Array.from(imageData.data).every((value) => value === 255)
+    })
 
-// // test('Undo button becomes disabled after undoing all drawings', async ({
-// //   page,
-// // }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#getInput').press('Enter')
-// //   await page.locator('#canvas').hover()
-// //   await page.mouse.down()
-// //   for (let y = 500; y <= 600; y += 10) {
-// //     await page.mouse.move(500, y)
-// //   }
+    expect(isEmpty).toBeFalsy()
+  })
 
-// //   await page.mouse.up()
-// //   await page.getByRole('button', { name: 'Undo' }).click()
+  test('Undo button becomes disabled after undoing all drawings', async ({
+    context,
+  }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    await page3.locator('#doneButton').click()
+    await page2.locator('#doneButton').click()
+    await page1.locator('#doneButton').click()
 
-// //   const isEmpty = await page.evaluate(() => {
-// //     const canvas = document.getElementById('canvas')
-// //     const context = canvas.getContext('2d')
-// //     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-// //     return Array.from(imageData.data).every((value) => value === 255)
-// //   })
+    await page1.locator('#canvas').hover()
+    await page1.mouse.down()
+    for (let y = 500; y <= 600; y += 10) {
+      await page1.mouse.move(500, y)
+    }
 
-// //   expect(isEmpty).toBeTruthy()
-// //   expect(
-// //     await page.getByRole('button', { name: 'Undo' }).isDisabled()
-// //   ).toBeTruthy()
-// // })
+    await page1.mouse.up()
+    await page1.getByRole('button', { name: 'Undo' }).click()
 
-// // test('Redo button becomes disabled after redoing all drawings', async ({
-// //   page,
-// // }) => {
-// //   await page.goto('http://localhost:4000/draw')
-// //   await page.locator('#getInput').press('Enter')
-// //   await page.locator('#canvas').hover()
-// //   await page.mouse.down()
-// //   for (let y = 500; y <= 600; y += 10) {
-// //     await page.mouse.move(500, y)
-// //   }
+    const isEmpty = await page1.evaluate(() => {
+      const canvas = document.getElementById('canvas')
+      const context = canvas.getContext('2d')
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      return Array.from(imageData.data).every((value) => value === 255)
+    })
 
-// //   await page.mouse.up()
-// //   await page.getByRole('button', { name: 'Undo' }).click()
-// //   await page.getByRole('button', { name: 'Redo' }).click()
+    expect(isEmpty).toBeTruthy()
+    expect(
+      await page1.getByRole('button', { name: 'Undo' }).isDisabled()
+    ).toBeTruthy()
+  })
 
-// //   const isEmpty = await page.evaluate(() => {
-// //     const canvas = document.getElementById('canvas')
-// //     const context = canvas.getContext('2d')
-// //     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-// //     return Array.from(imageData.data).every((value) => value === 255)
-// //   })
+  test('Redo button becomes disabled after redoing all drawings', async ({
+    context,
+  }) => {
+    const { page1, page2, page3 } = await navigateToGame(context)
+    await page3.locator('#doneButton').click()
+    await page2.locator('#doneButton').click()
+    await page1.locator('#doneButton').click()
 
-// //   expect(isEmpty).toBeFalsy()
-// //   expect(
-// //     await page.getByRole('button', { name: 'Redo' }).isDisabled()
-// //   ).toBeTruthy()
-// // })
+    await page1.locator('#canvas').hover()
+    await page1.mouse.down()
+    for (let y = 500; y <= 600; y += 10) {
+      await page1.mouse.move(500, y)
+    }
+
+    await page1.mouse.up()
+    await page1.getByRole('button', { name: 'Undo' }).click()
+    await page1.getByRole('button', { name: 'Redo' }).click()
+
+    const isEmpty = await page1.evaluate(() => {
+      const canvas = document.getElementById('canvas')
+      const context = canvas.getContext('2d')
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      return Array.from(imageData.data).every((value) => value === 255)
+    })
+
+    expect(isEmpty).toBeFalsy()
+    expect(
+      await page1.getByRole('button', { name: 'Redo' }).isDisabled()
+    ).toBeTruthy()
+  })
+})
 
 test('Exactly 1 imposter is chosen at the start of the game', async ({
   context,
-  browserName
 }) => {
   const { page1, page2, page3 } = await navigateToGame(context)
   await page3.locator('#doneButton').click()
