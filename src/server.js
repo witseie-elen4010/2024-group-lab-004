@@ -76,6 +76,7 @@ io.on('connection', (socket) => {
         io.to(roomID).emit('roomJoined', {
           roomId: roomID,
           members: allUserDetails,
+          host: room.host,
         })
         io.to(roomID).emit('updateMembers', room.members.length)
       }

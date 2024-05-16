@@ -16,7 +16,7 @@ const submitJoinRoomButton = document.getElementById('submitJoinRoom')
 let hostId = ''
 let started = false
 
-let userDetails = fetchUser()
+const userDetails = fetchUser()
 
 async function fetchUser() {
   const response = await fetch('/getUser')
@@ -111,13 +111,13 @@ socket.on('roomJoined', (data) => {
   data.members.forEach((member) => {
     const listItem = document.createElement('li')
     listItem.textContent = member.username
-    if (localStorage.getItem('hostId') === member.socketId) {
+    if (data.host === member.socketId) {
       listItem.innerHTML += ' (Host)'
     }
     membersList.appendChild(listItem)
   })
 
-  if ((localStorage.getItem('hostId') || hostId) !== socket.id) {
+  if ((data.host || hostId) !== socket.id) {
     startGameButton.style.display = 'none'
   } else if (data.members.length >= 3) {
     startGameButton.style.display = 'block'

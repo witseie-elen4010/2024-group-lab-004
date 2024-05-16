@@ -48,7 +48,7 @@ describe('createUserAccount', () => {
     expect(res._getRedirectUrl()).toBe('/landing')
   })
 
-  it('should return 500 if there is an error', async () => {
+  it('should redirect to /login/?loginError=true if there is an error', async () => {
     const req = httpMocks.createRequest({
       method: 'POST',
       url: '/user',
@@ -65,7 +65,6 @@ describe('createUserAccount', () => {
 
     await createUserAccount(req, res)
 
-    expect(res._getStatusCode()).toBe(500)
-    expect(JSON.parse(res._getData())).toEqual({ message: error.message })
+    expect(res._getRedirectUrl()).toBe('/login/?loginError=true')
   })
 })
