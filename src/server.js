@@ -95,50 +95,6 @@ io.on('connection', (socket) => {
     socket.emit('publicRoomsList', roomsList)
   })
 
-  // socket.on('inputDone', (data) => {
-  //   const { roomId } = data
-  //   const room = rooms[roomId]
-  //   if (!room) {
-  //     return
-  //   }
-  //   if (!room.todo) {
-  //     room.todo = []
-  //   }
-  //   data.socketID = socket.id
-  //   room.todo.push(data)
-  //   if (room.members.length !== room.gameSize) {
-  //     // wait for everyone to join, then do this process
-  //     return
-  //   }
-
-  //   sendPrompts(room)
-  // })
-
-  // function sendPrompts(room) {
-  //   room.allJoined = true // this is true when all people have joined the gameroom, to discern a websocket disconnect from a user leaving the game
-  //   for (const entry of room.todo) {
-  //     const { roomId, prompt, socketID } = entry
-
-  //     rooms[roomId].prompts[socketID] = prompt
-  //     updateGridSubmission(
-  //       roomId,
-  //       users.get(socketID).username,
-  //       'prompt',
-  //       prompt,
-  //       socketID
-  //     )
-
-  //     if (
-  //       Object.keys(rooms[roomId].prompts).length ===
-  //       rooms[roomId].members.length
-  //     ) {
-  //       distributePrompts(roomId)
-  //       rooms[roomId].prompts = {}
-  //     }
-  //   }
-  //   room.todo = []
-  // }
-
   socket.on('inputDone', async (data) => {
     await new Promise((resolve) => {
       const intervalId = setInterval(() => {
@@ -233,10 +189,10 @@ io.on('connection', (socket) => {
 
         // Send a "no" message to all other members
         room.members.forEach((member) => {
-          if (member === imposter) {
+          if (member === imposter && room.gameReady) {
             io.to(member).emit('imposter', true)
             room.imposterUsername = userDetails.username
-          } else {
+          } else if (room.gameReady) {
             io.to(member).emit('normal', true)
           }
         })
@@ -244,11 +200,6 @@ io.on('connection', (socket) => {
     } else {
       socket.emit('roomJoinError', 'Room does not exist')
     }
-
-    // if (room.todo && room.todo.length == room.gameSize) {
-    //   // the prompt's have arrived before the game room was joined
-    //   sendPrompts(room)
-    // }
   })
 
   socket.on('startGame', (roomID) => {
@@ -324,6 +275,25 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('sendMessage', (data) => {
+    const { roomId, message } = data
+    const room = rooms[roomId]
+    if (!room) {
+      return
+    }
+    if (!room.chatMessages) {
+      room.chatMessages = []
+    }
+    const userDetails = users.get(socket.id)
+    const chatMessage = {
+      username: userDetails.username,
+      message,
+      socketID: socket.id,
+    }
+    room.chatMessages.push(chatMessage)
+    io.to(roomId).emit('receiveMessage', chatMessage)
+  })
+
   socket.on('disconnect', () => {
     if (currentRoom) {
       const room = rooms[currentRoom]
@@ -377,6 +347,8 @@ io.on('connection', (socket) => {
         roundOver: room.roundOver,
         membersCount: room.members.length,
         gameReady: room.gameReady,
+        host: room.host,
+        currentRoom,
       })
     }
   })
