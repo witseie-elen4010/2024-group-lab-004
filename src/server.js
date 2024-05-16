@@ -390,9 +390,6 @@ function updateAndEmitOrders(roomID) {
   const orders = rooms[roomID].orders
   const members = rooms[roomID].members
 
-  for (const [member, order] of Object.entries(orders)) {
-  }
-
   io.to(roomID).emit('updateOrders', orders)
 }
 
@@ -506,12 +503,16 @@ function createRoomGrid(size) {
 
 function updateGridSubmission(roomID, username, type, content, socketID) {
   const orders = rooms[roomID].orders
+  const order = orders[socketID]
+
+  const currentRound = rounds[roomID]
+  if (currentRound === undefined || order === undefined) {
+    return
+  }
   if (!rounds[roomID]) {
     rounds[roomID] = 0
   }
-  const currentRound = rounds[roomID]
 
-  const order = orders[socketID]
   const targetIndex = order[currentRound] - 1
 
   rooms[roomID].grid[currentRound][targetIndex] = {
@@ -539,3 +540,19 @@ async function assignGameID(roomID, allUserIDs) {
 server.listen(port, () => {
   console.log(`Server running on local port ${port}...`)
 })
+
+module.exports = {
+  rooms,
+  server,
+  rounds,
+  users,
+  generateAndAssignOrders,
+  generateRoomId,
+  getImposter,
+  generateUniqueOrders,
+  updateAndEmitOrders,
+  determineResults,
+  createRoomGrid,
+  updateGridSubmission,
+  assignGameID,
+}
