@@ -95,56 +95,9 @@ io.on('connection', (socket) => {
     socket.emit('publicRoomsList', roomsList)
   })
 
-  socket.on('inputDone', async (data) => {
-    await new Promise((resolve) => {
-      const intervalId = setInterval(() => {
-        if (users.get(socket.id)) {
-          clearInterval(intervalId)
-          resolve()
-        }
-      }, 100) // Check every 100ms
-    })
-    const { roomId, prompt } = data
-    rooms[roomId].prompts[socket.id] = prompt
-    updateGridSubmission(
-      roomId,
-      users.get(socket.id).username,
-      'prompt',
-      prompt,
-      socket.id
-    )
+  socket.on('inputDone', async (data) => inputDone(data, socket.id))
 
-    if (
-      Object.keys(rooms[roomId].prompts).length === rooms[roomId].members.length
-    ) {
-      distributePrompts(roomId)
-      rooms[roomId].prompts = {}
-    }
-  })
-
-  socket.on('drawingSubmitted', (data) => {
-    const { roomId, image } = data
-    if (!drawingSubmissions[roomId]) {
-      drawingSubmissions[roomId] = {}
-    }
-
-    drawingSubmissions[roomId][socket.id] = image
-
-    updateGridSubmission(
-      roomId,
-      users.get(socket.id).username,
-      'drawing',
-      image,
-      socket.id
-    )
-
-    if (
-      Object.keys(drawingSubmissions[roomId]).length ===
-      rooms[roomId].members.length
-    ) {
-      distributeDrawings(roomId)
-    }
-  })
+  socket.on('drawingSubmitted', (data) => drawingSubmitted(data, socket.id))
 
   socket.on('joinGameRoom', (roomID, userDetails, host) => {
     const room = rooms[roomID]
@@ -242,7 +195,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('vote', (data) => {
-    const { roomId, username } = data
+    const { username } = data
 
     if (currentRoom) {
       const room = rooms[currentRoom]
@@ -269,21 +222,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('sendMessage', (data) => {
-    const { roomId, message } = data
-    const room = rooms[roomId]
-    if (!room) {
-      return
-    }
-    if (!room.chatMessages) {
-      room.chatMessages = []
-    }
-    const userDetails = users.get(socket.id)
-    const chatMessage = {
-      username: userDetails.username,
-      message,
-      socketID: socket.id,
-    }
-    room.chatMessages.push(chatMessage)
+    const chatMessage = getMessages(data, socket.id)
+    const { roomId } = data
     io.to(roomId).emit('receiveMessage', chatMessage)
   })
 
@@ -291,15 +231,7 @@ io.on('connection', (socket) => {
     if (currentRoom) {
       const room = rooms[currentRoom]
       const wasHost = room.host === socket.id
-      room.members = room.members.filter((id) => id !== socket.id)
-      if (room.gameStarted) {
-        room.playersReadyCount++
-      }
-      const username = users.get(socket.id).username
-      if (room.leaderboard && username in room.leaderboard) {
-        delete room.leaderboard[username]
-      }
-      users.delete(socket.id)
+      deleteSession(room, socket.id)
 
       if (wasHost) {
         room.host = room.members[0] // Elect a new host, simplest form
@@ -308,36 +240,9 @@ io.on('connection', (socket) => {
           membersCount: room.members.length,
         })
       }
-
+      roomChecks(room, socket.id, currentRoom)
       io.to(currentRoom).emit('hostUpdated', room.host)
 
-      if (room.gameStarted) {
-        room.maxMembers -= 1
-        delete publicRooms[currentRoom]
-      }
-
-      if (room.allJoined) {
-        room.gameSize -= 1
-      }
-
-      if (room.members.length === 0) {
-        if (room.isPublic) {
-          delete publicRooms[currentRoom]
-        }
-      }
-
-      if (room.orders[socket.id]) {
-        delete room.orders[socket.id]
-      }
-      if (room.prompts[socket.id]) {
-        delete room.prompts[socket.id]
-      }
-      if (
-        drawingSubmissions[currentRoom] &&
-        drawingSubmissions[currentRoom][socket.id]
-      ) {
-        delete drawingSubmissions[currentRoom][socket.id]
-      }
       updateAndEmitOrders(currentRoom)
       io.to(currentRoom).emit('userDisconnected', {
         votingSend: room.votingSend,
@@ -351,6 +256,107 @@ io.on('connection', (socket) => {
   })
 })
 
+function roomChecks(room, socketID, currentRoom) {
+  if (room.gameStarted) {
+    room.maxMembers -= 1
+    delete publicRooms[currentRoom]
+  }
+
+  if (room.allJoined) {
+    room.gameSize -= 1
+  }
+
+  if (room.members.length === 0) {
+    if (room.isPublic) {
+      delete publicRooms[currentRoom]
+    }
+  }
+
+  if (room.orders[socketID]) {
+    delete room.orders[socketID]
+  }
+  if (room.prompts[socketID]) {
+    delete room.prompts[socketID]
+  }
+  if (
+    drawingSubmissions[currentRoom] &&
+    drawingSubmissions[currentRoom][socketID]
+  ) {
+    delete drawingSubmissions[currentRoom][socketID]
+  }
+}
+
+async function inputDone(data, socketID) {
+  await new Promise((resolve) => {
+    const intervalId = setInterval(() => {
+      if (users.get(socketID)) {
+        clearInterval(intervalId)
+        resolve()
+      }
+    }, 100) // Check every 100ms
+  })
+  const { roomId, prompt } = data
+  rooms[roomId].prompts[socketID] = prompt
+
+  updateGridSubmission(
+    roomId,
+    users.get(socketID).username,
+    'prompt',
+    prompt,
+    socketID
+  )
+
+  if (
+    Object.keys(rooms[roomId].prompts).length === rooms[roomId].members.length
+  ) {
+    distributePrompts(roomId)
+    rooms[roomId].prompts = {}
+  }
+}
+
+function getMessages(data, socketID) {
+  const { roomId, message } = data
+  const room = rooms[roomId]
+  if (!room) {
+    return
+  }
+  if (!room.chatMessages) {
+    room.chatMessages = []
+  }
+  const userDetails = users.get(socketID)
+  const chatMessage = {
+    username: userDetails.username,
+    message,
+    socketID: socketID,
+  }
+  room.chatMessages.push(chatMessage)
+  return chatMessage
+}
+
+function drawingSubmitted(data, socketID) {
+  const { roomId, image } = data
+  if (!drawingSubmissions[roomId]) {
+    drawingSubmissions[roomId] = {}
+  }
+
+  drawingSubmissions[roomId][socketID] = image
+
+  updateGridSubmission(
+    roomId,
+    users.get(socketID).username,
+    'drawing',
+    image,
+    socketID
+  )
+
+  if (
+    Object.keys(drawingSubmissions[roomId]).length ===
+    rooms[roomId].members.length
+  ) {
+    distributeDrawings(roomId)
+  }
+}
+
 function generateAndAssignOrders(roomID) {
   const members = rooms[roomID].members
   const uniqueOrders = generateUniqueOrders(members.length)
@@ -359,6 +365,18 @@ function generateAndAssignOrders(roomID) {
     members.map((member, index) => [member, uniqueOrders[index]])
   )
   return rooms[roomID].orders
+}
+
+function deleteSession(room, socketID) {
+  room.members = room.members.filter((id) => id !== socketID)
+  if (room.gameStarted) {
+    room.playersReadyCount++
+  }
+  const username = users.get(socketID).username
+  if (room.leaderboard && username in room.leaderboard) {
+    delete room.leaderboard[username]
+  }
+  users.delete(socketID)
 }
 
 function generateRoomId() {
@@ -546,12 +564,19 @@ module.exports = {
   server,
   rounds,
   users,
+  drawingSubmissions,
+  publicRooms,
+  inputDone,
   generateAndAssignOrders,
+  deleteSession,
+  getMessages,
+  roomChecks,
   generateRoomId,
   getImposter,
   generateUniqueOrders,
   updateAndEmitOrders,
   determineResults,
+  drawingSubmitted,
   createRoomGrid,
   updateGridSubmission,
   assignGameID,

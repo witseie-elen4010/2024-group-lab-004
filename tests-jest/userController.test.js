@@ -215,8 +215,6 @@ describe('exitHistory', () => {
       },
     })
 
-    await console.log(req.session.user)
-
     const res = httpMocks.createResponse()
 
     await exitHistory(req, res)

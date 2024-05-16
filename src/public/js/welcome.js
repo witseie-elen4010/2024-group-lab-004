@@ -1,4 +1,3 @@
-// welcome.js
 document.addEventListener('DOMContentLoaded', function () {
   window.signInButton = document.getElementById('signin-btn')
   window.guestButton = document.getElementById('guest-btn')
@@ -32,10 +31,5 @@ function joinRedirect() {
     }/guest?nickname=${nicknameInput.value.trim()}`
   }
 }
-
-// Export functions for testing
-// window.loginRedirect = loginRedirect
-// window.guestRedirect = guestRedirect
-// window.joinRedirect = joinRedirect
 
 module.exports = { loginRedirect, guestRedirect, joinRedirect }

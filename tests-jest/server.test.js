@@ -7,12 +7,19 @@ const {
   server,
   rounds,
   users,
+  drawingSubmissions,
+  publicRooms,
+  inputDone,
   generateAndAssignOrders,
+  getMessages,
+  deleteSession,
+  roomChecks,
   generateRoomId,
   getImposter,
   generateUniqueOrders,
   updateAndEmitOrders,
   determineResults,
+  drawingSubmitted,
   createRoomGrid,
   updateGridSubmission,
   assignGameID,
@@ -337,5 +344,231 @@ describe('assignGameID', () => {
     await assignGameID(roomID, allUserIDs)
 
     expect(rooms[roomID].gameID).toBe('game1')
+  })
+})
+// const distributePrompts = mock('../src/server', 'distributePrompts')
+jest.mock('../src/server', () => ({
+  ...jest.requireActual('../src/server'),
+  distributePrompts: jest.fn(),
+}))
+
+describe('inputDone', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    rooms['room1'] = {
+      members: ['Alice', 'Bob', 'Charlie'],
+      prompts: {},
+      orders: {
+        id1: [1, 2, 3],
+        Bob: [2, 3, 1],
+        Charlie: [3, 1, 2],
+      },
+      grid: createRoomGrid(3),
+    }
+    rounds['room1'] = 1
+    users.set('id1', { username: 'Alice' })
+    users.set('id2', { username: 'Bob' })
+    users.set('id3', { username: 'Charlie' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    rounds['room1'] = undefined
+    users.clear()
+    jest.restoreAllMocks()
+  })
+
+  it('should call updateGridSubmission and result in the grid being changed', async () => {
+    await inputDone({ roomId: 'room1', prompt: 'prompt1' }, 'id1')
+
+    //expect grid to be truthy
+    expect(rooms['room1'].grid).toBeTruthy()
+  })
+  it('should update the prompt field of rooms[roomID] with the correct value', async () => {
+    await inputDone({ roomId: 'room1', prompt: 'new prompt' }, 'id1')
+    expect(rooms['room1'].prompts['id1']).toBe('new prompt')
+  })
+})
+
+describe('drawingSubmitted', () => {
+  let socketID
+  let data
+
+  beforeEach(() => {
+    socketID = 'socket1'
+    data = { roomId: 'room1', image: 'image1' }
+    rooms['room1'] = {
+      members: ['Alice', 'Bob', 'Charlie'],
+      orders: {
+        id1: [1, 2, 3],
+        Bob: [2, 3, 1],
+        Charlie: [3, 1, 2],
+      },
+      grid: createRoomGrid(3),
+    }
+    users.set('socket1', { username: 'Alice' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    users.clear()
+    drawingSubmissions['room1'] = {}
+  })
+
+  it('should update drawingSubmissions correctly', () => {
+    drawingSubmitted(data, socketID)
+    expect(drawingSubmissions['room1']['socket1']).toBe('image1')
+  })
+
+  it('should call updateGridSubmission with correct parameters', () => {
+    drawingSubmitted(data, socketID)
+    expect(rooms['room1'].grid).toBeTruthy()
+  })
+})
+describe('roomChecks', () => {
+  let socketID
+  let currentRoom
+
+  beforeEach(() => {
+    socketID = 'socket1'
+    currentRoom = 'room1'
+    rooms[currentRoom] = {
+      gameStarted: false,
+      allJoined: false,
+      members: ['Alice', 'Bob', 'Charlie'],
+      orders: {
+        [socketID]: [1, 2, 3],
+      },
+      prompts: {
+        [socketID]: 'prompt1',
+      },
+      isPublic: true,
+      maxMembers: 3,
+      gameSize: 3,
+    }
+    publicRooms[currentRoom] = rooms[currentRoom]
+    drawingSubmissions[currentRoom] = {
+      [socketID]: 'image1',
+    }
+  })
+
+  afterEach(() => {
+    rooms[currentRoom] = {}
+    publicRooms[currentRoom] = {}
+    drawingSubmissions[currentRoom] = {}
+  })
+
+  it('should decrease maxMembers and delete room from publicRooms when gameStarted is true', () => {
+    rooms[currentRoom].gameStarted = true
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(rooms[currentRoom].maxMembers).toBe(2)
+    expect(publicRooms[currentRoom]).toBeUndefined()
+  })
+
+  it('should decrease gameSize when allJoined is true', () => {
+    rooms[currentRoom].allJoined = true
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(rooms[currentRoom].gameSize).toBe(2)
+  })
+
+  it('should delete room from publicRooms when there are no members', () => {
+    rooms[currentRoom].members = []
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(publicRooms[currentRoom]).toBeUndefined()
+  })
+
+  it('should delete orders and prompts of a user when they exist', () => {
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(rooms[currentRoom].orders[socketID]).toBeUndefined()
+    expect(rooms[currentRoom].prompts[socketID]).toBeUndefined()
+  })
+
+  it('should delete drawingSubmissions of a user when they exist', () => {
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(drawingSubmissions[currentRoom][socketID]).toBeUndefined()
+  })
+})
+describe('getMessages', () => {
+  let socketID
+  let data
+
+  beforeEach(() => {
+    socketID = 'socket1'
+    data = { roomId: 'room1', message: 'Hello, world!' }
+    rooms['room1'] = {
+      members: ['Alice', 'Bob', 'Charlie'],
+      chatMessages: [],
+    }
+    users.set('socket1', { username: 'Alice' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    users.clear()
+  })
+
+  it('should initialize chatMessages array if it does not exist', () => {
+    delete rooms['room1'].chatMessages
+    getMessages(data, socketID)
+    expect(rooms['room1'].chatMessages).toBeDefined()
+  })
+
+  it('should add a new message to the chatMessages array', () => {
+    const initialLength = rooms['room1'].chatMessages.length
+    getMessages(data, socketID)
+    expect(rooms['room1'].chatMessages.length).toBe(initialLength + 1)
+  })
+
+  it('should add a new message with the correct username, message, and socketID', () => {
+    getMessages(data, socketID)
+    const newMessage =
+      rooms['room1'].chatMessages[rooms['room1'].chatMessages.length - 1]
+    expect(newMessage).toEqual({
+      username: 'Alice',
+      message: 'Hello, world!',
+      socketID: 'socket1',
+    })
+  })
+})
+describe('deleteSession', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    rooms['room1'] = {
+      members: ['id1', 'id2'],
+      gameStarted: true,
+      playersReadyCount: 0,
+      leaderboard: { Alice: 10 },
+    }
+    users.set('id1', { username: 'Alice' })
+    users.set('id2', { username: 'Bob' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    users.clear()
+  })
+
+  it('should be a function', () => {
+    expect(typeof deleteSession).toBe('function')
+  })
+
+  it('should remove the socketID from the room members', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(rooms['room1'].members).toEqual(['id2'])
+  })
+
+  it('should increment the playersReadyCount if the game has started', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(rooms['room1'].playersReadyCount).toBe(1)
+  })
+
+  it('should remove the user from the leaderboard if they exist in it', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(rooms['room1'].leaderboard).toEqual({})
+  })
+
+  it('should remove the user from the users Map', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(users.has('id1')).toBe(false)
   })
 })
