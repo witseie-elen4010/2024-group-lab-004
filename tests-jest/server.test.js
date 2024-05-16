@@ -12,6 +12,7 @@ const {
   inputDone,
   generateAndAssignOrders,
   getMessages,
+  deleteSession,
   roomChecks,
   generateRoomId,
   getImposter,
@@ -527,5 +528,47 @@ describe('getMessages', () => {
       message: 'Hello, world!',
       socketID: 'socket1',
     })
+  })
+})
+describe('deleteSession', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    rooms['room1'] = {
+      members: ['id1', 'id2'],
+      gameStarted: true,
+      playersReadyCount: 0,
+      leaderboard: { Alice: 10 },
+    }
+    users.set('id1', { username: 'Alice' })
+    users.set('id2', { username: 'Bob' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    users.clear()
+  })
+
+  it('should be a function', () => {
+    expect(typeof deleteSession).toBe('function')
+  })
+
+  it('should remove the socketID from the room members', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(rooms['room1'].members).toEqual(['id2'])
+  })
+
+  it('should increment the playersReadyCount if the game has started', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(rooms['room1'].playersReadyCount).toBe(1)
+  })
+
+  it('should remove the user from the leaderboard if they exist in it', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(rooms['room1'].leaderboard).toEqual({})
+  })
+
+  it('should remove the user from the users Map', () => {
+    deleteSession(rooms['room1'], 'id1')
+    expect(users.has('id1')).toBe(false)
   })
 })

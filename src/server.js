@@ -195,7 +195,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('vote', (data) => {
-    const { roomId, username } = data
+    const { username } = data
 
     if (currentRoom) {
       const room = rooms[currentRoom]
@@ -230,15 +230,7 @@ io.on('connection', (socket) => {
     if (currentRoom) {
       const room = rooms[currentRoom]
       const wasHost = room.host === socket.id
-      room.members = room.members.filter((id) => id !== socket.id)
-      if (room.gameStarted) {
-        room.playersReadyCount++
-      }
-      const username = users.get(socket.id).username
-      if (room.leaderboard && username in room.leaderboard) {
-        delete room.leaderboard[username]
-      }
-      users.delete(socket.id)
+      deleteSession(room, socket.id)
 
       if (wasHost) {
         room.host = room.members[0] // Elect a new host, simplest form
@@ -371,6 +363,18 @@ function generateAndAssignOrders(roomID) {
     members.map((member, index) => [member, uniqueOrders[index]])
   )
   return rooms[roomID].orders
+}
+
+function deleteSession(room, socketID) {
+  room.members = room.members.filter((id) => id !== socketID)
+  if (room.gameStarted) {
+    room.playersReadyCount++
+  }
+  const username = users.get(socketID).username
+  if (room.leaderboard && username in room.leaderboard) {
+    delete room.leaderboard[username]
+  }
+  users.delete(socketID)
 }
 
 function generateRoomId() {
@@ -562,6 +566,7 @@ module.exports = {
   publicRooms,
   inputDone,
   generateAndAssignOrders,
+  deleteSession,
   getMessages,
   roomChecks,
   generateRoomId,
