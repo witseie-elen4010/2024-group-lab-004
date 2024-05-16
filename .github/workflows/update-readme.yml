@@ -14,12 +14,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get the latest Coveralls badge
+      - name: Update README with Coveralls Badge
         run: |
           COVERALLS_BADGE_URL="https://coveralls.io/repos/github/witseie-elen4010/2024-group-lab-004/badge.svg?branch=main"
-          curl -o badge.svg $COVERALLS_BADGE_URL
-          sed -i "s|\[!\[Coverage Status\](.*)\]|\[!\[Coverage Status\]($COVERALLS_BADGE_URL)\]|" README.md
-        shell: bash
+          README_FILE="README.md"
+
+          # Replace the badge URL in README.md
+          sed -i "s|!\[Coverage Status\](https://coveralls.io/repos/github/witseie-elen4010/2024-group-lab-004/badge.svg?branch=.*)|!\[Coverage Status\]($COVERALLS_BADGE_URL)|" "$README_FILE"
+
+          # Confirm changes
+          echo "Updated README with the latest Coveralls badge."
+          cat "$README_FILE"
 
       - name: Commit changes
         run: |
