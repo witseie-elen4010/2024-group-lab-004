@@ -577,6 +577,7 @@ function endTimeout() {
 }
 
 socket.on('newRound', () => {
+  clearInterval(votingCountdownTimer)
   endTimeout()
   prevSubmissionPrompt = false
   overlay.style.display = 'none'

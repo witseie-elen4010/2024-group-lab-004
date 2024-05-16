@@ -302,6 +302,10 @@ io.on('connection', (socket) => {
       if (room.gameStarted) {
         room.playersReadyCount++
       }
+      const username = users.get(socket.id).username
+      if (room.leaderboard && username in room.leaderboard) {
+        delete room.leaderboard[username]
+      }
       users.delete(socket.id)
 
       if (wasHost) {
@@ -533,7 +537,10 @@ async function emitRoundOver(roomID) {
 }
 
 async function assignGameID(roomID, allUserIDs) {
-  rooms[roomID].gameID = await dbController.newGame(allUserIDs)
+  rooms[roomID].gameID = await dbController.newGame(
+    allUserIDs,
+    users.get(rooms[roomID].host).username
+  )
 }
 
 server.listen(port, () => {
