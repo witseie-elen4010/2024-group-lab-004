@@ -17,12 +17,12 @@ exports.createUserAccount = async (req, res) => {
       const result = await db.query(query, values)
       req.session.user = {
         id: result.rows[0].user_id,
-        username: result.rows[0].username,
+        username: result.rows[0].username
       }
     }
     return res.redirect('/landing')
   } catch (error) {
-    return res.status(500).json({ message: error.message })
+    return res.redirect('/login/?loginError=true')
   }
 }
 
@@ -42,7 +42,7 @@ exports.checkUserAccount = async (req, res) => {
       if (match) {
         req.session.user = {
           id: result.rows[0].user_id,
-          username: result.rows[0].username,
+          username: result.rows[0].username
         }
         req.session.save((err) => {
           if (err) {
@@ -91,7 +91,7 @@ exports.exitHistory = async (req, res) => {
 exports.guest = async (req, res) => {
   req.session.user = {
     id: -1,
-    username: req.query.nickname,
+    username: req.query.nickname
   }
   req.session.save((err) => {
     if (err) {
