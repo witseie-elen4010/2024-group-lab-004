@@ -36,6 +36,7 @@ All team members are present and ready for the meeting.
 ## Story Points
 
 - 8 user stories were completed, totaling 16 story points.
+- This maintains the current average of 16 story points and is 1 story point less than last week. The coming week is the final sprint. It is expected that the sprint velocity will be increased, as all remaining tasks need to be completed. This was expected ahead of time and it was decided that a sprint velocity of around 20 story points could be achieved for the final week.
 
 ## ADR
 

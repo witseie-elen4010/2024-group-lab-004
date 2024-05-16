@@ -36,6 +36,7 @@ The whole team is present and ready for the meeting.
 - 9 user stories were completed for a total of 17 story points, making the current sprint velocity 17 points per sprint.
 - Last week 8 user stories were completed for a total of 15 points.
 - This bring the average sprint velocity to 16 points per sprint.
+- The sprint velocity of this week was slightly higher than last week, while still not being excessive. This coming week includes a large amount of work on other projects, and therefore the sprint velocity may be decreased slightly. This has been catered for in the planning of the sprint velocities and it is expected that the sprint velocity of the coming week will be 15.
 
 ## ADR
 

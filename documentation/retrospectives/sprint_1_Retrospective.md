@@ -32,7 +32,7 @@ The whole team is present and ready for the meeting.
 ## Story Points
 
 - **Rudolph**: remarks that some user stories were scored disproportionately high compared to their requirements.
-- **Sprint velocity**: 8 user stories were completed for a total of 15 story points making the current sprint velocity 15 points per sprint.
+- **Sprint velocity**: 8 user stories were completed for a total of 15 story points making the current sprint velocity 15 points per sprint. This sprint velocity was high without necessitating excessive amounts of work. It is decided that the sprint velocity of the next sprint should be kept to the same velocity, as it was optimal.
 
 ## ADR
 
