@@ -71,7 +71,6 @@ exports.newGame = (names, host) => {
       if (error) {
         reject(error)
       } else {
-        console.log(`Created game with ID: ${results.rows[0].game_id}`)
         resolve(results.rows[0].game_id)
       }
     })

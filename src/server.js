@@ -139,7 +139,7 @@ io.on('connection', (socket) => {
 
     updateGridSubmission(
       roomId,
-      users.get(socket.id).username, // TOFIX: this sometimes gives an error "cannot read properties of undefined"
+      users.get(socket.id).username,
       'drawing',
       image,
       socket.id
