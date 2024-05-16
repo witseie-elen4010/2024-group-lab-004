@@ -115,3 +115,11 @@ input[type='text'] {
   background-color: #28a745; /* Bootstrap 4's default green */
   border-color: #28a745; /* Ensuring the border matches the background */
 }
+
+#membersList {
+  list-style-type: none;
+}
+
+#membersList li {
+  margin-bottom: 5px;
+}
