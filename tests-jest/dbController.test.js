@@ -53,7 +53,7 @@ describe('saveGrid', () => {
     expect(db.query).toHaveBeenLastCalledWith(
       'INSERT INTO grids (grid, game_id) VALUES ($1, $2)',
       [grid, gameID],
-      expect.any(Function)
+      expect.any(Function) // callback function was provided
     )
   })
 })
@@ -104,3 +104,4 @@ describe('newGame', () => {
       })
   })
 })
+
