@@ -222,7 +222,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('sendMessage', (data) => {
-    getMessages(data, socket.id)
+    const chatMessage = getMessages(data, socket.id)
+    const { roomId } = data
     io.to(roomId).emit('receiveMessage', chatMessage)
   })
 
@@ -329,6 +330,7 @@ function getMessages(data, socketID) {
     socketID: socketID,
   }
   room.chatMessages.push(chatMessage)
+  return chatMessage
 }
 
 function drawingSubmitted(data, socketID) {
