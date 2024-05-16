@@ -9,7 +9,8 @@
     "jsdom": "^24.0.0",
     "nodemon": "^3.1.0",
     "pg": "^8.11.5",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "supertest": "^7.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.43.1",
@@ -36,6 +37,9 @@
     ],
     "testMatch": [
       "**/tests-jest/**/*.test.js?(x)"
+    ],
+    "setupFiles": [
+      "./jest.setup.js"
     ]
   },
   "repository": {
