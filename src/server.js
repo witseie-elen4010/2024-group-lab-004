@@ -503,12 +503,16 @@ function createRoomGrid(size) {
 
 function updateGridSubmission(roomID, username, type, content, socketID) {
   const orders = rooms[roomID].orders
+  const order = orders[socketID]
+
+  const currentRound = rounds[roomID]
+  if (currentRound === undefined || order === undefined) {
+    return
+  }
   if (!rounds[roomID]) {
     rounds[roomID] = 0
   }
-  const currentRound = rounds[roomID]
 
-  const order = orders[socketID]
   const targetIndex = order[currentRound] - 1
 
   rooms[roomID].grid[currentRound][targetIndex] = {
@@ -540,16 +544,15 @@ server.listen(port, () => {
 module.exports = {
   rooms,
   server,
+  rounds,
+  users,
   generateAndAssignOrders,
   generateRoomId,
   getImposter,
   generateUniqueOrders,
   updateAndEmitOrders,
   determineResults,
-  distributePrompts,
-  distributeDrawings,
   createRoomGrid,
   updateGridSubmission,
-  emitRoundOver,
   assignGameID,
 }
