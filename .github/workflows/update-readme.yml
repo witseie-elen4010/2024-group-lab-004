@@ -1,0 +1,36 @@
+name: Update README with Coveralls Badge
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  update-readme:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Update README with Coveralls Badge
+        run: |
+          COVERALLS_BADGE_URL="https://coveralls.io/repos/github/witseie-elen4010/2024-group-lab-004/badge.svg?branch=main"
+          README_FILE="README.md"
+
+          # Replace the badge URL in README.md
+          sed -i "s|!\[Coverage Status\](https://coveralls.io/repos/github/witseie-elen4010/2024-group-lab-004/badge.svg?branch=.*)|!\[Coverage Status\]($COVERALLS_BADGE_URL)|" "$README_FILE"
+
+          # Confirm changes
+          echo "Updated README with the latest Coveralls badge."
+          cat "$README_FILE"
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git commit -m 'Update README with latest Coveralls badge'
+          git push origin HEAD:${GITHUB_REF}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
