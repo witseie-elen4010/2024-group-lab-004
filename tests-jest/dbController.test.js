@@ -36,6 +36,43 @@ describe('fetchGames', () => {
     )
     expect(res._getJSONData()).toEqual(mockGames)
   })
+  it('should return 404 if no games are found', async () => {
+    const req = httpMocks.createRequest({
+      session: {
+        user: {
+          username: 'test',
+          id: 1,
+        },
+      },
+    })
+    const res = httpMocks.createResponse()
+
+    db.query.mockResolvedValue({ rowCount: 0, rows: [] })
+
+    await fetchGames(req, res)
+
+    expect(res.statusCode).toBe(404)
+    expect(res._getJSONData()).toEqual({ message: 'No games found' })
+  })
+
+  it('should handle errors', async () => {
+    const req = httpMocks.createRequest({
+      session: {
+        user: {
+          username: 'test',
+          id: 1,
+        },
+      },
+    })
+    const res = httpMocks.createResponse()
+
+    db.query.mockRejectedValue(new Error('Database error'))
+
+    await fetchGames(req, res)
+
+    expect(res.statusCode).toBe(404)
+    expect(res._getJSONData()).toEqual({ message: 'No games found' })
+  })
 })
 
 describe('saveGrid', () => {
@@ -55,6 +92,19 @@ describe('saveGrid', () => {
       [grid, gameID],
       expect.any(Function) // callback function was provided
     )
+  })
+  it('should handle errors', async () => {
+    const gameID = 1
+    const grid = [
+      [0, 0],
+      [1, 1],
+    ]
+
+    db.query.mockImplementation((query, values, callback) => {
+      callback(new Error('Database error'))
+    })
+
+    await expect(saveGrid(gameID, grid)).rejects.toThrow('Database error')
   })
 })
 
@@ -103,5 +153,18 @@ describe('newGame', () => {
         done() // Call done even if the promise rejects to avoid a timeout
       })
   })
-})
 
+  it('should handle errors', (done) => {
+    const names = ['test1', 'test2', 'test3']
+    const host = 'test1'
+
+    db.query.mockImplementation((query, values, callback) => {
+      callback(new Error('Database error'))
+    })
+
+    newGame(names, host).catch((error) => {
+      expect(error).toEqual(new Error('Database error'))
+      done()
+    })
+  })
+})
