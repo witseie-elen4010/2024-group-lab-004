@@ -119,3 +119,89 @@ describe('generateUniqueOrders', () => {
   })
 })
 
+describe('updateAndEmitOrders', () => {
+  beforeEach(() => {
+    rooms['room1'] = {
+      members: ['Alice', 'Bob', 'Charlie'],
+      orders: {},
+    }
+  })
+
+  it('should assign unique orders to each member and emit them', () => {
+    updateAndEmitOrders('room1')
+    const orders = rooms['room1'].orders
+
+    const uniqueOrders = Object.values(orders).flat()
+
+    expect(Object.keys(orders)).toEqual(rooms['room1'].members)
+    expect(uniqueOrders.length).toBe(
+      rooms['room1'].members.length * rooms['room1'].members.length
+    )
+
+    Object.values(orders).forEach((order) => {
+      const uniqueElements = new Set(order)
+      expect(uniqueElements.size).toBe(order.length)
+    })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+  })
+})
+
+describe('determineResults', () => {
+  it('should correctly determine the most voted user and if they are the imposter', () => {
+    const room = {
+      votes: { user1: 2, user2: 3, user3: 1 },
+      leaderboard: { user1: 100, user2: 200, user3: 300 },
+      imposterUsername: 'user2',
+    }
+
+    const result = determineResults(room)
+
+    expect(result).toEqual({
+      mostVotedUser: 'user2',
+      votes: 3,
+      isImposter: true,
+      equalImposterVotes: false,
+      imposter: 'user2',
+    })
+  })
+
+  it('should correctly handle a tie in votes', () => {
+    const room = {
+      votes: { user1: 2, user2: 2, user3: 1 },
+      leaderboard: { user1: 100, user2: 200, user3: 300 },
+      imposterUsername: 'user1',
+    }
+
+    const result = determineResults(room)
+
+    expect(result).toEqual({
+      mostVotedUser: 'user1',
+      votes: 2,
+      isImposter: true,
+      equalImposterVotes: true,
+      imposter: 'user1',
+    })
+  })
+
+  it('should correctly handle no votes', () => {
+    const room = {
+      votes: {},
+      leaderboard: { user1: 100, user2: 200, user3: 300 },
+      imposterUsername: 'user1',
+    }
+
+    const result = determineResults(room)
+
+    expect(result).toEqual({
+      mostVotedUser: null,
+      votes: 0,
+      isImposter: false,
+      equalImposterVotes: false,
+      imposter: 'user1',
+    })
+  })
+})
+

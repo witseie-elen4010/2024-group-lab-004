@@ -390,9 +390,6 @@ function updateAndEmitOrders(roomID) {
   const orders = rooms[roomID].orders
   const members = rooms[roomID].members
 
-  for (const [member, order] of Object.entries(orders)) {
-  }
-
   io.to(roomID).emit('updateOrders', orders)
 }
 
