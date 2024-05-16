@@ -7,6 +7,7 @@ const {
   server,
   rounds,
   users,
+  inputDone,
   generateAndAssignOrders,
   generateRoomId,
   getImposter,
@@ -337,5 +338,48 @@ describe('assignGameID', () => {
     await assignGameID(roomID, allUserIDs)
 
     expect(rooms[roomID].gameID).toBe('game1')
+  })
+})
+// const distributePrompts = mock('../src/server', 'distributePrompts')
+jest.mock('../src/server', () => ({
+  ...jest.requireActual('../src/server'),
+  distributePrompts: jest.fn(),
+}))
+
+describe('inputDone', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    rooms['room1'] = {
+      members: ['Alice', 'Bob', 'Charlie'],
+      prompts: {},
+      orders: {
+        id1: [1, 2, 3],
+        Bob: [2, 3, 1],
+        Charlie: [3, 1, 2],
+      },
+      grid: createRoomGrid(3),
+    }
+    rounds['room1'] = 1
+    users.set('id1', { username: 'Alice' })
+    users.set('id2', { username: 'Bob' })
+    users.set('id3', { username: 'Charlie' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    rounds['room1'] = undefined
+    users.clear()
+    jest.restoreAllMocks()
+  })
+
+  it('should call updateGridSubmission and result in the grid being changed', async () => {
+    await inputDone({ roomId: 'room1', prompt: 'prompt1' }, 'id1')
+
+    //expect grid to be truthy
+    expect(rooms['room1'].grid).toBeTruthy()
+  })
+  it('should update the prompt field of rooms[roomID] with the correct value', async () => {
+    await inputDone({ roomId: 'room1', prompt: 'new prompt' }, 'id1')
+    expect(rooms['room1'].prompts['id1']).toBe('new prompt')
   })
 })

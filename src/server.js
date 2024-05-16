@@ -95,56 +95,9 @@ io.on('connection', (socket) => {
     socket.emit('publicRoomsList', roomsList)
   })
 
-  socket.on('inputDone', async (data) => {
-    await new Promise((resolve) => {
-      const intervalId = setInterval(() => {
-        if (users.get(socket.id)) {
-          clearInterval(intervalId)
-          resolve()
-        }
-      }, 100) // Check every 100ms
-    })
-    const { roomId, prompt } = data
-    rooms[roomId].prompts[socket.id] = prompt
-    updateGridSubmission(
-      roomId,
-      users.get(socket.id).username,
-      'prompt',
-      prompt,
-      socket.id
-    )
+  socket.on('inputDone', async (data) => inputDone(data, socket.id))
 
-    if (
-      Object.keys(rooms[roomId].prompts).length === rooms[roomId].members.length
-    ) {
-      distributePrompts(roomId)
-      rooms[roomId].prompts = {}
-    }
-  })
-
-  socket.on('drawingSubmitted', (data) => {
-    const { roomId, image } = data
-    if (!drawingSubmissions[roomId]) {
-      drawingSubmissions[roomId] = {}
-    }
-
-    drawingSubmissions[roomId][socket.id] = image
-
-    updateGridSubmission(
-      roomId,
-      users.get(socket.id).username,
-      'drawing',
-      image,
-      socket.id
-    )
-
-    if (
-      Object.keys(drawingSubmissions[roomId]).length ===
-      rooms[roomId].members.length
-    ) {
-      distributeDrawings(roomId)
-    }
-  })
+  socket.on('drawingSubmitted', (data) => drawingSubmitted(data, socket.id))
 
   socket.on('joinGameRoom', (roomID, userDetails, host) => {
     const room = rooms[roomID]
@@ -351,6 +304,58 @@ io.on('connection', (socket) => {
   })
 })
 
+async function inputDone(data, socketID) {
+  await new Promise((resolve) => {
+    const intervalId = setInterval(() => {
+      if (users.get(socketID)) {
+        clearInterval(intervalId)
+        resolve()
+      }
+    }, 100) // Check every 100ms
+  })
+  const { roomId, prompt } = data
+  rooms[roomId].prompts[socketID] = prompt
+
+  updateGridSubmission(
+    roomId,
+    users.get(socketID).username,
+    'prompt',
+    prompt,
+    socketID
+  )
+
+  if (
+    Object.keys(rooms[roomId].prompts).length === rooms[roomId].members.length
+  ) {
+    distributePrompts(roomId)
+    rooms[roomId].prompts = {}
+  }
+}
+
+function drawingSubmitted(data, socketID) {
+  const { roomId, image } = data
+  if (!drawingSubmissions[roomId]) {
+    drawingSubmissions[roomId] = {}
+  }
+
+  drawingSubmissions[roomId][socketID] = image
+
+  updateGridSubmission(
+    roomId,
+    users.get(socketID).username,
+    'drawing',
+    image,
+    socketID
+  )
+
+  if (
+    Object.keys(drawingSubmissions[roomId]).length ===
+    rooms[roomId].members.length
+  ) {
+    distributeDrawings(roomId)
+  }
+}
+
 function generateAndAssignOrders(roomID) {
   const members = rooms[roomID].members
   const uniqueOrders = generateUniqueOrders(members.length)
@@ -546,6 +551,7 @@ module.exports = {
   server,
   rounds,
   users,
+  inputDone,
   generateAndAssignOrders,
   generateRoomId,
   getImposter,
