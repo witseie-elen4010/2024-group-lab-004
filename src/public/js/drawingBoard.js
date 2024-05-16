@@ -670,7 +670,10 @@ function undo() {
   index -= 1
   drawingShapeStart -= 1
   if (index <= -1) {
+    const previousFillStyle = context.fillStyle
+    context.fillStyle = '#FFFFFF' // Set fillStyle to white
     context.fillRect(0, 0, canvas.width, canvas.height)
+    context.fillStyle = previousFillStyle // Reset fillStyle to previous value
     index = -1
   } else {
     context.putImageData(pastDrawings[index], 0, 0)
@@ -725,29 +728,22 @@ function restoreCanvasPosition(index) {
     context.putImageData(pastDrawings[index], 0, 0)
   }
 }
-function drawRectangle(e) {
+function drawRectangle(currentPoint) {
   restoreCanvasPosition(drawingShapeStart)
-  const mouseX = e.clientX - canvas.offsetLeft
-  const mouseY = e.clientY - canvas.offsetTop
-
-  // Clear canvas before drawing a new rectangle
-  // context.clearRect(0, 0, canvas.width, canvas.height)
 
   // Calculate width and height of the rectangle
-  const width = mouseX - startX
-  const height = mouseY - startY
+  const width = currentPoint.x - startX
+  const height = currentPoint.y - startY
 
   // Draw the rectangle
   context.strokeRect(startX, startY, width, height)
 }
 
-function drawCircle(e) {
+function drawCircle(currentPoint) {
   restoreCanvasPosition(drawingShapeStart)
-  const mouseX = e.clientX - canvas.offsetLeft
-  const mouseY = e.clientY - canvas.offsetTop
 
   const radius = Math.sqrt(
-    Math.pow(mouseX - startX, 2) + Math.pow(mouseY - startY, 2)
+    Math.pow(currentPoint.x - startX, 2) + Math.pow(currentPoint.y - startY, 2)
   )
 
   context.beginPath()
@@ -756,25 +752,22 @@ function drawCircle(e) {
   context.stroke()
 }
 
-function drawTriangle(e) {
+function drawTriangle(currentPoint) {
   restoreCanvasPosition(drawingShapeStart)
-  const mouseX = e.clientX - canvas.offsetLeft
-  const mouseY = e.clientY - canvas.offsetTop
 
   context.beginPath()
   context.moveTo(startX, startY)
-  context.lineTo(mouseX, mouseY)
-  context.lineTo(startX + (startX - mouseX), mouseY) // Calculate third point of triangle
+  context.lineTo(currentPoint.x, currentPoint.y)
+  context.lineTo(startX + (startX - currentPoint.x), currentPoint.y) // Calculate third point of triangle
   context.closePath()
   context.stroke()
 }
 
-function drawPentagram(e) {
+function drawPentagram(currentPoint) {
   restoreCanvasPosition(drawingShapeStart)
-  const newMouseX = e.clientX - canvas.offsetLeft
-  const newMouseY = e.clientY - canvas.offsetTop
-  const deltaX = newMouseX - startX
-  const deltaY = newMouseY - startY
+
+  const deltaX = currentPoint.x - startX
+  const deltaY = currentPoint.y - startY
   outerRadius = Math.sqrt(deltaX ** 2 + deltaY ** 2)
   innerRadius = outerRadius / 2.5
 
@@ -797,14 +790,14 @@ function drawPentagram(e) {
   context.stroke()
 }
 
-function drawPencil(e, currentPoint) {
+function drawPencil(currentPoint) {
   context.lineTo(currentPoint.x, currentPoint.y)
   context.lineCap = 'round'
   context.lineJoin = 'round'
   context.stroke()
 }
 
-function drawBlur(e, currentPoint) {
+function drawBlur(currentPoint) {
   // Begin a new path for each circle
   context.beginPath()
 
@@ -832,12 +825,9 @@ function drawBlur(e, currentPoint) {
   }
 
   context.globalAlpha = 1.0 // Reset transparency
-
-  // Prevent the default action to avoid drawing a line
-  e.preventDefault()
 }
 
-function drawSprayPaint(e, currentPoint) {
+function drawSprayPaint(currentPoint) {
   // Begin a new path for each point
   context.beginPath()
   context.fillStyle = context.strokeStyle
@@ -854,9 +844,6 @@ function drawSprayPaint(e, currentPoint) {
 
     context.fillRect(currentPoint.x + offset.x, currentPoint.y + offset.y, 1, 1)
   }
-
-  // Prevent the default action to avoid drawing a line
-  e.preventDefault()
 }
 
 function draw(e) {
@@ -867,20 +854,23 @@ function draw(e) {
 
   if (isDrawing) {
     if (drawingTool === 'blur') {
-      drawBlur(e, currentPoint)
+      drawBlur(currentPoint)
     } else if (drawingTool === 'sprayPaint') {
-      drawSprayPaint(e, currentPoint)
+      drawSprayPaint(currentPoint)
     } else if (drawingTool === 'pencil') {
-      drawPencil(e, currentPoint)
+      drawPencil(currentPoint)
     } else if (drawingTool === 'rectangle') {
-      drawRectangle(e)
+      drawRectangle(currentPoint)
     } else if (drawingTool === 'triangle') {
-      drawTriangle(e)
+      drawTriangle(currentPoint)
     } else if (drawingTool === 'circle') {
-      drawCircle(e)
+      drawCircle(currentPoint)
     } else if (drawingTool === 'pentagram') {
-      drawPentagram(e)
+      drawPentagram(currentPoint)
     }
+
+    // Prevent the default action to avoid drawing a line
+    e.preventDefault()
   }
 
   lastPoint = currentPoint
