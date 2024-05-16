@@ -3,9 +3,6 @@ global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 
 const { JSDOM } = require('jsdom')
-const userEvent = require('@testing-library/user-event')
-const { getByText, getByRole } = require('@testing-library/dom')
-const { fireEvent } = require('@testing-library/dom')
 const {
   loginRedirect,
   guestRedirect,
