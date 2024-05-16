@@ -11,6 +11,7 @@ const {
   publicRooms,
   inputDone,
   generateAndAssignOrders,
+  getMessages,
   roomChecks,
   generateRoomId,
   getImposter,
@@ -484,5 +485,47 @@ describe('roomChecks', () => {
   it('should delete drawingSubmissions of a user when they exist', () => {
     roomChecks(rooms[currentRoom], socketID, currentRoom)
     expect(drawingSubmissions[currentRoom][socketID]).toBeUndefined()
+  })
+})
+describe('getMessages', () => {
+  let socketID
+  let data
+
+  beforeEach(() => {
+    socketID = 'socket1'
+    data = { roomId: 'room1', message: 'Hello, world!' }
+    rooms['room1'] = {
+      members: ['Alice', 'Bob', 'Charlie'],
+      chatMessages: [],
+    }
+    users.set('socket1', { username: 'Alice' })
+  })
+
+  afterEach(() => {
+    rooms['room1'] = {}
+    users.clear()
+  })
+
+  it('should initialize chatMessages array if it does not exist', () => {
+    delete rooms['room1'].chatMessages
+    getMessages(data, socketID)
+    expect(rooms['room1'].chatMessages).toBeDefined()
+  })
+
+  it('should add a new message to the chatMessages array', () => {
+    const initialLength = rooms['room1'].chatMessages.length
+    getMessages(data, socketID)
+    expect(rooms['room1'].chatMessages.length).toBe(initialLength + 1)
+  })
+
+  it('should add a new message with the correct username, message, and socketID', () => {
+    getMessages(data, socketID)
+    const newMessage =
+      rooms['room1'].chatMessages[rooms['room1'].chatMessages.length - 1]
+    expect(newMessage).toEqual({
+      username: 'Alice',
+      message: 'Hello, world!',
+      socketID: 'socket1',
+    })
   })
 })

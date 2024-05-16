@@ -222,21 +222,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('sendMessage', (data) => {
-    const { roomId, message } = data
-    const room = rooms[roomId]
-    if (!room) {
-      return
-    }
-    if (!room.chatMessages) {
-      room.chatMessages = []
-    }
-    const userDetails = users.get(socket.id)
-    const chatMessage = {
-      username: userDetails.username,
-      message,
-      socketID: socket.id,
-    }
-    room.chatMessages.push(chatMessage)
+    getMessages(data, socket.id)
     io.to(roomId).emit('receiveMessage', chatMessage)
   })
 
@@ -333,6 +319,24 @@ async function inputDone(data, socketID) {
     distributePrompts(roomId)
     rooms[roomId].prompts = {}
   }
+}
+
+function getMessages(data, socketID) {
+  const { roomId, message } = data
+  const room = rooms[roomId]
+  if (!room) {
+    return
+  }
+  if (!room.chatMessages) {
+    room.chatMessages = []
+  }
+  const userDetails = users.get(socketID)
+  const chatMessage = {
+    username: userDetails.username,
+    message,
+    socketID: socketID,
+  }
+  room.chatMessages.push(chatMessage)
 }
 
 function drawingSubmitted(data, socketID) {
@@ -558,6 +562,7 @@ module.exports = {
   publicRooms,
   inputDone,
   generateAndAssignOrders,
+  getMessages,
   roomChecks,
   generateRoomId,
   getImposter,
