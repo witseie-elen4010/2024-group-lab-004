@@ -36,6 +36,9 @@
     ],
     "testMatch": [
       "**/tests-jest/**/*.test.js?(x)"
+    ],
+    "setupFiles": [
+      "./jest.setup.js"
     ]
   },
   "repository": {
