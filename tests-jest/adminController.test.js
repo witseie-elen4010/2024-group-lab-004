@@ -32,4 +32,24 @@ describe('admin', () => {
 
     expect(res._getRedirectUrl()).toBe('/logout')
   })
+
+  it('should send the admin.html file if user is an admin', async () => {
+    const req = httpMocks.createRequest({
+      session: {
+        user: {
+          id: parseInt(process.env.ADMIN_ID, 10), // Make sure this is a number
+          username: process.env.ADMIN_NAME,
+        },
+      },
+    })
+
+    const res = httpMocks.createResponse()
+    res.sendFile = jest.fn()
+
+    await adminController.admin(req, res)
+
+    expect(res.sendFile).toHaveBeenCalledWith(
+      path.join(__dirname, '../src/public/html', 'admin.html')
+    )
+  })
 })
