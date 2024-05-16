@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test')
 
-async function navigateToGame(context) {
+async function navigateToGame (context) {
   const setupPage = async (nickname) => {
     const page = await context.newPage()
     await page.goto('http://localhost:4000/')
@@ -13,7 +13,7 @@ async function navigateToGame(context) {
   const pagePromises = [
     setupPage('test name 1'),
     setupPage('test name 2'),
-    setupPage('test name 3'),
+    setupPage('test name 3')
   ]
 
   const [page1, page2, page3] = await Promise.all(pagePromises)
@@ -26,12 +26,12 @@ async function navigateToGame(context) {
 
   await Promise.all([
     page2.getByPlaceholder('Enter room ID').fill(roomID),
-    page3.getByPlaceholder('Enter room ID').fill(roomID),
+    page3.getByPlaceholder('Enter room ID').fill(roomID)
   ])
 
   await Promise.all([
     page2.getByRole('button', { name: 'Join', exact: true }).click(),
-    page3.getByRole('button', { name: 'Join', exact: true }).click(),
+    page3.getByRole('button', { name: 'Join', exact: true }).click()
   ])
 
   return { page1, page2, page3 }
@@ -41,7 +41,7 @@ test.describe('Start game tests', () => {
   test('member count is correct', async ({ context }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
-    // await page1.waitForTimeout(500) // needed?
+    await page1.waitForTimeout(500)
 
     // check that memberCount == 3
     const memberCount = await page1.locator('#membersCount').textContent()
@@ -50,7 +50,7 @@ test.describe('Start game tests', () => {
 
   // Test if the Start Game button becomes visible after three members join
   test('start game button becomes visible when 3 members join the room', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
 
@@ -71,7 +71,7 @@ test.describe('Start game tests', () => {
 
   // Test navigation to the /draw page
   test('clicking start game button loads /draw page on all pages', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
@@ -87,7 +87,7 @@ test.describe('Start game tests', () => {
 
   // Test if the /draw page is loaded on all pages
   test('clicking start game button on page1 loads /draw page on all pages', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.click('#startGame')
@@ -107,7 +107,7 @@ test.describe('Start game tests', () => {
 test.describe('Gameplay tests', () => {
   // Test if the waiting container is shown after filling and submitting the input
   test('pressing enter on page1 makes waiting container visible', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
@@ -123,7 +123,7 @@ test.describe('Gameplay tests', () => {
 
   // Test if the waiting container is hidden after all pages complete input
   test('waitingContainer is no longer visible when all pages fill input and click done button', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
@@ -131,13 +131,13 @@ test.describe('Gameplay tests', () => {
     await Promise.all([
       page1.locator('#getInput').fill('test prompt'),
       page2.locator('#getInput').fill('test prompt'),
-      page3.locator('#getInput').fill('test prompt'),
+      page3.locator('#getInput').fill('test prompt')
     ])
 
     await Promise.all([
       page1.locator('#doneButton').click(),
       page2.locator('#doneButton').click(),
-      page3.locator('#doneButton').click(),
+      page3.locator('#doneButton').click()
     ])
 
     await page1.waitForFunction(
@@ -155,7 +155,7 @@ test.describe('Gameplay tests', () => {
 
   // Test if the canvas is visible after all pages submit
   test('canvas is visible when all pages click done button', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
@@ -163,7 +163,7 @@ test.describe('Gameplay tests', () => {
     await Promise.all([
       page1.locator('#doneButton').click(),
       page2.locator('#doneButton').click(),
-      page3.locator('#doneButton').click(),
+      page3.locator('#doneButton').click()
     ])
 
     await page1.waitForFunction(
@@ -182,7 +182,7 @@ test.describe('Gameplay tests', () => {
 
 test.describe('Exit game tests', () => {
   test('page1 and page2 navigate to /landing when page3 exits', async ({
-    context,
+    context
   }) => {
     const { page1, page2, page3 } = await navigateToGame(context)
     await page1.getByRole('button', { name: 'Start Game' }).click()
@@ -190,7 +190,7 @@ test.describe('Exit game tests', () => {
     await Promise.all([
       page1.locator('#doneButton').click(),
       page2.locator('#doneButton').click(),
-      page3.locator('#doneButton').click(),
+      page3.locator('#doneButton').click()
     ])
 
     // Simulate page3 exiting the game
