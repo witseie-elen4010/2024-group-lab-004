@@ -261,36 +261,9 @@ io.on('connection', (socket) => {
           membersCount: room.members.length,
         })
       }
-
+      roomChecks(room, socket.id, currentRoom)
       io.to(currentRoom).emit('hostUpdated', room.host)
 
-      if (room.gameStarted) {
-        room.maxMembers -= 1
-        delete publicRooms[currentRoom]
-      }
-
-      if (room.allJoined) {
-        room.gameSize -= 1
-      }
-
-      if (room.members.length === 0) {
-        if (room.isPublic) {
-          delete publicRooms[currentRoom]
-        }
-      }
-
-      if (room.orders[socket.id]) {
-        delete room.orders[socket.id]
-      }
-      if (room.prompts[socket.id]) {
-        delete room.prompts[socket.id]
-      }
-      if (
-        drawingSubmissions[currentRoom] &&
-        drawingSubmissions[currentRoom][socket.id]
-      ) {
-        delete drawingSubmissions[currentRoom][socket.id]
-      }
       updateAndEmitOrders(currentRoom)
       io.to(currentRoom).emit('userDisconnected', {
         votingSend: room.votingSend,
@@ -303,6 +276,36 @@ io.on('connection', (socket) => {
     }
   })
 })
+
+function roomChecks(room, socketID, currentRoom) {
+  if (room.gameStarted) {
+    room.maxMembers -= 1
+    delete publicRooms[currentRoom]
+  }
+
+  if (room.allJoined) {
+    room.gameSize -= 1
+  }
+
+  if (room.members.length === 0) {
+    if (room.isPublic) {
+      delete publicRooms[currentRoom]
+    }
+  }
+
+  if (room.orders[socketID]) {
+    delete room.orders[socketID]
+  }
+  if (room.prompts[socketID]) {
+    delete room.prompts[socketID]
+  }
+  if (
+    drawingSubmissions[currentRoom] &&
+    drawingSubmissions[currentRoom][socketID]
+  ) {
+    delete drawingSubmissions[currentRoom][socketID]
+  }
+}
 
 async function inputDone(data, socketID) {
   await new Promise((resolve) => {
@@ -552,8 +555,10 @@ module.exports = {
   rounds,
   users,
   drawingSubmissions,
+  publicRooms,
   inputDone,
   generateAndAssignOrders,
+  roomChecks,
   generateRoomId,
   getImposter,
   generateUniqueOrders,

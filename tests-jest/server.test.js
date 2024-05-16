@@ -8,8 +8,10 @@ const {
   rounds,
   users,
   drawingSubmissions,
+  publicRooms,
   inputDone,
   generateAndAssignOrders,
+  roomChecks,
   generateRoomId,
   getImposter,
   generateUniqueOrders,
@@ -419,5 +421,68 @@ describe('drawingSubmitted', () => {
   it('should call updateGridSubmission with correct parameters', () => {
     drawingSubmitted(data, socketID)
     expect(rooms['room1'].grid).toBeTruthy()
+  })
+})
+describe('roomChecks', () => {
+  let socketID
+  let currentRoom
+
+  beforeEach(() => {
+    socketID = 'socket1'
+    currentRoom = 'room1'
+    rooms[currentRoom] = {
+      gameStarted: false,
+      allJoined: false,
+      members: ['Alice', 'Bob', 'Charlie'],
+      orders: {
+        [socketID]: [1, 2, 3],
+      },
+      prompts: {
+        [socketID]: 'prompt1',
+      },
+      isPublic: true,
+      maxMembers: 3,
+      gameSize: 3,
+    }
+    publicRooms[currentRoom] = rooms[currentRoom]
+    drawingSubmissions[currentRoom] = {
+      [socketID]: 'image1',
+    }
+  })
+
+  afterEach(() => {
+    rooms[currentRoom] = {}
+    publicRooms[currentRoom] = {}
+    drawingSubmissions[currentRoom] = {}
+  })
+
+  it('should decrease maxMembers and delete room from publicRooms when gameStarted is true', () => {
+    rooms[currentRoom].gameStarted = true
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(rooms[currentRoom].maxMembers).toBe(2)
+    expect(publicRooms[currentRoom]).toBeUndefined()
+  })
+
+  it('should decrease gameSize when allJoined is true', () => {
+    rooms[currentRoom].allJoined = true
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(rooms[currentRoom].gameSize).toBe(2)
+  })
+
+  it('should delete room from publicRooms when there are no members', () => {
+    rooms[currentRoom].members = []
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(publicRooms[currentRoom]).toBeUndefined()
+  })
+
+  it('should delete orders and prompts of a user when they exist', () => {
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(rooms[currentRoom].orders[socketID]).toBeUndefined()
+    expect(rooms[currentRoom].prompts[socketID]).toBeUndefined()
+  })
+
+  it('should delete drawingSubmissions of a user when they exist', () => {
+    roomChecks(rooms[currentRoom], socketID, currentRoom)
+    expect(drawingSubmissions[currentRoom][socketID]).toBeUndefined()
   })
 })
