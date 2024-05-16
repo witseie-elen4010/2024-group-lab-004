@@ -50,10 +50,10 @@ exports.fetchGrid = async (req, res) => {
   }
 }
 
-exports.newGame = (names) => {
+exports.newGame = (names, host) => {
   return new Promise((resolve, reject) => {
     const game = {}
-    game['game_name'] = 'NEW'
+    game['game_name'] = `Host: ${host}`
     game['game_date'] = new Date()
     for (let i = 0; i < names.length; i++) {
       game[`user${i + 1}`] = names[i]
